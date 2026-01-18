@@ -44,7 +44,7 @@ function Line({ lineNumber, content, time, isActive, onLineClick }: LineProps) {
       {/* Line Number */}
       <div
         className={cn(
-          "select-none border-r border-[var(--border)] bg-[var(--editor-bg)] px-3 py-0 text-right text-gray-500 cursor-pointer hover:bg-gray-800/30 transition-colors",
+          "select-none border-r border-border bg-background px-3 py-0 text-right text-gray-500 cursor-pointer hover:bg-gray-800/30 transition-colors",
           isActive && "bg-gray-800/50 text-gray-300",
         )}
         onClick={() => {
@@ -143,7 +143,7 @@ export function CodeEditor({ className }: CodeEditorProps) {
     return (
       <div
         className={cn(
-          "flex h-full flex-col items-center justify-center bg-[var(--editor-bg)] font-mono text-[13px] text-gray-500",
+          "flex h-full flex-col items-center justify-center bg-background font-mono text-[13px] text-gray-500",
           className,
         )}
       >
@@ -171,11 +171,11 @@ export function CodeEditor({ className }: CodeEditorProps) {
   return (
     <div
       className={cn(
-        "flex h-full flex-col bg-[var(--editor-bg)] font-mono text-[13px]",
+        "flex h-full flex-col bg-background font-mono text-[13px]",
         className,
       )}
     >
-      <div className="border-b border-[var(--border)] px-4 py-2 flex items-center gap-2">
+      <div className="border-b border-border px-4 py-2 flex items-center gap-2">
         <span className="text-[11px] text-gray-500 truncate">{filePath}</span>
         <span className="text-[10px] text-gray-600">
           {formatDuration(activeFile.duration)}

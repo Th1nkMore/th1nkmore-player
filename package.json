@@ -25,7 +25,7 @@
       "biome check --write",
       "node scripts/check-file-length.js"
     ],
-    "*.{js,jsx,json,css,md}": [
+    "*.{js,jsx,json,md}": [
       "biome check --write"
     ]
   },

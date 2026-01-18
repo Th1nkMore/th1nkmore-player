@@ -62,7 +62,7 @@ function ProgressBar({
     <div
       ref={progressRef}
       onClick={handleClick}
-      className="flex h-5 w-full cursor-pointer items-center gap-0.5 border border-[var(--border)] bg-gray-900/50 px-1 hover:bg-gray-900/70"
+      className="flex h-5 w-full cursor-pointer items-center gap-0.5 border border-border bg-gray-900/50 px-1 hover:bg-gray-900/70"
       role="progressbar"
       aria-valuenow={percentage}
       aria-valuemin={0}
@@ -224,7 +224,6 @@ export function TerminalPanel({ className }: TerminalPanelProps) {
     duration,
     currentTime,
     currentTrackId,
-    queue,
     playOrder,
     play,
     pause,
@@ -279,19 +278,19 @@ export function TerminalPanel({ className }: TerminalPanelProps) {
   return (
     <div
       className={cn(
-        "flex h-full flex-col bg-[var(--terminal-bg)] font-mono text-[12px]",
+        "flex h-full flex-col bg-muted font-mono text-[12px]",
         className,
       )}
     >
       {/* Tabs - Hidden on mobile */}
-      <div className="hidden md:flex border-b border-[var(--border)] bg-[var(--terminal-bg)]">
+      <div className="hidden md:flex border-b border-border bg-muted">
         {tabs.map((tab) => (
           <button
             key={tab}
             type="button"
             onClick={() => setActiveTab(tab)}
             className={cn(
-              "border-r border-[var(--border)] px-4 py-2 text-[11px] uppercase text-gray-500 hover:bg-gray-800/50 transition-colors",
+              "border-r border-border px-4 py-2 text-[11px] uppercase text-gray-500 hover:bg-gray-800/50 transition-colors",
               activeTab === tab && "bg-gray-800/50 text-gray-300",
             )}
             aria-label={`Switch to ${tab} tab`}
@@ -316,9 +315,9 @@ export function TerminalPanel({ className }: TerminalPanelProps) {
         </ScrollArea>
 
         {/* Player Controls - Always visible, full width on mobile */}
-        <div className="w-full md:w-[400px] border-t md:border-t-0 md:border-l border-[var(--border)] flex flex-col">
+        <div className="w-full md:w-[400px] border-t md:border-t-0 md:border-l border-border flex flex-col">
           {/* Progress Bar */}
-          <div className="p-3 space-y-2 border-b border-[var(--border)]">
+          <div className="p-3 space-y-2 border-b border-border">
             <ProgressBar current={currentTime} total={duration} onSeek={seek} />
             <div className="flex items-center justify-between text-[10px] text-gray-500">
               <span>{formatDuration(currentTime)}</span>
@@ -327,7 +326,7 @@ export function TerminalPanel({ className }: TerminalPanelProps) {
           </div>
 
           {/* Controls */}
-          <div className="flex items-center justify-between p-3 border-b border-[var(--border)]">
+          <div className="flex items-center justify-between p-3 border-b border-border">
             <button
               type="button"
               onClick={handlePrevious}

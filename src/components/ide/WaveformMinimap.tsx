@@ -164,7 +164,7 @@ export function WaveformMinimap({
   return (
     <div
       className={cn(
-        "relative w-full border-b border-[var(--border)] bg-black",
+        "relative w-full border-b border-border bg-black",
         className,
       )}
     >

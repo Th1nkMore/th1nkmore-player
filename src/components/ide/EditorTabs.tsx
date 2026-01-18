@@ -28,7 +28,7 @@ export function EditorTabs({ className }: EditorTabsProps) {
   return (
     <div
       className={cn(
-        "flex items-center gap-0 border-b border-[var(--border)] bg-[var(--editor-bg)] overflow-x-auto",
+        "flex items-center gap-0 border-b border-border bg-background overflow-x-auto",
         className,
       )}
     >
@@ -44,8 +44,8 @@ export function EditorTabs({ className }: EditorTabsProps) {
             role="tab"
             onClick={() => handleTabClick(fileId)}
             className={cn(
-              "group flex items-center gap-2 border-r border-[var(--border)] px-3 py-1.5 text-[11px] text-gray-500 transition-colors hover:bg-gray-800/30 cursor-pointer",
-              isActive && "bg-[var(--editor-bg)] text-gray-300",
+              "group flex items-center gap-2 border-r border-border px-3 py-1.5 text-[11px] text-gray-500 transition-colors hover:bg-gray-800/30 cursor-pointer",
+              isActive && "bg-background text-gray-300",
             )}
             aria-label={`Switch to ${file.title}`}
             aria-selected={isActive}

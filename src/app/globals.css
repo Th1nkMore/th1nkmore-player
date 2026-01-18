@@ -129,20 +129,3 @@
     @apply bg-background text-foreground font-mono;
   }
 }
-
-/* IDE-specific CSS variables */
-:root {
-  --sidebar-bg: #f5f5f5;
-  --editor-bg: #ffffff;
-  --terminal-bg: #f5f5f5;
-  --border: #e0e0e0;
-  --accent: #000000;
-}
-
-.dark {
-  --sidebar-bg: #000000;
-  --editor-bg: #0a0a0a;
-  --terminal-bg: #000000;
-  --border: #333333;
-  --accent: #ffffff;
-}
