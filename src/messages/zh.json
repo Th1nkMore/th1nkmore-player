@@ -24,7 +24,13 @@
   "codeEditor": {
     "filePath": "lyrics/midnight-refactor.lyr",
     "trackComment": "// track: midnight-refactor",
-    "artistComment": "// artist: sonic-ide"
+    "artistComment": "// artist: sonic-ide",
+    "welcome": "欢迎使用 Sonic IDE",
+    "emptyStateDescription": "从资源管理器中选择一个文件以开始查看其内容。",
+    "shortcutsTitle": "快捷方式：",
+    "shortcutOpen": "点击资源管理器中的文件打开",
+    "shortcutSwitch": "点击标签页在打开的文件之间切换",
+    "shortcutClose": "使用 × 按钮关闭标签页"
   },
   "inspector": {
     "title": "检查器",

@@ -24,7 +24,13 @@
   "codeEditor": {
     "filePath": "lyrics/midnight-refactor.lyr",
     "trackComment": "// track: midnight-refactor",
-    "artistComment": "// artist: sonic-ide"
+    "artistComment": "// artist: sonic-ide",
+    "welcome": "Sonic IDE へようこそ",
+    "emptyStateDescription": "エクスプローラーからファイルを選択してコンテンツを表示します。",
+    "shortcutsTitle": "ショートカット：",
+    "shortcutOpen": "エクスプローラーのファイルをクリックして開く",
+    "shortcutSwitch": "タブをクリックして開いているファイルを切り替え",
+    "shortcutClose": "× ボタンでタブを閉じる"
   },
   "inspector": {
     "title": "インスペクター",

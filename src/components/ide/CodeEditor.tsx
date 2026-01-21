@@ -1,6 +1,7 @@
 "use client";
 
 import { FileCode } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { lyricsToLrc, parseLrc } from "@/lib/lrcParser";
@@ -39,25 +40,34 @@ function Line({ lineNumber, content, time, isActive, onLineClick }: LineProps) {
     }
   }, [isActive]);
 
+  const handleInteraction = () => {
+    if (time !== null) {
+      onLineClick(time);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleInteraction();
+    }
+  };
+
   return (
     <div className="flex leading-6">
       {/* Line Number */}
-      <div
+      <button
+        type="button"
         className={cn(
           "select-none border-r border-border bg-background px-3 py-0 text-right text-gray-500 cursor-pointer hover:bg-gray-800/30 transition-colors",
           isActive && "bg-gray-800/50 text-gray-300",
         )}
-        onClick={() => {
-          if (time !== null) {
-            onLineClick(time);
-          }
-        }}
-        role="button"
-        tabIndex={0}
+        onClick={handleInteraction}
+        onKeyDown={handleKeyDown}
         aria-label={`Go to time ${time !== null ? formatDuration(time) : ""}`}
       >
         {lineNumber}
-      </div>
+      </button>
       {/* Code Content */}
       <div
         ref={lineRef}
@@ -73,6 +83,7 @@ function Line({ lineNumber, content, time, isActive, onLineClick }: LineProps) {
 }
 
 export function CodeEditor({ className }: CodeEditorProps) {
+  const t = useTranslations("codeEditor");
   const { getActiveFile } = useIDEStore();
   const { currentTime, seek } = usePlayerStore();
   const activeFile = getActiveFile();
@@ -149,17 +160,17 @@ export function CodeEditor({ className }: CodeEditorProps) {
       >
         <FileCode className="h-16 w-16 mb-4 text-gray-600" aria-hidden="true" />
         <h2 className="text-lg font-semibold text-gray-400 mb-2">
-          Welcome to Sonic IDE
+          {t("welcome")}
         </h2>
         <p className="text-[12px] text-gray-500 text-center max-w-md">
-          Select a file from the explorer to start viewing its content.
+          {t("emptyStateDescription")}
         </p>
         <div className="mt-6 text-[11px] text-gray-600">
-          <p>Shortcuts:</p>
+          <p>{t("shortcutsTitle")}</p>
           <ul className="mt-2 space-y-1 list-disc list-inside">
-            <li>Click files in the explorer to open</li>
-            <li>Click tabs to switch between open files</li>
-            <li>Close tabs with the × button</li>
+            <li>{t("shortcutOpen")}</li>
+            <li>{t("shortcutSwitch")}</li>
+            <li>{t("shortcutClose")}</li>
           </ul>
         </div>
       </div>
@@ -192,7 +203,7 @@ export function CodeEditor({ className }: CodeEditorProps) {
 
             return (
               <Line
-                key={index}
+                key={`${line.time}-${index}`}
                 lineNumber={index + 1}
                 content={line.content}
                 time={line.time}
