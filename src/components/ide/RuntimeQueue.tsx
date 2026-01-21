@@ -16,6 +16,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { AnimatePresence, motion } from "framer-motion";
 import { Circle, FileAudio, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
@@ -69,9 +70,24 @@ function QueueItem({ songId, isActive }: QueueItemProps) {
   };
 
   return (
-    <div
+    <motion.div
       ref={setNodeRef}
       style={style}
+      layout
+      initial={{ opacity: 0, x: 20 }}
+      animate={{
+        opacity: isDragging ? 0.5 : 1,
+        x: 0,
+        transition: { duration: 0.3 },
+      }}
+      exit={{
+        opacity: 0,
+        scale: 0.95,
+        transition: { duration: 0.2 },
+      }}
+      transition={{
+        layout: { duration: 0.3, type: "spring", bounce: 0.2 },
+      }}
       className={cn(
         "flex items-center gap-1.5 px-2 py-1 text-[11px] text-gray-400 hover:bg-gray-800/50 cursor-pointer transition-colors group",
         isActive && "bg-gray-800/70 text-gray-200",
@@ -84,11 +100,11 @@ function QueueItem({ songId, isActive }: QueueItemProps) {
       <div className="flex items-center gap-1.5 flex-1 min-w-0">
         {isActive ? (
           <Circle
-            className="h-3 w-3 flex-shrink-0 text-primary fill-primary"
+            className="h-3 w-3 shrink-0 text-primary fill-primary"
             aria-hidden="true"
           />
         ) : (
-          <FileAudio className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
+          <FileAudio className="h-3 w-3 shrink-0" aria-hidden="true" />
         )}
         <span className="truncate" title={song.title}>
           {song.title}
@@ -100,9 +116,9 @@ function QueueItem({ songId, isActive }: QueueItemProps) {
         className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-gray-700/50 rounded"
         aria-label={`Remove ${song.title} from queue`}
       >
-        <X className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
+        <X className="h-3 w-3 shrink-0" aria-hidden="true" />
       </button>
-    </div>
+    </motion.div>
   );
 }
 
@@ -153,13 +169,15 @@ export function RuntimeQueue() {
         items={queue.map((song) => song.id)}
         strategy={verticalListSortingStrategy}
       >
-        {queue.map((song) => (
-          <QueueItem
-            key={song.id}
-            songId={song.id}
-            isActive={song.id === currentTrackId}
-          />
-        ))}
+        <AnimatePresence mode="popLayout">
+          {queue.map((song) => (
+            <QueueItem
+              key={song.id}
+              songId={song.id}
+              isActive={song.id === currentTrackId}
+            />
+          ))}
+        </AnimatePresence>
       </SortableContext>
     </DndContext>
   );

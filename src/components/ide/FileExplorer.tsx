@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ChevronDown,
   ChevronRight,
@@ -25,6 +26,7 @@ import {
 } from "@/components/ui/context-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { useDeviceType } from "@/lib/hooks/useDeviceType";
 import { cn } from "@/lib/utils";
 import { useIDEStore } from "@/store/useIDEStore";
 import { usePlayerStore } from "@/store/usePlayerStore";
@@ -41,15 +43,24 @@ type GroupedSongs = {
 
 export function FileExplorer({ className, onFileClick }: FileExplorerProps) {
   const { files, activeFileId, openFile, getFileById } = useIDEStore();
-  const { setTrack, play, addToQueue } = usePlayerStore();
+  const { setTrack, play, addToQueue, queue } = usePlayerStore();
   const [isQueueOpen, setIsQueueOpen] = useState(true);
   const [isRepoOpen, setIsRepoOpen] = useState(true);
   const clickTimerRef = useRef<{ [key: string]: NodeJS.Timeout | null }>({});
+  const deviceType = useDeviceType();
+  const isTouchDevice = deviceType === "touch";
   const t = useTranslations("fileExplorer");
 
+  // Track which songs are in the queue
+  const queuedSongIds = useMemo(() => new Set(queue.map((s) => s.id)), [queue]);
+
+  // Group songs by album, excluding songs already in queue
   const groupedSongs = useMemo(() => {
     const grouped: GroupedSongs = {};
     files.forEach((song) => {
+      // Skip songs that are already in queue
+      if (queuedSongIds.has(song.id)) return;
+
       if (!grouped[song.album]) {
         grouped[song.album] = [];
       }
@@ -60,7 +71,7 @@ export function FileExplorer({ className, onFileClick }: FileExplorerProps) {
       });
     });
     return grouped;
-  }, [files]);
+  }, [files, queuedSongIds]);
 
   const handleFileClick = (fileId: string) => {
     // Clear any existing timer for this file
@@ -171,72 +182,115 @@ export function FileExplorer({ className, onFileClick }: FileExplorerProps) {
                   <div key={album}>
                     {/* Album/Folder */}
                     <div className="flex items-center gap-1.5 px-2 py-1 text-[11px] text-gray-400">
-                      <Folder
-                        className="h-3 w-3 flex-shrink-0"
-                        aria-hidden="true"
-                      />
+                      <Folder className="h-3 w-3 shrink-0" aria-hidden="true" />
                       <span className="truncate">{album}</span>
                     </div>
                     {/* Files in Album */}
                     <div>
-                      {songs.map((song) => {
-                        const isActive = song.id === activeFileId;
-                        return (
-                          <ContextMenu key={song.id}>
-                            <ContextMenuTrigger asChild>
-                              <button
-                                type="button"
-                                onClick={() => handleFileClick(song.id)}
-                                onDoubleClick={() =>
-                                  handleFileDoubleClick(song.id)
-                                }
-                                className={cn(
-                                  "flex w-full items-center gap-1.5 px-2 py-1 text-[11px] text-gray-400 hover:bg-gray-800/50 cursor-pointer transition-colors",
-                                  isActive && "bg-gray-800/70 text-gray-200",
-                                )}
-                                style={{ paddingLeft: "24px" }}
-                                aria-label={`Open ${song.title}. Double click to add to queue.`}
-                              >
-                                <FileAudio
-                                  className="h-3 w-3 flex-shrink-0"
-                                  aria-hidden="true"
-                                />
-                                <span className="truncate">{song.title}</span>
-                              </button>
-                            </ContextMenuTrigger>
-                            <ContextMenuContent className="bg-sidebar border-border text-gray-300">
-                              <ContextMenuItem
-                                onClick={() => handlePlay(song.id)}
-                                className="cursor-pointer hover:bg-gray-800/50"
-                              >
-                                <Play className="h-3 w-3 mr-2" />
-                                {t("play")}
-                              </ContextMenuItem>
-                              <ContextMenuItem
-                                onClick={() => handleAddToQueue(song.id)}
-                                className="cursor-pointer hover:bg-gray-800/50"
-                              >
-                                <Plus className="h-3 w-3 mr-2" />
-                                {t("addToQueue")}
-                              </ContextMenuItem>
-                              <ContextMenuItem
-                                onClick={() => handleCopyLink(song.id)}
-                                className="cursor-pointer hover:bg-gray-800/50"
-                              >
-                                <Copy className="h-3 w-3 mr-2" />
-                                {t("copyLink")}
-                              </ContextMenuItem>
-                              <ContextMenuItem
-                                onClick={() => handleProperties(song.id)}
-                                className="cursor-pointer hover:bg-gray-800/50"
-                              >
-                                <Info className="h-3 w-3 mr-2" />
-                                {t("properties")}
-                              </ContextMenuItem>
-                            </ContextMenuContent>
-                          </ContextMenu>
-                        );
-                      })}
+                      <AnimatePresence mode="popLayout">
+                        {songs.map((song) => {
+                          const isActive = song.id === activeFileId;
+                          return (
+                            <motion.div
+                              key={song.id}
+                              layout
+                              initial={{ opacity: 1, x: 0 }}
+                              exit={{
+                                opacity: 0,
+                                x: -20,
+                                transition: { duration: 0.2 },
+                              }}
+                              transition={{
+                                layout: {
+                                  duration: 0.3,
+                                  type: "spring",
+                                  bounce: 0.2,
+                                },
+                              }}
+                              className="flex items-center gap-1"
+                            >
+                              <ContextMenu>
+                                <ContextMenuTrigger asChild>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleFileClick(song.id)}
+                                    onDoubleClick={
+                                      !isTouchDevice
+                                        ? () => handleFileDoubleClick(song.id)
+                                        : undefined
+                                    }
+                                    className={cn(
+                                      "flex flex-1 items-center gap-1.5 px-2 py-1 text-[11px] text-gray-400 hover:bg-gray-800/50 cursor-pointer transition-colors",
+                                      isActive &&
+                                        "bg-gray-800/70 text-gray-200",
+                                    )}
+                                    style={{ paddingLeft: "24px" }}
+                                    aria-label={
+                                      isTouchDevice
+                                        ? `Open ${song.title}`
+                                        : `Open ${song.title}. Double click to add to queue.`
+                                    }
+                                  >
+                                    <FileAudio
+                                      className="h-3 w-3 shrink-0"
+                                      aria-hidden="true"
+                                    />
+                                    <span className="truncate">
+                                      {song.title}
+                                    </span>
+                                  </button>
+                                </ContextMenuTrigger>
+                                <ContextMenuContent className="bg-sidebar border-border text-gray-300">
+                                  <ContextMenuItem
+                                    onClick={() => handlePlay(song.id)}
+                                    className="cursor-pointer hover:bg-gray-800/50"
+                                  >
+                                    <Play className="h-3 w-3 mr-2" />
+                                    {t("play")}
+                                  </ContextMenuItem>
+                                  <ContextMenuItem
+                                    onClick={() => handleAddToQueue(song.id)}
+                                    className="cursor-pointer hover:bg-gray-800/50"
+                                  >
+                                    <Plus className="h-3 w-3 mr-2" />
+                                    {t("addToQueue")}
+                                  </ContextMenuItem>
+                                  <ContextMenuItem
+                                    onClick={() => handleCopyLink(song.id)}
+                                    className="cursor-pointer hover:bg-gray-800/50"
+                                  >
+                                    <Copy className="h-3 w-3 mr-2" />
+                                    {t("copyLink")}
+                                  </ContextMenuItem>
+                                  <ContextMenuItem
+                                    onClick={() => handleProperties(song.id)}
+                                    className="cursor-pointer hover:bg-gray-800/50"
+                                  >
+                                    <Info className="h-3 w-3 mr-2" />
+                                    {t("properties")}
+                                  </ContextMenuItem>
+                                </ContextMenuContent>
+                              </ContextMenu>
+
+                              {/* Touch Device: Show explicit add button */}
+                              {isTouchDevice && (
+                                <motion.button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAddToQueue(song.id);
+                                  }}
+                                  className="shrink-0 p-1.5 mr-1 text-gray-400/60 hover:text-primary hover:bg-gray-800/50 rounded transition-colors active:bg-gray-800"
+                                  aria-label={`Add ${song.title} to queue`}
+                                  whileTap={{ scale: 0.9 }}
+                                >
+                                  <Plus className="h-3.5 w-3.5" />
+                                </motion.button>
+                              )}
+                            </motion.div>
+                          );
+                        })}
+                      </AnimatePresence>
                     </div>
                   </div>
                 ))}
