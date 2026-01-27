@@ -1,36 +1,18 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  ChevronDown,
-  ChevronRight,
-  Copy,
-  FileAudio,
-  Folder,
-  Info,
-  Play,
-  Plus,
-} from "lucide-react";
+import { AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { useMemo, useRef, useState } from "react";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from "@/components/ui/context-menu";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { useDeviceType } from "@/lib/hooks/useDeviceType";
 import { cn } from "@/lib/utils";
 import { useIDEStore } from "@/store/useIDEStore";
 import { usePlayerStore } from "@/store/usePlayerStore";
+import { AlbumFolder } from "./AlbumFolder";
+import { CollapsibleSection } from "./CollapsibleSection";
+import { LoadingDots } from "./LoadingDots";
 import { RuntimeQueue } from "./RuntimeQueue";
+import { SongItem } from "./SongItem";
 
 type FileExplorerProps = {
   className?: string;
@@ -42,10 +24,12 @@ type GroupedSongs = {
 };
 
 export function FileExplorer({ className, onFileClick }: FileExplorerProps) {
-  const { files, activeFileId, openFile, getFileById } = useIDEStore();
+  const { files, activeFileId, openFile, getFileById, isLoading } =
+    useIDEStore();
   const { setTrack, play, addToQueue, queue } = usePlayerStore();
   const [isQueueOpen, setIsQueueOpen] = useState(true);
   const [isRepoOpen, setIsRepoOpen] = useState(true);
+  const [openAlbums, setOpenAlbums] = useState<Set<string>>(new Set());
   const clickTimerRef = useRef<{ [key: string]: NodeJS.Timeout | null }>({});
   const deviceType = useDeviceType();
   const isTouchDevice = deviceType === "touch";
@@ -57,10 +41,8 @@ export function FileExplorer({ className, onFileClick }: FileExplorerProps) {
   // Group songs by album, excluding songs already in queue
   const groupedSongs = useMemo(() => {
     const grouped: GroupedSongs = {};
-    files.forEach((song) => {
-      // Skip songs that are already in queue
-      if (queuedSongIds.has(song.id)) return;
-
+    for (const song of files) {
+      if (queuedSongIds.has(song.id)) continue;
       if (!grouped[song.album]) {
         grouped[song.album] = [];
       }
@@ -69,76 +51,106 @@ export function FileExplorer({ className, onFileClick }: FileExplorerProps) {
         title: song.title,
         album: song.album,
       });
-    });
+    }
     return grouped;
   }, [files, queuedSongIds]);
 
-  const handleFileClick = (fileId: string) => {
-    // Clear any existing timer for this file
-    if (clickTimerRef.current[fileId]) {
-      clearTimeout(clickTimerRef.current[fileId]);
-      clickTimerRef.current[fileId] = null;
-    }
+  // Album keys memoized
+  const albumKeys = useMemo(() => Object.keys(groupedSongs), [groupedSongs]);
+  const hasInitializedRef = useRef(false);
 
-    // Set a timer for single click - delay allows double click to cancel it
-    clickTimerRef.current[fileId] = setTimeout(() => {
-      // Single click: Only open/preview the file
-      // Inspector and CodeEditor will update automatically via activeFileId
+  // Initialize open albums only once when data first loads
+  useEffect(() => {
+    if (albumKeys.length > 0 && !hasInitializedRef.current) {
+      setOpenAlbums(new Set(albumKeys));
+      hasInitializedRef.current = true;
+    }
+  }, [albumKeys]);
+
+  const toggleAlbum = useCallback((album: string) => {
+    setOpenAlbums((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(album)) {
+        newSet.delete(album);
+      } else {
+        newSet.add(album);
+      }
+      return newSet;
+    });
+  }, []);
+
+  const handleFileClick = useCallback(
+    (fileId: string) => {
+      if (clickTimerRef.current[fileId]) {
+        clearTimeout(clickTimerRef.current[fileId]);
+        clickTimerRef.current[fileId] = null;
+      }
+      clickTimerRef.current[fileId] = setTimeout(() => {
+        openFile(fileId);
+        onFileClick?.();
+        clickTimerRef.current[fileId] = null;
+      }, 300);
+    },
+    [openFile, onFileClick],
+  );
+
+  const handleFileDoubleClick = useCallback(
+    (fileId: string) => {
+      const song = getFileById(fileId);
+      if (!song) return;
+      if (clickTimerRef.current[fileId]) {
+        clearTimeout(clickTimerRef.current[fileId]);
+        clickTimerRef.current[fileId] = null;
+      }
+      addToQueue(song);
+    },
+    [getFileById, addToQueue],
+  );
+
+  const handlePlay = useCallback(
+    (fileId: string) => {
+      const song = getFileById(fileId);
+      if (!song) return;
+      openFile(fileId);
+      addToQueue(song);
+      setTrack(fileId);
+      setTimeout(() => play(song), 100);
+      onFileClick?.();
+    },
+    [getFileById, openFile, addToQueue, setTrack, play, onFileClick],
+  );
+
+  const handleAddToQueue = useCallback(
+    (fileId: string) => {
+      const song = getFileById(fileId);
+      if (song) addToQueue(song);
+    },
+    [getFileById, addToQueue],
+  );
+
+  const handleCopyLink = useCallback(
+    (fileId: string) => {
+      const file = files.find((f) => f.id === fileId);
+      if (!file) return;
+      navigator.clipboard.writeText(file.audioUrl).catch(() => {
+        const textArea = document.createElement("textarea");
+        textArea.value = file.audioUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      });
+    },
+    [files],
+  );
+
+  const handleProperties = useCallback(
+    (fileId: string) => {
       openFile(fileId);
       onFileClick?.();
-      clickTimerRef.current[fileId] = null;
-    }, 300); // 300ms delay to detect double click
-  };
-
-  const handleFileDoubleClick = (fileId: string) => {
-    const song = getFileById(fileId);
-    if (!song) return;
-
-    // Cancel the single click timer
-    if (clickTimerRef.current[fileId]) {
-      clearTimeout(clickTimerRef.current[fileId]);
-      clickTimerRef.current[fileId] = null;
-    }
-
-    // Double click: Only add to queue/playlist - do NOT open, set track, or play
-    addToQueue(song);
-  };
-
-  const handlePlay = (fileId: string) => {
-    const song = getFileById(fileId);
-    if (!song) return;
-
-    openFile(fileId);
-    addToQueue(song);
-    setTrack(fileId);
-    setTimeout(() => play(song), 100);
-    onFileClick?.();
-  };
-
-  const handleAddToQueue = (fileId: string) => {
-    const song = getFileById(fileId);
-    if (!song) return;
-    addToQueue(song);
-  };
-
-  const handleCopyLink = (fileId: string) => {
-    const file = files.find((f) => f.id === fileId);
-    if (!file) return;
-    navigator.clipboard.writeText(file.audioUrl).catch(() => {
-      // Fallback for older browsers
-      const textArea = document.createElement("textarea");
-      textArea.value = file.audioUrl;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
-    });
-  };
-
-  const handleProperties = (fileId: string) => {
-    openFile(fileId);
-    onFileClick?.();
-  };
+    },
+    [openFile, onFileClick],
+  );
 
   return (
     <div
@@ -147,158 +159,60 @@ export function FileExplorer({ className, onFileClick }: FileExplorerProps) {
       <div className="border-b border-border px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-gray-500 bg-sidebar">
         {t("title").toUpperCase()}
       </div>
-      <ScrollArea className="flex-1">
-        <div className="py-2">
-          {/* Runtime Queue Section */}
-          <Collapsible open={isQueueOpen} onOpenChange={setIsQueueOpen}>
-            <CollapsibleTrigger className="flex w-full items-center gap-1.5 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500 hover:bg-gray-800/30 transition-colors">
-              {isQueueOpen ? (
-                <ChevronDown className="h-3 w-3" aria-hidden="true" />
-              ) : (
-                <ChevronRight className="h-3 w-3" aria-hidden="true" />
-              )}
-              <span>{t("runtimeQueue")}</span>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <RuntimeQueue />
-            </CollapsibleContent>
-          </Collapsible>
 
-          <Separator className="my-2" />
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+        {/* Runtime Queue Section */}
+        <CollapsibleSection
+          title={t("runtimeQueue")}
+          isOpen={isQueueOpen}
+          onToggle={() => setIsQueueOpen(!isQueueOpen)}
+          fillSpace
+        >
+          <RuntimeQueue />
+        </CollapsibleSection>
 
-          {/* TH1NKMORE_REPO Section */}
-          <Collapsible open={isRepoOpen} onOpenChange={setIsRepoOpen}>
-            <CollapsibleTrigger className="flex w-full items-center gap-1.5 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-gray-500 hover:bg-gray-800/30 transition-colors">
-              {isRepoOpen ? (
-                <ChevronDown className="h-3 w-3" aria-hidden="true" />
-              ) : (
-                <ChevronRight className="h-3 w-3" aria-hidden="true" />
-              )}
-              <span>{t("repoName")}</span>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <div>
-                {Object.entries(groupedSongs).map(([album, songs]) => (
-                  <div key={album}>
-                    {/* Album/Folder */}
-                    <div className="flex items-center gap-1.5 px-2 py-1 text-[11px] text-gray-400">
-                      <Folder className="h-3 w-3 shrink-0" aria-hidden="true" />
-                      <span className="truncate">{album}</span>
-                    </div>
-                    {/* Files in Album */}
-                    <div>
-                      <AnimatePresence mode="popLayout">
-                        {songs.map((song) => {
-                          const isActive = song.id === activeFileId;
-                          return (
-                            <motion.div
-                              key={song.id}
-                              layout
-                              initial={{ opacity: 1, x: 0 }}
-                              exit={{
-                                opacity: 0,
-                                x: -20,
-                                transition: { duration: 0.2 },
-                              }}
-                              transition={{
-                                layout: {
-                                  duration: 0.3,
-                                  type: "spring",
-                                  bounce: 0.2,
-                                },
-                              }}
-                              className="flex items-center gap-1"
-                            >
-                              <ContextMenu>
-                                <ContextMenuTrigger asChild>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleFileClick(song.id)}
-                                    onDoubleClick={
-                                      !isTouchDevice
-                                        ? () => handleFileDoubleClick(song.id)
-                                        : undefined
-                                    }
-                                    className={cn(
-                                      "flex flex-1 items-center gap-1.5 px-2 py-1 text-[11px] text-gray-400 hover:bg-gray-800/50 cursor-pointer transition-colors",
-                                      isActive &&
-                                        "bg-gray-800/70 text-gray-200",
-                                    )}
-                                    style={{ paddingLeft: "24px" }}
-                                    aria-label={
-                                      isTouchDevice
-                                        ? `Open ${song.title}`
-                                        : `Open ${song.title}. Double click to add to queue.`
-                                    }
-                                  >
-                                    <FileAudio
-                                      className="h-3 w-3 shrink-0"
-                                      aria-hidden="true"
-                                    />
-                                    <span className="truncate">
-                                      {song.title}
-                                    </span>
-                                  </button>
-                                </ContextMenuTrigger>
-                                <ContextMenuContent className="bg-sidebar border-border text-gray-300">
-                                  <ContextMenuItem
-                                    onClick={() => handlePlay(song.id)}
-                                    className="cursor-pointer hover:bg-gray-800/50"
-                                  >
-                                    <Play className="h-3 w-3 mr-2" />
-                                    {t("play")}
-                                  </ContextMenuItem>
-                                  <ContextMenuItem
-                                    onClick={() => handleAddToQueue(song.id)}
-                                    className="cursor-pointer hover:bg-gray-800/50"
-                                  >
-                                    <Plus className="h-3 w-3 mr-2" />
-                                    {t("addToQueue")}
-                                  </ContextMenuItem>
-                                  <ContextMenuItem
-                                    onClick={() => handleCopyLink(song.id)}
-                                    className="cursor-pointer hover:bg-gray-800/50"
-                                  >
-                                    <Copy className="h-3 w-3 mr-2" />
-                                    {t("copyLink")}
-                                  </ContextMenuItem>
-                                  <ContextMenuItem
-                                    onClick={() => handleProperties(song.id)}
-                                    className="cursor-pointer hover:bg-gray-800/50"
-                                  >
-                                    <Info className="h-3 w-3 mr-2" />
-                                    {t("properties")}
-                                  </ContextMenuItem>
-                                </ContextMenuContent>
-                              </ContextMenu>
+        <Separator className="shrink-0" />
 
-                              {/* Touch Device: Show explicit add button */}
-                              {isTouchDevice && (
-                                <motion.button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleAddToQueue(song.id);
-                                  }}
-                                  className="shrink-0 p-1.5 mr-1 text-gray-400/60 hover:text-primary hover:bg-gray-800/50 rounded transition-colors active:bg-gray-800"
-                                  aria-label={`Add ${song.title} to queue`}
-                                  whileTap={{ scale: 0.9 }}
-                                >
-                                  <Plus className="h-3.5 w-3.5" />
-                                </motion.button>
-                              )}
-                            </motion.div>
-                          );
-                        })}
-                      </AnimatePresence>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
+        {/* TH1NKMORE_REPO Section */}
+        <div className="flex flex-col shrink-0">
+          <CollapsibleSection
+            title={t("repoName")}
+            isOpen={isRepoOpen}
+            onToggle={() => setIsRepoOpen(!isRepoOpen)}
+            maxHeight="300px"
+          >
+            <div className="py-2">
+              {Object.entries(groupedSongs).map(([album, songs]) => (
+                <AlbumFolder
+                  key={album}
+                  name={album}
+                  isOpen={openAlbums.has(album)}
+                  onToggle={() => toggleAlbum(album)}
+                >
+                  <AnimatePresence mode="popLayout">
+                    {songs.map((song) => (
+                      <SongItem
+                        key={song.id}
+                        title={song.title}
+                        isActive={song.id === activeFileId}
+                        isTouchDevice={isTouchDevice}
+                        onPlay={() => handlePlay(song.id)}
+                        onClick={() => handleFileClick(song.id)}
+                        onDoubleClick={() => handleFileDoubleClick(song.id)}
+                        onAddToQueue={() => handleAddToQueue(song.id)}
+                        onCopyLink={() => handleCopyLink(song.id)}
+                        onProperties={() => handleProperties(song.id)}
+                      />
+                    ))}
+                  </AnimatePresence>
+                </AlbumFolder>
+              ))}
+            </div>
+          </CollapsibleSection>
+
+          <LoadingDots show={!isRepoOpen && isLoading} />
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 }
