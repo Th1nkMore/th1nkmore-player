@@ -32,7 +32,7 @@ type QueueItemProps = {
 };
 
 function QueueItem({ songId, isActive, isTouchDevice }: QueueItemProps) {
-  const { files, openFile } = useIDEStore();
+  const { files } = useIDEStore();
   const { removeFromQueue, setTrack, play } = usePlayerStore();
   const song = useMemo(
     () => files.find((f) => f.id === songId),
@@ -62,11 +62,10 @@ function QueueItem({ songId, isActive, isTouchDevice }: QueueItemProps) {
   };
 
   const handleClick = (e: React.MouseEvent) => {
-    // Click to play: open file, set track, and play
+    // Click to play: set track and play
     // The activation constraint on PointerSensor ensures clicks work (drags require 5px movement)
     if (!song) return;
     e.stopPropagation(); // Prevent event from bubbling up
-    openFile(songId);
     setTrack(songId);
     setTimeout(() => play(song), 100);
   };
