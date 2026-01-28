@@ -263,9 +263,48 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
     >
       {/* Tab Bar - IDE style */}
       <div className="flex items-center border-b border-border bg-muted shrink-0">
-        <div className="flex items-center px-3 py-1.5 bg-background text-gray-300 border-r border-border text-[10px] uppercase tracking-wide">
+        {/* Desktop tab label */}
+        <div className="hidden md:flex items-center px-3 py-1.5 bg-background text-gray-300 border-r border-border text-[10px] uppercase tracking-wide">
           {t("output")}
         </div>
+
+        {/* Mobile inline controls (play order + volume) */}
+        <div className="flex md:hidden flex-1 items-center justify-between px-3 py-1.5">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCyclePlayOrder}
+              className="p-1.5 text-gray-500 hover:text-gray-300 hover:bg-gray-800/50 rounded transition-colors"
+              aria-label={playOrderText}
+            >
+              <PlayOrderIcon className="h-3.5 w-3.5" />
+            </button>
+            <span className="text-[10px] text-gray-400">{playOrderText}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Volume2 className="h-3 w-3 text-gray-500 shrink-0" />
+            <button
+              type="button"
+              onClick={() => handleVolumeChange(Math.max(0, volume - 0.1))}
+              className="p-0.5 text-gray-500 hover:text-gray-300 rounded transition-colors"
+              aria-label="Decrease volume"
+            >
+              <Minus className="h-3 w-3" />
+            </button>
+            <span className="text-[10px] text-gray-500 w-8 text-center">
+              {Math.round(volume * 100)}%
+            </span>
+            <button
+              type="button"
+              onClick={() => handleVolumeChange(Math.min(1, volume + 0.1))}
+              className="p-0.5 text-gray-500 hover:text-gray-300 rounded transition-colors"
+              aria-label="Increase volume"
+            >
+              <Plus className="h-3 w-3" />
+            </button>
+          </div>
+        </div>
+
         <div className="flex-1" />
         {onClose && (
           <button
@@ -301,8 +340,8 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
 
         {/* Player Controls - Right side (IDE-style compact) */}
         <div className="w-full md:w-[280px] flex flex-col bg-muted">
-          {/* Progress */}
-          <div className="px-3 py-2 border-b border-border">
+          {/* Progress - Hidden on mobile (available in MiniPlayerBar) */}
+          <div className="hidden md:block px-3 py-2 border-b border-border">
             <button
               type="button"
               onClick={(e) => {
@@ -325,8 +364,8 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
             </div>
           </div>
 
-          {/* Playback Controls */}
-          <div className="flex items-center gap-1 px-3 py-2 border-b border-border">
+          {/* Playback Controls - Hidden on mobile (available in MiniPlayerBar) */}
+          <div className="hidden md:flex items-center gap-1 px-3 py-2 border-b border-border">
             <button
               type="button"
               onClick={handlePrevious}
@@ -377,8 +416,13 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
             </div>
           </div>
 
-          {/* Volume */}
-          <div className="flex items-center gap-2 px-3 py-2">
+          {/* Play Order - Mobile only (moved into header, so hide here) */}
+          <div className="hidden md:hidden items-center gap-2 px-3 py-2 border-b border-border">
+            {/* Intentionally hidden on all breakpoints; kept for layout parity */}
+          </div>
+
+          {/* Volume - Desktop only (mobile volume is in header) */}
+          <div className="hidden md:flex items-center gap-2 px-3 py-2">
             <Volume2 className="h-3 w-3 text-gray-500 shrink-0" />
             <button
               type="button"

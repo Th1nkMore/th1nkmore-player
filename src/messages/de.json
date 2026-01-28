@@ -19,7 +19,8 @@
     "addToQueue": "Zur Warteschlange hinzufügen",
     "copyLink": "Link kopieren",
     "properties": "Eigenschaften",
-    "noSongsInQueue": "Keine Titel in der Warteschlange"
+    "noSongsInQueue": "Keine Titel in der Warteschlange",
+    "resizeSections": "Bereiche in der Höhe anpassen"
   },
   "codeEditor": {
     "filePath": "lyrics/midnight-refactor.lyr",

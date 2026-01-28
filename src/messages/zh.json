@@ -19,7 +19,8 @@
     "addToQueue": "添加到队列",
     "copyLink": "复制链接",
     "properties": "属性",
-    "noSongsInQueue": "队列中没有歌曲"
+    "noSongsInQueue": "队列中没有歌曲",
+    "resizeSections": "调整分区大小"
   },
   "codeEditor": {
     "filePath": "lyrics/midnight-refactor.lyr",

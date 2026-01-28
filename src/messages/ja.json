@@ -19,7 +19,8 @@
     "addToQueue": "キューに追加",
     "copyLink": "リンクをコピー",
     "properties": "プロパティ",
-    "noSongsInQueue": "キューに曲がありません"
+    "noSongsInQueue": "キューに曲がありません",
+    "resizeSections": "セクションの高さを調整"
   },
   "codeEditor": {
     "filePath": "lyrics/midnight-refactor.lyr",

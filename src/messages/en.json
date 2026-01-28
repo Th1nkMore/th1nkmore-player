@@ -19,7 +19,8 @@
     "addToQueue": "Add to Queue",
     "copyLink": "Copy Link",
     "properties": "Properties",
-    "noSongsInQueue": "No songs in queue"
+    "noSongsInQueue": "No songs in queue",
+    "resizeSections": "Resize sections"
   },
   "codeEditor": {
     "filePath": "lyrics/midnight-refactor.lyr",
