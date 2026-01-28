@@ -24,13 +24,12 @@ type GroupedSongs = {
 };
 
 export function FileExplorer({ className, onFileClick }: FileExplorerProps) {
-  const { files, activeFileId, openFile, getFileById, isLoading } =
-    useIDEStore();
-  const { setTrack, play, addToQueue, queue } = usePlayerStore();
+  const { files, getFileById, isLoading } = useIDEStore();
+  const { setTrack, play, addToQueue, queue, currentTrackId } =
+    usePlayerStore();
   const [isQueueOpen, setIsQueueOpen] = useState(true);
   const [isRepoOpen, setIsRepoOpen] = useState(true);
   const [openAlbums, setOpenAlbums] = useState<Set<string>>(new Set());
-  const clickTimerRef = useRef<{ [key: string]: NodeJS.Timeout | null }>({});
   const deviceType = useDeviceType();
   const isTouchDevice = deviceType === "touch";
   const t = useTranslations("fileExplorer");
@@ -79,45 +78,33 @@ export function FileExplorer({ className, onFileClick }: FileExplorerProps) {
     });
   }, []);
 
+  // Single click adds to queue; only plays if nothing is currently playing
   const handleFileClick = useCallback(
-    (fileId: string) => {
-      if (clickTimerRef.current[fileId]) {
-        clearTimeout(clickTimerRef.current[fileId]);
-        clickTimerRef.current[fileId] = null;
-      }
-      clickTimerRef.current[fileId] = setTimeout(() => {
-        openFile(fileId);
-        onFileClick?.();
-        clickTimerRef.current[fileId] = null;
-      }, 300);
-    },
-    [openFile, onFileClick],
-  );
-
-  const handleFileDoubleClick = useCallback(
     (fileId: string) => {
       const song = getFileById(fileId);
       if (!song) return;
-      if (clickTimerRef.current[fileId]) {
-        clearTimeout(clickTimerRef.current[fileId]);
-        clickTimerRef.current[fileId] = null;
-      }
       addToQueue(song);
+      // Only switch and play if no song is currently playing
+      if (!currentTrackId) {
+        setTrack(fileId);
+        setTimeout(() => play(song), 100);
+      }
+      onFileClick?.();
     },
-    [getFileById, addToQueue],
+    [getFileById, addToQueue, setTrack, play, onFileClick, currentTrackId],
   );
 
+  // handlePlay explicitly plays the song (used in context menu)
   const handlePlay = useCallback(
     (fileId: string) => {
       const song = getFileById(fileId);
       if (!song) return;
-      openFile(fileId);
       addToQueue(song);
       setTrack(fileId);
       setTimeout(() => play(song), 100);
       onFileClick?.();
     },
-    [getFileById, openFile, addToQueue, setTrack, play, onFileClick],
+    [getFileById, addToQueue, setTrack, play, onFileClick],
   );
 
   const handleAddToQueue = useCallback(
@@ -144,12 +131,16 @@ export function FileExplorer({ className, onFileClick }: FileExplorerProps) {
     [files],
   );
 
+  // Properties just adds to queue without playing
   const handleProperties = useCallback(
     (fileId: string) => {
-      openFile(fileId);
-      onFileClick?.();
+      const song = getFileById(fileId);
+      if (song) {
+        addToQueue(song);
+        onFileClick?.();
+      }
     },
-    [openFile, onFileClick],
+    [getFileById, addToQueue, onFileClick],
   );
 
   return (
@@ -194,11 +185,10 @@ export function FileExplorer({ className, onFileClick }: FileExplorerProps) {
                       <SongItem
                         key={song.id}
                         title={song.title}
-                        isActive={song.id === activeFileId}
+                        isActive={song.id === currentTrackId}
                         isTouchDevice={isTouchDevice}
                         onPlay={() => handlePlay(song.id)}
                         onClick={() => handleFileClick(song.id)}
-                        onDoubleClick={() => handleFileDoubleClick(song.id)}
                         onAddToQueue={() => handleAddToQueue(song.id)}
                         onCopyLink={() => handleCopyLink(song.id)}
                         onProperties={() => handleProperties(song.id)}

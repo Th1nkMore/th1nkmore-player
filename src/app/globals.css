@@ -129,3 +129,34 @@
     @apply bg-background text-foreground font-mono;
   }
 }
+
+/* Custom scrollbar utilities */
+@layer utilities {
+  /* Hide scrollbar completely */
+  .scrollbar-none {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+
+  /* Thin scrollbar (for when we want subtle scrollbars) */
+  .scrollbar-thin {
+    scrollbar-width: thin; /* Firefox */
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: oklch(0.4 0 0 / 30%);
+    border-radius: 3px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.5 0 0 / 50%);
+  }
+}

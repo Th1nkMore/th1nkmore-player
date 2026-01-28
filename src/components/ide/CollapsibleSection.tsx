@@ -57,13 +57,13 @@ export function CollapsibleSection({
         {isOpen && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
+            animate={{ height: fillSpace ? "100%" : "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={transitionConfig}
             className={cn("overflow-hidden", fillSpace && "flex-1 min-h-0")}
           >
             <ScrollArea
-              className={cn("h-full", maxHeight && `max-h-[${maxHeight}]`)}
+              className="h-full"
               style={maxHeight ? { maxHeight } : undefined}
             >
               {children}

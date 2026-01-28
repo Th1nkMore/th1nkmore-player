@@ -463,7 +463,7 @@ export default function AdminPage() {
               TERMINAL OUTPUT
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-1 font-mono text-[11px]">
+          <div className="flex-1 overflow-y-auto scrollbar-none p-4 space-y-1 font-mono text-[11px]">
             {logs.length === 0 ? (
               <div className="text-gray-600">
                 {"> Waiting for deployment..."}
