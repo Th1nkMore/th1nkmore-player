@@ -339,7 +339,7 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
         </ScrollArea>
 
         {/* Player Controls - Right side (IDE-style compact) */}
-        <div className="w-full md:w-[280px] flex flex-col bg-muted">
+        <div className="w-full md:w-[280px] md:max-w-[40vw] flex flex-col bg-muted">
           {/* Progress - Hidden on mobile (available in MiniPlayerBar) */}
           <div className="hidden md:block px-3 py-2 border-b border-border">
             <button
