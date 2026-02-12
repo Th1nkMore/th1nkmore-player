@@ -28,7 +28,7 @@ export function MobileBottomNav({
   return (
     <nav
       className={cn(
-        "flex items-center justify-around bg-sidebar border-t border-border",
+        "flex items-center justify-around bg-sidebar border-t border-border pb-[env(safe-area-inset-bottom)]",
         className,
       )}
       aria-label="Mobile navigation"

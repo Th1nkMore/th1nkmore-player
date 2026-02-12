@@ -19,12 +19,14 @@ export function useScreenMode(): ScreenMode {
       const width = window.innerWidth;
       const height = window.innerHeight;
 
-      if (width >= 768 && height >= 500) {
+      // Priority 1: Width-based Desktop (matches Tailwind 'md' breakpoint)
+      if (width >= 768) {
         setScreenMode("desktop");
       } else if (width >= 480 && height < 500) {
-        // Landscape phone: wider than tall with limited height
+        // Priority 2: Landscape phone (wider than tall, limited height)
         setScreenMode("mobile-landscape");
       } else {
+        // Default: Portrait phone / small screens
         setScreenMode("mobile-portrait");
       }
     };

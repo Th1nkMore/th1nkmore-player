@@ -69,7 +69,7 @@ function MobilePortraitLayout({
       <div
         className={cn(
           "bg-muted border-t border-border transition-all duration-300 ease-in-out overflow-hidden",
-          mobileTerminalVisible ? "max-h-[35vh]" : "max-h-0",
+          mobileTerminalVisible ? "max-h-[35dvh]" : "max-h-0",
         )}
       >
         <div className="h-full overflow-hidden">
@@ -101,7 +101,7 @@ function MobileLandscapeLayout({
   return (
     <div className="flex-1 overflow-hidden flex flex-row">
       {/* Left: File Explorer / Song List */}
-      <div className="w-[200px] shrink-0 border-r border-border overflow-hidden bg-sidebar">
+      <div className="w-[200px] max-w-[30vw] shrink-0 border-r border-border overflow-hidden bg-sidebar">
         <FileExplorer />
       </div>
 
@@ -286,12 +286,12 @@ export function IDEFrame({
       <GlobalAudioPlayer />
       <div
         className={cn(
-          "flex h-screen w-full flex-col overflow-hidden bg-background",
+          "flex h-screen w-full flex-col overflow-hidden bg-background supports-[height:100dvh]:h-[100dvh]",
           className,
         )}
       >
         {/* Header - Fixed at top */}
-        <header className="flex items-center justify-between gap-2 border-b border-border bg-sidebar px-4 py-2">
+        <header className="flex items-center justify-between gap-2 border-b border-border bg-sidebar px-4 py-2 pt-[calc(0.5rem+env(safe-area-inset-top))]">
           <div className="flex items-center gap-3 md:hidden">
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
@@ -305,7 +305,7 @@ export function IDEFrame({
               </SheetTrigger>
               <SheetContent
                 side="left"
-                className="w-[250px] bg-sidebar border-border p-0"
+                className="w-[250px] max-w-[80vw] bg-sidebar border-border p-0"
               >
                 <SheetTitle className="sr-only">File Explorer</SheetTitle>
                 <FileExplorer onFileClick={() => setMobileMenuOpen(false)} />
