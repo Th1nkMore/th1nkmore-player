@@ -85,5 +85,14 @@
     "lyrics": "Lyrics",
     "songs": "Songs",
     "settings": "Settings"
+  },
+  "player": {
+    "nowPlaying": "Now Playing",
+    "noTrack": "No track selected",
+    "selectTrack": "Select a track to start playing",
+    "openPlayer": "Open player",
+    "closePlayer": "Close player",
+    "volumeControl": "Volume",
+    "progressControl": "Playback progress"
   }
 }

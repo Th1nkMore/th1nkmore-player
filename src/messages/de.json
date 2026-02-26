@@ -85,5 +85,14 @@
     "lyrics": "Texte",
     "songs": "Titel",
     "settings": "Einstellungen"
+  },
+  "player": {
+    "nowPlaying": "Wird abgespielt",
+    "noTrack": "Kein Titel ausgewählt",
+    "selectTrack": "Wählen Sie einen Titel zum Abspielen",
+    "openPlayer": "Player öffnen",
+    "closePlayer": "Player schließen",
+    "volumeControl": "Lautstärke",
+    "progressControl": "Wiedergabefortschritt"
   }
 }
