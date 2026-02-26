@@ -90,8 +90,8 @@ function QueueItem({ songId, isActive, isTouchDevice }: QueueItemProps) {
         layout: { duration: 0.3, type: "spring", bounce: 0.2 },
       }}
       className={cn(
-        "flex items-center gap-1.5 px-2 py-1 text-[11px] text-gray-400 hover:bg-gray-800/50 cursor-pointer transition-colors group",
-        isActive && "bg-gray-800/70 text-gray-200",
+        "flex items-center gap-1.5 px-2 py-1 text-[11px] text-muted-foreground hover:bg-accent cursor-pointer transition-colors group",
+        isActive && "bg-accent text-foreground",
       )}
       {...attributes}
       {...listeners}
@@ -115,9 +115,9 @@ function QueueItem({ songId, isActive, isTouchDevice }: QueueItemProps) {
         type="button"
         onClick={handleRemove}
         className={cn(
-          "p-0.5 hover:bg-gray-700/50 rounded transition-opacity",
+          "p-0.5 hover:bg-accent rounded transition-opacity",
           isTouchDevice
-            ? "opacity-100 text-gray-400/60 active:bg-gray-800"
+            ? "opacity-100 text-muted-foreground/60 active:bg-accent"
             : "opacity-0 group-hover:opacity-100",
         )}
         aria-label={`Remove ${song.title} from queue`}
@@ -161,7 +161,7 @@ export function RuntimeQueue() {
 
   if (queue.length === 0) {
     return (
-      <div className="px-2 py-4 text-[11px] text-gray-500 text-center">
+      <div className="px-2 py-4 text-[11px] text-muted-foreground text-center">
         {t("noSongsInQueue")}
       </div>
     );

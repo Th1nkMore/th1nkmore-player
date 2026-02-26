@@ -92,8 +92,8 @@ function SortableTab({
       {...listeners}
       onClick={() => onTabClick(song)}
       className={cn(
-        "group flex items-center gap-2 border-r border-border px-3 py-1.5 text-[11px] text-gray-500 transition-colors hover:bg-gray-800/30 cursor-pointer shrink-0",
-        isActive && "bg-background text-gray-300",
+        "group flex items-center gap-2 border-r border-border px-3 py-1.5 text-[11px] text-muted-foreground transition-colors hover:bg-accent/30 cursor-pointer shrink-0",
+        isActive && "bg-background text-foreground",
         isDragging && "shadow-lg",
       )}
       aria-label={`Switch to ${song.title}`}
@@ -105,7 +105,7 @@ function SortableTab({
         type="button"
         onClick={(e) => onTabClose(e, song.id)}
         className={cn(
-          "opacity-0 group-hover:opacity-100 transition-opacity rounded hover:bg-gray-700/50 p-0.5",
+          "opacity-0 group-hover:opacity-100 transition-opacity rounded hover:bg-accent p-0.5",
           isActive && "opacity-100",
         )}
         aria-label={`Close ${song.title}`}

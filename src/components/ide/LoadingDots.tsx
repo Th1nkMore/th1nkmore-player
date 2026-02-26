@@ -18,7 +18,7 @@ export function LoadingDots({ show }: LoadingDotsProps) {
         >
           <div className="flex gap-1">
             <motion.div
-              className="h-1.5 w-1.5 rounded-full bg-gray-500"
+              className="h-1.5 w-1.5 rounded-full bg-muted-foreground"
               animate={{ y: [0, -4, 0] }}
               transition={{
                 duration: 0.6,
@@ -27,7 +27,7 @@ export function LoadingDots({ show }: LoadingDotsProps) {
               }}
             />
             <motion.div
-              className="h-1.5 w-1.5 rounded-full bg-gray-500"
+              className="h-1.5 w-1.5 rounded-full bg-muted-foreground"
               animate={{ y: [0, -4, 0] }}
               transition={{
                 duration: 0.6,
@@ -36,7 +36,7 @@ export function LoadingDots({ show }: LoadingDotsProps) {
               }}
             />
             <motion.div
-              className="h-1.5 w-1.5 rounded-full bg-gray-500"
+              className="h-1.5 w-1.5 rounded-full bg-muted-foreground"
               animate={{ y: [0, -4, 0] }}
               transition={{
                 duration: 0.6,
