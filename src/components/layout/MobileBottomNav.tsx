@@ -43,8 +43,8 @@ export function MobileBottomNav({
           className={cn(
             "flex-1 flex flex-col items-center gap-1 py-2 px-3 transition-colors",
             activeTab === id
-              ? "text-primary bg-gray-800/30"
-              : "text-gray-500 hover:text-gray-300 hover:bg-gray-800/20",
+              ? "text-primary bg-accent/30"
+              : "text-muted-foreground hover:text-foreground hover:bg-accent/20",
           )}
         >
           <Icon className="h-5 w-5" aria-hidden="true" />

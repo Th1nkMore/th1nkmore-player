@@ -249,9 +249,12 @@ export function FileExplorer({ className, onFileClick }: FileExplorerProps) {
 
   return (
     <div
-      className={cn("flex h-full flex-col bg-sidebar text-gray-300", className)}
+      className={cn(
+        "flex h-full flex-col bg-sidebar text-foreground",
+        className,
+      )}
     >
-      <div className="border-b border-border px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-gray-500 bg-sidebar shrink-0">
+      <div className="border-b border-border px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground bg-sidebar shrink-0">
         {t("title").toUpperCase()}
       </div>
 

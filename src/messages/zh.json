@@ -85,5 +85,14 @@
     "lyrics": "歌词",
     "songs": "歌曲",
     "settings": "设置"
+  },
+  "player": {
+    "nowPlaying": "正在播放",
+    "noTrack": "未选择曲目",
+    "selectTrack": "选择一首曲目开始播放",
+    "openPlayer": "打开播放器",
+    "closePlayer": "关闭播放器",
+    "volumeControl": "音量",
+    "progressControl": "播放进度"
   }
 }

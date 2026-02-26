@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { lyricsToLrc, parseLrc } from "@/lib/lrcParser";
 import { cn } from "@/lib/utils";
+import { formatDuration } from "@/lib/utils/audio";
 import { usePlayerStore } from "@/store/usePlayerStore";
 
 // Auto-scroll delay after user stops scrolling (ms)
@@ -12,15 +13,7 @@ const AUTO_SCROLL_DELAY = 3000;
 
 type CodeEditorProps = {
   className?: string;
-  /** Compact mode shows only current and next line (for landscape/small screens) */
-  compactMode?: boolean;
 };
-
-function formatDuration(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-}
 
 // Memoized line component for performance
 type LineProps = {
@@ -59,8 +52,8 @@ function Line({
       <button
         type="button"
         className={cn(
-          "select-none border-r border-border bg-background w-10 md:w-12 px-2 md:px-3 py-0 text-right text-gray-500 cursor-pointer hover:bg-gray-800/30 transition-colors shrink-0",
-          isActive && "bg-gray-800/50 text-gray-300",
+          "select-none border-r border-border bg-background w-10 md:w-12 px-2 md:px-3 py-0 text-right text-muted-foreground cursor-pointer hover:bg-accent/30 transition-colors shrink-0",
+          isActive && "bg-accent/50 text-foreground",
         )}
         onClick={handleInteraction}
         onKeyDown={handleKeyDown}
@@ -68,15 +61,14 @@ function Line({
       >
         {lineNumber}
       </button>
-      {/* Code Content - responsive text wrapping for mobile */}
       <div
         className={cn(
-          "flex-1 px-3 md:px-4 py-0 text-gray-300 whitespace-pre-wrap break-words text-center text-[12px] md:text-[13px]",
-          isActive && "bg-gray-900/50 text-white font-medium",
+          "flex-1 px-3 md:px-4 py-0 text-foreground/80 whitespace-pre-wrap break-words text-center text-[12px] md:text-[13px]",
+          isActive && "bg-accent/30 text-foreground font-medium",
         )}
       >
         {isActive && time !== null && (
-          <span className="text-gray-500 text-[10px] md:text-[11px] mr-2">
+          <span className="text-muted-foreground text-[10px] md:text-[11px] mr-2">
             [{formatDuration(time)}]
           </span>
         )}
@@ -86,10 +78,7 @@ function Line({
   );
 }
 
-export function CodeEditor({
-  className,
-  compactMode = false,
-}: CodeEditorProps) {
+export function CodeEditor({ className }: CodeEditorProps) {
   const t = useTranslations("codeEditor");
   const { currentTrackId, currentTime, seek, queue } = usePlayerStore();
 
@@ -205,38 +194,26 @@ export function CodeEditor({
     }));
   }, [currentTrack, lrcLines]);
 
-  // Filter lines for compact mode (current + next line only)
-  const visibleLines = useMemo(() => {
-    if (!compactMode || displayLines.length === 0) {
-      return displayLines;
-    }
-
-    // In compact mode, show current line and next line
-    const currentIdx = activeLineIndex >= 0 ? activeLineIndex : 0;
-    const startIdx = Math.max(0, currentIdx);
-    const endIdx = Math.min(displayLines.length, currentIdx + 2);
-
-    return displayLines.slice(startIdx, endIdx);
-  }, [compactMode, displayLines, activeLineIndex]);
+  const visibleLines = displayLines;
   if (!currentTrack) {
     return (
       <div
         className={cn(
-          "flex h-full flex-col items-center justify-center bg-background font-mono text-[13px] text-gray-500 px-4",
+          "flex h-full flex-col items-center justify-center bg-background font-mono text-[13px] text-muted-foreground px-4",
           className,
         )}
       >
         <FileCode
-          className="h-12 w-12 md:h-16 md:w-16 mb-4 text-gray-600"
+          className="h-12 w-12 md:h-16 md:w-16 mb-4 text-muted-foreground/60"
           aria-hidden="true"
         />
-        <h2 className="text-base md:text-lg font-semibold text-gray-400 mb-2 text-center">
+        <h2 className="text-base md:text-lg font-semibold text-muted-foreground mb-2 text-center">
           {t("welcome")}
         </h2>
-        <p className="text-[11px] md:text-[12px] text-gray-500 text-center max-w-md">
+        <p className="text-[11px] md:text-[12px] text-muted-foreground text-center max-w-md">
           {t("emptyStateDescription")}
         </p>
-        <div className="mt-6 text-[10px] md:text-[11px] text-gray-600">
+        <div className="mt-6 text-[10px] md:text-[11px] text-muted-foreground/60">
           <p>{t("shortcutsTitle")}</p>
           <ul className="mt-2 space-y-1 list-disc list-inside">
             <li>{t("shortcutOpen")}</li>
@@ -259,23 +236,20 @@ export function CodeEditor({
     >
       {/* File path bar - fixed at top */}
       <div className="border-b border-border px-3 md:px-4 py-2 flex items-center gap-2 shrink-0 bg-background">
-        <span className="text-[10px] md:text-[11px] text-gray-500 truncate">
+        <span className="text-[10px] md:text-[11px] text-muted-foreground truncate">
           {filePath}
         </span>
-        <span className="text-[9px] md:text-[10px] text-gray-600">
+        <span className="text-[9px] md:text-[10px] text-muted-foreground/60">
           {formatDuration(currentTrack.duration)}
         </span>
       </div>
       {/* Scrollable lyrics area - hidden scrollbar */}
       <div
         ref={scrollContainerRef}
-        className={cn(
-          "flex-1 overflow-y-auto scrollbar-none",
-          compactMode && "flex flex-col justify-center",
-        )}
-        onScroll={compactMode ? undefined : handleScroll}
+        className="flex-1 overflow-y-auto scrollbar-none"
+        onScroll={handleScroll}
       >
-        <div className={cn("py-4", compactMode && "py-2")}>
+        <div className="py-4">
           {visibleLines.map((line) => {
             // Check if this line corresponds to the active LRC line
             const isActive =

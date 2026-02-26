@@ -85,5 +85,14 @@
     "lyrics": "歌詞",
     "songs": "曲",
     "settings": "設定"
+  },
+  "player": {
+    "nowPlaying": "再生中",
+    "noTrack": "トラックが選択されていません",
+    "selectTrack": "トラックを選択して再生を開始",
+    "openPlayer": "プレーヤーを開く",
+    "closePlayer": "プレーヤーを閉じる",
+    "volumeControl": "音量",
+    "progressControl": "再生進捗"
   }
 }

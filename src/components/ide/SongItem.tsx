@@ -61,8 +61,8 @@ export function SongItem({
             onClick={onClick}
             onDoubleClick={!isTouchDevice ? onDoubleClick : undefined}
             className={cn(
-              "flex flex-1 items-center gap-1.5 px-2 py-1 text-[11px] text-gray-400 hover:bg-gray-800/50 cursor-pointer transition-colors",
-              isActive && "bg-gray-800/70 text-gray-200",
+              "flex flex-1 items-center gap-1.5 px-2 py-1 text-[11px] text-muted-foreground hover:bg-accent cursor-pointer transition-colors",
+              isActive && "bg-accent text-foreground",
             )}
             style={{ paddingLeft: "36px" }}
             aria-label={
@@ -75,31 +75,31 @@ export function SongItem({
             <span className="truncate">{title}</span>
           </button>
         </ContextMenuTrigger>
-        <ContextMenuContent className="bg-sidebar border-border text-gray-300">
+        <ContextMenuContent className="bg-sidebar border-border text-foreground">
           <ContextMenuItem
             onClick={onPlay}
-            className="cursor-pointer hover:bg-gray-800/50"
+            className="cursor-pointer hover:bg-accent"
           >
             <Play className="h-3 w-3 mr-2" />
             {t("play")}
           </ContextMenuItem>
           <ContextMenuItem
             onClick={onAddToQueue}
-            className="cursor-pointer hover:bg-gray-800/50"
+            className="cursor-pointer hover:bg-accent"
           >
             <Plus className="h-3 w-3 mr-2" />
             {t("addToQueue")}
           </ContextMenuItem>
           <ContextMenuItem
             onClick={onCopyLink}
-            className="cursor-pointer hover:bg-gray-800/50"
+            className="cursor-pointer hover:bg-accent"
           >
             <Copy className="h-3 w-3 mr-2" />
             {t("copyLink")}
           </ContextMenuItem>
           <ContextMenuItem
             onClick={onProperties}
-            className="cursor-pointer hover:bg-gray-800/50"
+            className="cursor-pointer hover:bg-accent"
           >
             <Info className="h-3 w-3 mr-2" />
             {t("properties")}
@@ -115,7 +115,7 @@ export function SongItem({
             e.stopPropagation();
             onAddToQueue();
           }}
-          className="shrink-0 p-1.5 mr-1 text-gray-400/60 hover:text-primary hover:bg-gray-800/50 rounded transition-colors active:bg-gray-800"
+          className="shrink-0 p-1.5 mr-1 text-muted-foreground/60 hover:text-primary hover:bg-accent rounded transition-colors active:bg-accent"
           aria-label={`Add ${title} to queue`}
           whileTap={{ scale: 0.9 }}
         >
