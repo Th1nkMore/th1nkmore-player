@@ -5,7 +5,6 @@ import { InspectorPanel } from "@/components/ide/InspectorPanel";
 import { TerminalPanel } from "@/components/ide/TerminalPanel";
 import { IDEFrame } from "@/components/layout/IDEFrame";
 
-// Force dynamic rendering to ensure locale changes are reflected
 export const dynamic = "force-dynamic";
 
 export default function HomePage() {
@@ -22,7 +21,7 @@ export default function HomePage() {
       }
       compactCenterEditor={
         <div className="flex h-full flex-col overflow-hidden">
-          <CodeEditor className="h-full" compactMode />
+          <CodeEditor className="h-full" />
         </div>
       }
       rightInspector={<InspectorPanel />}

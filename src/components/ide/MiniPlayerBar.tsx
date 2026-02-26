@@ -1,108 +1,79 @@
 "use client";
 
-import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
+import {
+  Minus,
+  Pause,
+  Play,
+  Plus,
+  SkipBack,
+  SkipForward,
+  Volume2,
+} from "lucide-react";
 import { useCallback, useMemo } from "react";
+import { playOrderIcons } from "@/lib/constants/player";
+import { usePlaybackControls } from "@/lib/hooks/usePlaybackControls";
 import { cn } from "@/lib/utils";
+import { formatDuration } from "@/lib/utils/audio";
 import { useIDEStore } from "@/store/useIDEStore";
 import { usePlayerStore } from "@/store/usePlayerStore";
 
 type MiniPlayerBarProps = {
   className?: string;
+  /** "landscape" inlines volume + play order; "default" is tappable to open sheet */
+  variant?: "default" | "landscape";
+  /** Callback when the bar area is tapped — used to open FullPlayerSheet (default variant only) */
+  onTap?: () => void;
 };
 
-function formatDuration(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-}
-
-export function MiniPlayerBar({ className }: MiniPlayerBarProps) {
+export function MiniPlayerBar({
+  className,
+  variant = "default",
+  onTap,
+}: MiniPlayerBarProps) {
   const {
-    isPlaying,
     duration,
     currentTime,
     currentTrackId,
-    play,
-    pause,
-    seek,
-    setTrack,
-    playNext,
-    playPrevious,
-    addToQueue,
+    volume,
+    playOrder,
+    setVolume,
+    cyclePlayOrder,
   } = usePlayerStore();
+  const { getFileById } = useIDEStore();
+  const { isPlaying, handlePlayPause, handlePrevious, handleNext } =
+    usePlaybackControls();
 
-  const { files, activeFileId, getFileById } = useIDEStore();
-
-  // Get current track title
   const currentTrack = useMemo(
     () => (currentTrackId ? getFileById(currentTrackId) : null),
     [currentTrackId, getFileById],
   );
 
-  const handlePlayPause = useCallback(() => {
-    if (isPlaying) {
-      pause();
-    } else if (!currentTrackId) {
-      const trackToPlay = activeFileId
-        ? files.find((f) => f.id === activeFileId)
-        : files[0];
-
-      if (trackToPlay) {
-        addToQueue(trackToPlay);
-        setTrack(trackToPlay.id);
-        setTimeout(() => play(trackToPlay), 100);
-      }
-    } else {
-      play();
-    }
-  }, [
-    isPlaying,
-    currentTrackId,
-    activeFileId,
-    files,
-    pause,
-    play,
-    addToQueue,
-    setTrack,
-  ]);
-
-  const handlePrevious = useCallback(() => {
-    if (!currentTrackId) return;
-    playPrevious();
-    setTimeout(() => play(), 100);
-  }, [currentTrackId, playPrevious, play]);
-
-  const handleNext = useCallback(() => {
-    if (!currentTrackId) return;
-    playNext();
-    setTimeout(() => play(), 100);
-  }, [currentTrackId, playNext, play]);
-
-  const handleSeek = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const percent = Math.max(0, Math.min(1, x / rect.width));
-      seek(percent * duration);
-    },
-    [seek, duration],
-  );
-
   const percentage = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const isLandscape = variant === "landscape";
+
+  const PlayOrderIcon = playOrderIcons[playOrder];
+
+  const handleVolumeDown = useCallback(() => {
+    setVolume(Math.max(0, volume - 0.1));
+  }, [setVolume, volume]);
+
+  const handleVolumeUp = useCallback(() => {
+    setVolume(Math.min(1, volume + 0.1));
+  }, [setVolume, volume]);
 
   return (
     <div
       className={cn(
-        "flex items-center gap-2 px-3 py-2 bg-muted border-t border-border",
+        "flex items-center gap-2 px-3 py-1.5 bg-muted border-t border-border",
         className,
       )}
     >
       {/* Playback Controls */}
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex items-center gap-0.5 shrink-0">
         <button
           type="button"
           onClick={handlePrevious}
-          className="p-1.5 text-gray-500 hover:text-gray-300 hover:bg-gray-800/50 rounded transition-colors"
+          className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
           aria-label="Previous"
         >
           <SkipBack className="h-3.5 w-3.5" />
@@ -110,7 +81,7 @@ export function MiniPlayerBar({ className }: MiniPlayerBarProps) {
         <button
           type="button"
           onClick={handlePlayPause}
-          className="p-2 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded transition-colors"
+          className="p-2 text-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
           aria-label={isPlaying ? "Pause" : "Play"}
         >
           {isPlaying ? (
@@ -122,7 +93,7 @@ export function MiniPlayerBar({ className }: MiniPlayerBarProps) {
         <button
           type="button"
           onClick={handleNext}
-          className="p-1.5 text-gray-500 hover:text-gray-300 hover:bg-gray-800/50 rounded transition-colors"
+          className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
           aria-label="Next"
         >
           <SkipForward className="h-3.5 w-3.5" />
@@ -130,33 +101,92 @@ export function MiniPlayerBar({ className }: MiniPlayerBarProps) {
       </div>
 
       {/* Track Info & Progress */}
-      <div className="flex-1 min-w-0 flex flex-col gap-1">
-        {/* Track Title */}
-        <span className="text-[10px] text-gray-400 truncate">
-          {currentTrack?.title || "No track selected"}
-        </span>
+      {isLandscape ? (
+        <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+          <span className="text-[10px] text-muted-foreground truncate">
+            {currentTrack?.title || "No track selected"}
+          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] text-muted-foreground/80 w-8 shrink-0">
+              {formatDuration(currentTime)}
+            </span>
+            <div className="flex-1 h-1 bg-border rounded-full overflow-hidden">
+              <div
+                className="h-full bg-muted-foreground/60 transition-[width] duration-100"
+                style={{ width: `${percentage}%` }}
+              />
+            </div>
+            <span className="text-[9px] text-muted-foreground/80 w-8 shrink-0 text-right">
+              {formatDuration(duration)}
+            </span>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={onTap}
+          className="flex-1 min-w-0 flex flex-col gap-0.5 text-left"
+          aria-label="Open player"
+        >
+          <span className="text-[10px] text-muted-foreground truncate">
+            {currentTrack?.title || "No track selected"}
+          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] text-muted-foreground/80 w-8 shrink-0">
+              {formatDuration(currentTime)}
+            </span>
+            <div className="flex-1 h-1 bg-border rounded-full overflow-hidden">
+              <div
+                className="h-full bg-muted-foreground/60 transition-[width] duration-100"
+                style={{ width: `${percentage}%` }}
+              />
+            </div>
+            <span className="text-[9px] text-muted-foreground/80 w-8 shrink-0 text-right">
+              {formatDuration(duration)}
+            </span>
+          </div>
+        </button>
+      )}
 
-        {/* Progress Bar */}
-        <div className="flex items-center gap-2">
-          <span className="text-[9px] text-gray-500 w-8 shrink-0">
-            {formatDuration(currentTime)}
+      {/* Landscape: inline play order + volume */}
+      {isLandscape && (
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            type="button"
+            onClick={cyclePlayOrder}
+            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
+            aria-label="Play order"
+          >
+            <PlayOrderIcon className="h-3.5 w-3.5" />
+          </button>
+
+          <div className="w-px h-4 bg-border mx-0.5" />
+
+          <button
+            type="button"
+            onClick={handleVolumeDown}
+            className="p-1 text-muted-foreground hover:text-foreground rounded transition-colors"
+            aria-label="Decrease volume"
+          >
+            <Minus className="h-3 w-3" />
+          </button>
+          <Volume2
+            className="h-3 w-3 text-muted-foreground/80 shrink-0"
+            aria-hidden="true"
+          />
+          <span className="text-[9px] text-muted-foreground/80 w-7 text-center tabular-nums">
+            {Math.round(volume * 100)}%
           </span>
           <button
             type="button"
-            onClick={handleSeek}
-            className="flex-1 h-1 bg-gray-700 rounded-full overflow-hidden cursor-pointer group"
-            aria-label={`Progress: ${Math.round(percentage)}%`}
+            onClick={handleVolumeUp}
+            className="p-1 text-muted-foreground hover:text-foreground rounded transition-colors"
+            aria-label="Increase volume"
           >
-            <div
-              className="h-full bg-gray-400 group-hover:bg-gray-300 transition-colors"
-              style={{ width: `${percentage}%` }}
-            />
+            <Plus className="h-3 w-3" />
           </button>
-          <span className="text-[9px] text-gray-500 w-8 shrink-0 text-right">
-            {formatDuration(duration)}
-          </span>
         </div>
-      </div>
+      )}
     </div>
   );
 }
