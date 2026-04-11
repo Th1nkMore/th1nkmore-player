@@ -10,12 +10,15 @@ ADMIN_SECRET=your-secret-key-here-minimum-32-characters-recommended
 
 # Base URL for magic links (optional, defaults to http://localhost:3000)
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
+NEXT_PUBLIC_ASSET_BASE_URL=https://your-public-assets-domain.example.com
 
 # Cloudflare R2 Configuration
 R2_ACCOUNT_ID=your-r2-account-id
 R2_ACCESS_KEY_ID=your-r2-access-key-id
 R2_SECRET_ACCESS_KEY=your-r2-secret-access-key
 R2_BUCKET_NAME=your-bucket-name
+R2_PUBLIC_URL=https://your-public-assets-domain.example.com
+PLAYLIST_PUBLIC_URL=https://your-public-assets-domain.example.com
 ```
 
 ## Generating Admin Magic Links
@@ -38,6 +41,12 @@ This will:
 3. **Middleware Verification**: The middleware verifies the JWT token
 4. **Cookie Setting**: If valid, a secure `admin_session` cookie is set
 5. **Access Granted**: Subsequent requests to `/admin` or `/api/admin` are authenticated via the cookie
+
+## Storage Notes
+
+- `R2_PUBLIC_URL` should point to the public asset host or custom domain that serves files from your bucket.
+- `PLAYLIST_PUBLIC_URL` can be set separately if `playlist.json` is served from a different public base URL.
+- `NEXT_PUBLIC_ASSET_BASE_URL` lets the client normalize legacy audio URLs when older playlist entries still reference the wrong host.
 
 ## Protected Routes
 

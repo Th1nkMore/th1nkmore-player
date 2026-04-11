@@ -25,21 +25,27 @@ function encodeFilename(filename: string): string {
   return filename;
 }
 
+function getClientAssetBaseUrl(): string | null {
+  const baseUrl = process.env.NEXT_PUBLIC_ASSET_BASE_URL;
+  if (!baseUrl) return null;
+  return baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+}
+
 /**
  * Fixes audio URL by correcting domain and ensuring proper filename encoding.
  */
 function fixAudioUrl(audioUrl: string): string {
   let fixedUrl = audioUrl;
-  // Fix domain: remove .com if present
-  if (fixedUrl.includes("files.th1nkmore.space.com")) {
-    fixedUrl = fixedUrl.replace(
-      "files.th1nkmore.space.com",
-      "files.th1nkmore.space",
-    );
-  }
+
   // Fix filename encoding
   try {
     const url = new URL(fixedUrl);
+
+    const clientAssetBaseUrl = getClientAssetBaseUrl();
+    if (clientAssetBaseUrl && url.hostname.endsWith(".space.com")) {
+      fixedUrl = `${clientAssetBaseUrl}/${url.pathname.replace(/^\/+/, "")}`;
+    }
+
     const pathParts = url.pathname.split("/");
     const filename = pathParts[pathParts.length - 1];
     if (filename) {

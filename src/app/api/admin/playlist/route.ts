@@ -1,13 +1,27 @@
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { type NextRequest, NextResponse } from "next/server";
 import { R2_BUCKET_NAME, r2Client } from "@/lib/r2";
+import { normalizeLanguage } from "@/lib/utils";
 import type { Song } from "@/types/music";
 
 /**
  * Helper function to convert stream to string
  * AWS SDK v3 returns Body as a ReadableStream, Blob, or Node.js Readable stream
  */
-async function streamToString(body: any): Promise<string> {
+function isNodeReadableStream(
+  value: unknown,
+): value is NodeJS.ReadableStream & {
+  on: (event: string, listener: (...args: unknown[]) => void) => void;
+} {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "on" in value &&
+    typeof (value as { on?: unknown }).on === "function"
+  );
+}
+
+async function streamToString(body: unknown): Promise<string> {
   if (!body) {
     return "";
   }
@@ -42,16 +56,16 @@ async function streamToString(body: any): Promise<string> {
   }
 
   // If it's a Node.js Readable stream (has pipe/on methods)
-  if (
-    body &&
-    typeof body === "object" &&
-    (typeof body.pipe === "function" || typeof body.on === "function")
-  ) {
-    const chunks: Buffer[] = [];
+  if (isNodeReadableStream(body)) {
+    const chunks: Uint8Array[] = [];
     return new Promise((resolve, reject) => {
-      body.on("data", (chunk: Buffer) => chunks.push(chunk));
+      body.on("data", (chunk: unknown) => {
+        if (chunk instanceof Uint8Array) {
+          chunks.push(chunk);
+        }
+      });
       body.on("end", () => resolve(Buffer.concat(chunks).toString("utf-8")));
-      body.on("error", reject);
+      body.on("error", (err: unknown) => reject(err));
     });
   }
 
@@ -61,6 +75,13 @@ async function streamToString(body: any): Promise<string> {
   } catch {
     return JSON.stringify(body);
   }
+}
+
+function normalizePlaylist(playlist: Song[]): Song[] {
+  return playlist.map((song) => ({
+    ...song,
+    language: normalizeLanguage(song.language),
+  }));
 }
 
 /**
@@ -91,7 +112,7 @@ export async function GET() {
     }
 
     const bodyString = await streamToString(response.Body as ReadableStream);
-    const playlist: Song[] = JSON.parse(bodyString);
+    const playlist = normalizePlaylist(JSON.parse(bodyString) as Song[]);
 
     return NextResponse.json(playlist);
   } catch (error) {
@@ -121,7 +142,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const playlist: Song[] = await request.json();
+    const playlist = normalizePlaylist((await request.json()) as Song[]);
 
     if (!Array.isArray(playlist)) {
       return NextResponse.json(

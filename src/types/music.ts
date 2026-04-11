@@ -1,4 +1,5 @@
-export type Language = "en" | "zh" | "jp";
+export type Language = "en" | "zh" | "ja";
+export type LegacyLanguage = Language | "jp";
 
 export type SongMetadata = {
   [key: string]: string | number;
@@ -13,5 +14,5 @@ export interface Song {
   lyrics: string;
   audioUrl: string;
   metadata: SongMetadata;
-  language: Language;
+  language: LegacyLanguage;
 }

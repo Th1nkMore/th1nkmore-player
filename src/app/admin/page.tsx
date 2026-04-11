@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { EditPlaylist } from "@/components/admin/EditPlaylist";
 import { UploadForm } from "@/components/admin/UploadForm";
+import { normalizeLanguage, slugifySegment } from "@/lib/utils";
 import type { Song } from "@/types/music";
 
 type LogEntry = {
@@ -270,17 +271,28 @@ export default function AdminPage() {
     return publicUrl;
   };
 
-  const updatePlaylistWithNewSong = async (newSong: Song) => {
-    addLog("> Fetching current manifest...");
-    const playlistResponse = await fetch("/api/admin/playlist");
-    if (!playlistResponse.ok) {
-      throw new Error("Failed to fetch playlist");
+  const updatePlaylistWithNewSong = async (
+    newSong: Song,
+    currentPlaylist?: Song[],
+  ) => {
+    let playlistToUpdate = currentPlaylist;
+    if (!playlistToUpdate) {
+      addLog("> Fetching current manifest...");
+      const playlistResponse = await fetch("/api/admin/playlist");
+      if (!playlistResponse.ok) {
+        throw new Error("Failed to fetch playlist");
+      }
+      playlistToUpdate = await playlistResponse.json();
     }
 
-    const currentPlaylist: Song[] = await playlistResponse.json();
-    addLog(`> Found ${currentPlaylist.length} existing tracks`);
+    const songs = playlistToUpdate ?? [];
+    const normalizedPlaylist = songs.map((song) => ({
+      ...song,
+      language: normalizeLanguage(song.language),
+    }));
+    addLog(`> Found ${normalizedPlaylist.length} existing tracks`);
 
-    const updatedPlaylist = [...currentPlaylist, newSong];
+    const updatedPlaylist = [...normalizedPlaylist, newSong];
     addLog("> Updating manifest...");
 
     const updateResponse = await fetch("/api/admin/playlist", {
@@ -301,11 +313,21 @@ export default function AdminPage() {
     artist: string,
     album: string,
     publicUrl: string,
+    existingSongs: Song[],
   ): Song => {
+    const baseId =
+      [artist, title].map(slugifySegment).filter(Boolean).join("-") || "song";
+    const existingIds = new Set(existingSongs.map((song) => song.id));
+    let candidateId = baseId;
+    let suffix = 2;
+
+    while (existingIds.has(candidateId)) {
+      candidateId = `${baseId}-${suffix}`;
+      suffix += 1;
+    }
+
     return {
-      id:
-        `${artist?.toLowerCase().replace(/\s+/g, "-")}-${title?.toLowerCase().replace(/\s+/g, "-")}` ||
-        `song-${Date.now()}`,
+      id: candidateId,
       title: title || "",
       artist: artist || "",
       album: album || "",
@@ -313,7 +335,7 @@ export default function AdminPage() {
       lyrics: formData.lyrics || "",
       audioUrl: publicUrl,
       metadata: formData.metadata || {},
-      language: (formData.language as Song["language"]) || "en",
+      language: normalizeLanguage(formData.language || "en"),
     };
   };
 
@@ -354,8 +376,19 @@ export default function AdminPage() {
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       const publicUrl = await uploadFileToR2(audioFile);
-      const newSong = createSongFromFormData(title, artist, album, publicUrl);
-      await updatePlaylistWithNewSong(newSong);
+      const currentPlaylistResponse = await fetch("/api/admin/playlist");
+      if (!currentPlaylistResponse.ok) {
+        throw new Error("Failed to fetch playlist");
+      }
+      const currentPlaylist: Song[] = await currentPlaylistResponse.json();
+      const newSong = createSongFromFormData(
+        title,
+        artist,
+        album,
+        publicUrl,
+        currentPlaylist,
+      );
+      await updatePlaylistWithNewSong(newSong, currentPlaylist);
 
       addLog("> Deployment successful!");
       addLog(`> New track: ${newSong.title} by ${newSong.artist}`);

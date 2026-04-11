@@ -14,9 +14,10 @@ type RootLayoutProps = {
 export default async function RootLayout(props: RootLayoutProps) {
   const { children, params } = props;
   const { locale } = await params;
+  const validLocales = routing.locales;
 
   // Ensure that the incoming `locale` is valid
-  if (!routing.locales.includes(locale as any)) {
+  if (!validLocales.includes(locale as (typeof validLocales)[number])) {
     notFound();
   }
 
