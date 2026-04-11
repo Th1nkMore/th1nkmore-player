@@ -93,7 +93,9 @@ async function verifyRenamedFiles() {
 
     if (filesWithSpaces.length > 0) {
       console.log("❌ Files still with spaces:");
-      filesWithSpaces.forEach((f) => console.log(`   - ${f}`));
+      filesWithSpaces.forEach((f) => {
+        console.log(`   - ${f}`);
+      });
       console.log();
     } else {
       console.log("✅ All files use underscores (no spaces found)\n");

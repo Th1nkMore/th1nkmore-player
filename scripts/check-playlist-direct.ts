@@ -25,41 +25,48 @@ const r2Client = new S3Client({
   },
 });
 
+function isNodeReadableStream(
+  value: unknown,
+): value is NodeJS.ReadableStream & {
+  on: (event: string, listener: (...args: unknown[]) => void) => void;
+} {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "on" in value &&
+    typeof (value as { on?: unknown }).on === "function"
+  );
+}
+
 async function streamToString(body: any): Promise<string> {
   if (!body) return "";
   if (typeof body === "string") return body;
   if (body instanceof Blob) return await body.text();
 
-  // AWS SDK v3 returns body as ReadableStream | Blob | undefined
-  // In Node.js, it's typically a ReadableStream or a Readable
-  if (body && typeof body === "object") {
-    // Check if it has a getReader method (ReadableStream)
-    if (typeof body.getReader === "function") {
-      const reader = body.getReader();
-      const decoder = new TextDecoder();
-      let result = "";
+  if (body instanceof ReadableStream) {
+    const reader = body.getReader();
+    const decoder = new TextDecoder();
+    let result = "";
 
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          result += decoder.decode(value, { stream: true });
-        }
-      } finally {
-        reader.releaseLock();
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        result += decoder.decode(value, { stream: true });
       }
-      return result;
+    } finally {
+      reader.releaseLock();
     }
+    return result;
+  }
 
-    // Check if it's a Node.js Readable stream (has pipe method)
-    if (typeof body.pipe === "function" || typeof body.on === "function") {
-      const chunks: Buffer[] = [];
-      return new Promise((resolve, reject) => {
-        body.on("data", (chunk: Buffer) => chunks.push(chunk));
-        body.on("end", () => resolve(Buffer.concat(chunks).toString("utf-8")));
-        body.on("error", reject);
-      });
-    }
+  if (isNodeReadableStream(body)) {
+    const chunks: Buffer[] = [];
+    return new Promise((resolve, reject) => {
+      body.on("data", (chunk: Buffer) => chunks.push(chunk));
+      body.on("end", () => resolve(Buffer.concat(chunks).toString("utf-8")));
+      body.on("error", reject);
+    });
   }
 
   // Fallback: try to convert to string

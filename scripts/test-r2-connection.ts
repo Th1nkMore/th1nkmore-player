@@ -61,119 +61,138 @@ const r2Client = new S3Client({
   },
 });
 
-async function testConnection() {
-  try {
-    // Test 1: List objects in bucket
-    console.log("📦 Test 1: Listing objects in bucket...");
-    try {
-      const listCommand = new ListObjectsV2Command({
-        Bucket: R2_BUCKET_NAME,
-        MaxKeys: 5,
-      });
-      const listResponse = await r2Client.send(listCommand);
-      console.log(`✅ Successfully connected to bucket: ${R2_BUCKET_NAME}`);
-      console.log(`   Found ${listResponse.KeyCount || 0} objects\n`);
-    } catch (error: any) {
-      console.error("❌ Failed to list objects:");
-      console.error(`   Error: ${error.name || error.message}`);
-      if (error.$metadata) {
-        console.error(`   HTTP Status: ${error.$metadata.httpStatusCode}`);
-        console.error(`   Request ID: ${error.$metadata.requestId}`);
-      }
-      if (error.message) {
-        console.error(`   Details: ${error.message}`);
-      }
-      console.error();
+function logBucketSuggestions(error: any) {
+  if (error.name === "InvalidBucketName" || error.message?.includes("bucket")) {
+    console.error("💡 Suggestion: Check if R2_BUCKET_NAME is correct");
+    console.error(`   Current bucket name: ${R2_BUCKET_NAME}\n`);
+    return;
+  }
 
-      // Common error messages
-      if (
-        error.name === "InvalidBucketName" ||
-        error.message?.includes("bucket")
-      ) {
-        console.error("💡 Suggestion: Check if R2_BUCKET_NAME is correct");
-        console.error(`   Current bucket name: ${R2_BUCKET_NAME}\n`);
-      } else if (
-        error.name === "InvalidAccessKeyId" ||
-        error.message?.includes("credentials")
-      ) {
-        console.error(
-          "💡 Suggestion: Check if R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY are correct\n",
-        );
-      } else if (error.name === "NoSuchBucket") {
-        console.error(
-          "💡 Suggestion: The bucket doesn't exist or the name is incorrect\n",
-        );
-      }
+  if (
+    error.name === "InvalidAccessKeyId" ||
+    error.message?.includes("credentials")
+  ) {
+    console.error(
+      "💡 Suggestion: Check if R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY are correct\n",
+    );
+    return;
+  }
+
+  if (error.name === "NoSuchBucket") {
+    console.error(
+      "💡 Suggestion: The bucket doesn't exist or the name is incorrect\n",
+    );
+  }
+}
+
+async function testBucketListing(): Promise<boolean> {
+  console.log("📦 Test 1: Listing objects in bucket...");
+  try {
+    const listCommand = new ListObjectsV2Command({
+      Bucket: R2_BUCKET_NAME,
+      MaxKeys: 5,
+    });
+    const listResponse = await r2Client.send(listCommand);
+    console.log(`✅ Successfully connected to bucket: ${R2_BUCKET_NAME}`);
+    console.log(`   Found ${listResponse.KeyCount || 0} objects\n`);
+    return true;
+  } catch (error: any) {
+    console.error("❌ Failed to list objects:");
+    console.error(`   Error: ${error.name || error.message}`);
+    if (error.$metadata) {
+      console.error(`   HTTP Status: ${error.$metadata.httpStatusCode}`);
+      console.error(`   Request ID: ${error.$metadata.requestId}`);
+    }
+    if (error.message) {
+      console.error(`   Details: ${error.message}`);
+    }
+    console.error();
+    logBucketSuggestions(error);
+    return false;
+  }
+}
+
+async function readBodyText(body: ReadableStream | Blob): Promise<string> {
+  const chunks: Uint8Array[] = [];
+  if (body instanceof ReadableStream) {
+    const reader = body.getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+    }
+  } else {
+    const arrayBuffer = await body.arrayBuffer();
+    chunks.push(new Uint8Array(arrayBuffer));
+  }
+
+  return new TextDecoder().decode(
+    Buffer.concat(chunks.map((chunk) => Buffer.from(chunk))),
+  );
+}
+
+async function testPlaylistFetch() {
+  console.log("📋 Test 2: Fetching playlist.json...");
+  try {
+    const getCommand = new GetObjectCommand({
+      Bucket: R2_BUCKET_NAME,
+      Key: "playlist.json",
+    });
+    const getResponse = await r2Client.send(getCommand);
+
+    if (!getResponse.Body) {
+      console.error("❌ playlist.json exists but has no content");
       return;
     }
 
-    // Test 2: Try to get playlist.json
-    console.log("📋 Test 2: Fetching playlist.json...");
-    try {
-      const getCommand = new GetObjectCommand({
-        Bucket: R2_BUCKET_NAME,
-        Key: "playlist.json",
-      });
-      const getResponse = await r2Client.send(getCommand);
+    const text = await readBodyText(getResponse.Body as ReadableStream | Blob);
+    const playlist = JSON.parse(text);
 
-      if (!getResponse.Body) {
-        console.error("❌ playlist.json exists but has no content");
-        return;
-      }
-
-      // Convert stream to string
-      const chunks: Uint8Array[] = [];
-      if (getResponse.Body instanceof ReadableStream) {
-        const reader = getResponse.Body.getReader();
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          chunks.push(value);
-        }
-      } else if (getResponse.Body instanceof Blob) {
-        const arrayBuffer = await getResponse.Body.arrayBuffer();
-        chunks.push(new Uint8Array(arrayBuffer));
-      }
-
-      const text = new TextDecoder().decode(
-        Buffer.concat(chunks.map((chunk) => Buffer.from(chunk))),
-      );
-      const playlist = JSON.parse(text);
-
-      console.log(`✅ Successfully fetched playlist.json`);
+    console.log(`✅ Successfully fetched playlist.json`);
+    console.log(
+      `   Contains ${Array.isArray(playlist) ? playlist.length : 0} songs\n`,
+    );
+  } catch (error: any) {
+    if (error.name === "NoSuchKey") {
       console.log(
-        `   Contains ${Array.isArray(playlist) ? playlist.length : 0} songs\n`,
+        "ℹ️  playlist.json doesn't exist yet (this is OK for first upload)\n",
       );
-    } catch (error: any) {
-      if (error.name === "NoSuchKey") {
-        console.log(
-          "ℹ️  playlist.json doesn't exist yet (this is OK for first upload)\n",
-        );
-      } else {
-        console.error("❌ Failed to fetch playlist.json:");
-        console.error(`   Error: ${error.name || error.message}`);
-        if (error.message) {
-          console.error(`   Details: ${error.message}`);
-        }
-        console.error();
-      }
+      return;
     }
 
-    // Test 3: Check audio directory
-    console.log("🎵 Test 3: Checking audio/ directory...");
-    try {
-      const listAudioCommand = new ListObjectsV2Command({
-        Bucket: R2_BUCKET_NAME,
-        Prefix: "audio/",
-        MaxKeys: 5,
-      });
-      const audioResponse = await r2Client.send(listAudioCommand);
-      console.log(`✅ audio/ directory accessible`);
-      console.log(`   Found ${audioResponse.KeyCount || 0} audio files\n`);
-    } catch (error: any) {
-      console.error("❌ Failed to list audio/ directory:");
-      console.error(`   Error: ${error.message}\n`);
+    console.error("❌ Failed to fetch playlist.json:");
+    console.error(`   Error: ${error.name || error.message}`);
+    if (error.message) {
+      console.error(`   Details: ${error.message}`);
     }
+    console.error();
+  }
+}
+
+async function testAudioDirectory() {
+  console.log("🎵 Test 3: Checking audio/ directory...");
+  try {
+    const listAudioCommand = new ListObjectsV2Command({
+      Bucket: R2_BUCKET_NAME,
+      Prefix: "audio/",
+      MaxKeys: 5,
+    });
+    const audioResponse = await r2Client.send(listAudioCommand);
+    console.log(`✅ audio/ directory accessible`);
+    console.log(`   Found ${audioResponse.KeyCount || 0} audio files\n`);
+  } catch (error: any) {
+    console.error("❌ Failed to list audio/ directory:");
+    console.error(`   Error: ${error.message}\n`);
+  }
+}
+
+async function testConnection() {
+  try {
+    const connected = await testBucketListing();
+    if (!connected) return;
+
+    await testPlaylistFetch();
+    await testAudioDirectory();
 
     console.log("✅ All tests completed!");
   } catch (error: any) {
