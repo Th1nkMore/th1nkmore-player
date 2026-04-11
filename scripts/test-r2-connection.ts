@@ -13,6 +13,7 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import { config } from "dotenv";
+import { getErrorInfo } from "./lib/r2";
 
 // Load environment variables
 config({ path: resolve(process.cwd(), ".env.local") });
@@ -61,16 +62,21 @@ const r2Client = new S3Client({
   },
 });
 
-function logBucketSuggestions(error: any) {
-  if (error.name === "InvalidBucketName" || error.message?.includes("bucket")) {
+function logBucketSuggestions(error: unknown) {
+  const errorInfo = getErrorInfo(error);
+
+  if (
+    errorInfo.name === "InvalidBucketName" ||
+    errorInfo.message.includes("bucket")
+  ) {
     console.error("💡 Suggestion: Check if R2_BUCKET_NAME is correct");
     console.error(`   Current bucket name: ${R2_BUCKET_NAME}\n`);
     return;
   }
 
   if (
-    error.name === "InvalidAccessKeyId" ||
-    error.message?.includes("credentials")
+    errorInfo.name === "InvalidAccessKeyId" ||
+    errorInfo.message.includes("credentials")
   ) {
     console.error(
       "💡 Suggestion: Check if R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY are correct\n",
@@ -78,7 +84,7 @@ function logBucketSuggestions(error: any) {
     return;
   }
 
-  if (error.name === "NoSuchBucket") {
+  if (errorInfo.name === "NoSuchBucket") {
     console.error(
       "💡 Suggestion: The bucket doesn't exist or the name is incorrect\n",
     );
@@ -96,15 +102,25 @@ async function testBucketListing(): Promise<boolean> {
     console.log(`✅ Successfully connected to bucket: ${R2_BUCKET_NAME}`);
     console.log(`   Found ${listResponse.KeyCount || 0} objects\n`);
     return true;
-  } catch (error: any) {
+  } catch (error) {
+    const errorInfo = getErrorInfo(error);
     console.error("❌ Failed to list objects:");
-    console.error(`   Error: ${error.name || error.message}`);
-    if (error.$metadata) {
-      console.error(`   HTTP Status: ${error.$metadata.httpStatusCode}`);
-      console.error(`   Request ID: ${error.$metadata.requestId}`);
+    console.error(`   Error: ${errorInfo.name || errorInfo.message}`);
+    if (typeof error === "object" && error !== null && "$metadata" in error) {
+      const metadata = (
+        error as {
+          $metadata?: { httpStatusCode?: unknown; requestId?: unknown };
+        }
+      ).$metadata;
+      if (metadata?.httpStatusCode) {
+        console.error(`   HTTP Status: ${metadata.httpStatusCode}`);
+      }
+      if (metadata?.requestId) {
+        console.error(`   Request ID: ${metadata.requestId}`);
+      }
     }
-    if (error.message) {
-      console.error(`   Details: ${error.message}`);
+    if (errorInfo.message) {
+      console.error(`   Details: ${errorInfo.message}`);
     }
     console.error();
     logBucketSuggestions(error);
@@ -152,8 +168,9 @@ async function testPlaylistFetch() {
     console.log(
       `   Contains ${Array.isArray(playlist) ? playlist.length : 0} songs\n`,
     );
-  } catch (error: any) {
-    if (error.name === "NoSuchKey") {
+  } catch (error) {
+    const errorInfo = getErrorInfo(error);
+    if (errorInfo.name === "NoSuchKey") {
       console.log(
         "ℹ️  playlist.json doesn't exist yet (this is OK for first upload)\n",
       );
@@ -161,9 +178,9 @@ async function testPlaylistFetch() {
     }
 
     console.error("❌ Failed to fetch playlist.json:");
-    console.error(`   Error: ${error.name || error.message}`);
-    if (error.message) {
-      console.error(`   Details: ${error.message}`);
+    console.error(`   Error: ${errorInfo.name || errorInfo.message}`);
+    if (errorInfo.message) {
+      console.error(`   Details: ${errorInfo.message}`);
     }
     console.error();
   }
@@ -180,9 +197,10 @@ async function testAudioDirectory() {
     const audioResponse = await r2Client.send(listAudioCommand);
     console.log(`✅ audio/ directory accessible`);
     console.log(`   Found ${audioResponse.KeyCount || 0} audio files\n`);
-  } catch (error: any) {
+  } catch (error) {
+    const errorInfo = getErrorInfo(error);
     console.error("❌ Failed to list audio/ directory:");
-    console.error(`   Error: ${error.message}\n`);
+    console.error(`   Error: ${errorInfo.message}\n`);
   }
 }
 
@@ -195,13 +213,14 @@ async function testConnection() {
     await testAudioDirectory();
 
     console.log("✅ All tests completed!");
-  } catch (error: any) {
+  } catch (error) {
+    const errorInfo = getErrorInfo(error);
     console.error("❌ Unexpected error:", error);
-    if (error.message) {
-      console.error(`   ${error.message}`);
+    if (errorInfo.message) {
+      console.error(`   ${errorInfo.message}`);
     }
-    if (error.stack) {
-      console.error(`   Stack: ${error.stack}`);
+    if (errorInfo.stack) {
+      console.error(`   Stack: ${errorInfo.stack}`);
     }
     process.exit(1);
   }

@@ -14,30 +14,22 @@ import {
   GetObjectCommand,
   ListObjectsV2Command,
   PutObjectCommand,
-  S3Client,
+  type S3Client,
 } from "@aws-sdk/client-s3";
 import { config } from "dotenv";
 import type { Song } from "../src/types/music";
+import {
+  createR2Client,
+  getErrorInfo,
+  getR2Config,
+  streamToString,
+} from "./lib/r2";
 
 // Load environment variables
 config({ path: resolve(process.cwd(), ".env.local") });
 
-const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID!;
-const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID!;
-const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY!;
-const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME!;
-const R2_PUBLIC_URL =
-  process.env.R2_PUBLIC_URL ||
-  `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${R2_BUCKET_NAME}`;
-
-const r2Client = new S3Client({
-  region: "auto",
-  endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: R2_ACCESS_KEY_ID,
-    secretAccessKey: R2_SECRET_ACCESS_KEY,
-  },
-});
+const r2Config = getR2Config();
+const r2Client: S3Client = createR2Client(r2Config);
 
 /**
  * Convert filename from spaces to underscores
@@ -48,44 +40,6 @@ function normalizeFilename(filename: string): string {
   return filename.replace(/\s+/g, "_");
 }
 
-/**
- * Stream to string helper
- */
-async function streamToString(body: any): Promise<string> {
-  if (!body) return "";
-  if (typeof body === "string") return body;
-  if (body instanceof Blob) return await body.text();
-
-  if (body instanceof ReadableStream) {
-    const reader = body.getReader();
-    const decoder = new TextDecoder();
-    let result = "";
-
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        result += decoder.decode(value, { stream: true });
-      }
-    } finally {
-      reader.releaseLock();
-    }
-    return result;
-  }
-
-  // Node.js Readable stream
-  if (body && typeof body === "object" && typeof body.on === "function") {
-    const chunks: Buffer[] = [];
-    return new Promise((resolve, reject) => {
-      body.on("data", (chunk: Buffer) => chunks.push(chunk));
-      body.on("end", () => resolve(Buffer.concat(chunks).toString("utf-8")));
-      body.on("error", reject);
-    });
-  }
-
-  return String(body);
-}
-
 type AudioFile = {
   key: string;
   size: number;
@@ -94,7 +48,7 @@ type AudioFile = {
 async function listAudioFilesWithSpaces(): Promise<AudioFile[]> {
   console.log("🔍 Listing audio files in R2 bucket...\n");
   const listCommand = new ListObjectsV2Command({
-    Bucket: R2_BUCKET_NAME,
+    Bucket: r2Config.bucketName,
     Prefix: "audio/",
   });
 
@@ -106,7 +60,7 @@ async function listAudioFilesWithSpaces(): Promise<AudioFile[]> {
       return obj.Key.startsWith("audio/") && obj.Key.includes(" ");
     })
     .map((obj) => ({
-      key: obj.Key!,
+      key: obj.Key as string,
       size: obj.Size || 0,
     }));
 }
@@ -128,7 +82,7 @@ async function loadPlaylist(): Promise<Song[]> {
   console.log("📋 Loading current playlist...\n");
   try {
     const getPlaylistCommand = new GetObjectCommand({
-      Bucket: R2_BUCKET_NAME,
+      Bucket: r2Config.bucketName,
       Key: "playlist.json",
     });
     const playlistResponse = await r2Client.send(getPlaylistCommand);
@@ -140,8 +94,9 @@ async function loadPlaylist(): Promise<Song[]> {
     const playlist = JSON.parse(bodyString) as Song[];
     console.log(`✅ Loaded playlist with ${playlist.length} songs\n`);
     return playlist;
-  } catch (error: any) {
-    if (error.name !== "NoSuchKey") {
+  } catch (error) {
+    const errorInfo = getErrorInfo(error);
+    if (errorInfo.name !== "NoSuchKey") {
       throw error;
     }
 
@@ -166,21 +121,22 @@ async function renameFiles(renameMap: Map<string, string>) {
     try {
       try {
         const checkCommand = new GetObjectCommand({
-          Bucket: R2_BUCKET_NAME,
+          Bucket: r2Config.bucketName,
           Key: newKey,
         });
         await r2Client.send(checkCommand);
         console.log(`   ⚠️  Skipping ${oldKey}: ${newKey} already exists`);
         continue;
-      } catch (error: any) {
-        if (error.name !== "NoSuchKey") {
+      } catch (error) {
+        const errorInfo = getErrorInfo(error);
+        if (errorInfo.name !== "NoSuchKey") {
           throw error;
         }
       }
 
-      const copySource = `${R2_BUCKET_NAME}/${encodeURIComponent(oldKey)}`;
+      const copySource = `${r2Config.bucketName}/${encodeURIComponent(oldKey)}`;
       const copyCommand = new CopyObjectCommand({
-        Bucket: R2_BUCKET_NAME,
+        Bucket: r2Config.bucketName,
         CopySource: copySource,
         Key: newKey,
       });
@@ -189,13 +145,14 @@ async function renameFiles(renameMap: Map<string, string>) {
       console.log(`   ✓ Copied: ${oldKey} -> ${newKey}`);
 
       const deleteCommand = new DeleteObjectCommand({
-        Bucket: R2_BUCKET_NAME,
+        Bucket: r2Config.bucketName,
         Key: oldKey,
       });
       await r2Client.send(deleteCommand);
       console.log(`   ✓ Deleted: ${oldKey}\n`);
-    } catch (error: any) {
-      console.error(`   ❌ Error renaming ${oldKey}:`, error.message);
+    } catch (error) {
+      const errorInfo = getErrorInfo(error);
+      console.error(`   ❌ Error renaming ${oldKey}:`, errorInfo.message);
     }
   }
 }
@@ -217,9 +174,9 @@ async function updatePlaylistUrls(playlist: Song[]): Promise<boolean> {
     if (oldFilename === newFilename) continue;
 
     const encodedFilename = encodeURIComponent(newFilename);
-    const baseUrl = R2_PUBLIC_URL.endsWith("/")
-      ? R2_PUBLIC_URL.slice(0, -1)
-      : R2_PUBLIC_URL;
+    const baseUrl = r2Config.publicUrl.endsWith("/")
+      ? r2Config.publicUrl.slice(0, -1)
+      : r2Config.publicUrl;
     song.audioUrl = `${baseUrl}/audio/${encodedFilename}`;
     updatedCount++;
     console.log(`   ✓ Updated: ${song.title}`);
@@ -233,7 +190,7 @@ async function updatePlaylistUrls(playlist: Song[]): Promise<boolean> {
 
   console.log(`\n📤 Uploading updated playlist...\n`);
   const putCommand = new PutObjectCommand({
-    Bucket: R2_BUCKET_NAME,
+    Bucket: r2Config.bucketName,
     Key: "playlist.json",
     Body: JSON.stringify(playlist, null, 2),
     ContentType: "application/json",
@@ -265,10 +222,11 @@ async function renameAudioFiles() {
     console.log(`\n📋 Summary:`);
     console.log(`   - Files renamed: ${audioFiles.length}`);
     console.log(`   - Playlist updated: ${playlistUpdated ? "Yes" : "No"}\n`);
-  } catch (error: any) {
-    console.error("❌ Error:", error.message);
-    if (error.stack) {
-      console.error(`   Stack: ${error.stack}`);
+  } catch (error) {
+    const errorInfo = getErrorInfo(error);
+    console.error("❌ Error:", errorInfo.message);
+    if (errorInfo.stack) {
+      console.error(`   Stack: ${errorInfo.stack}`);
     }
     process.exit(1);
   }
