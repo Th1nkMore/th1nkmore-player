@@ -80,7 +80,8 @@ async function verifyRenamedFiles() {
 
     const audioFiles = files
       .filter((obj) => obj.Key?.startsWith("audio/"))
-      .map((obj) => obj.Key?.replace("audio/", ""));
+      .map((obj) => obj.Key?.replace("audio/", ""))
+      .filter((key): key is string => typeof key === "string");
 
     // Check for files with spaces
     const filesWithSpaces = audioFiles.filter((f) => f.includes(" "));
