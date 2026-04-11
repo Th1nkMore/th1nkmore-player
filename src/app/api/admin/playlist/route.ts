@@ -142,14 +142,16 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const playlist = normalizePlaylist((await request.json()) as Song[]);
+    const payload = await request.json();
 
-    if (!Array.isArray(playlist)) {
+    if (!Array.isArray(payload)) {
       return NextResponse.json(
         { error: "Playlist must be an array" },
         { status: 400 },
       );
     }
+
+    const playlist = normalizePlaylist(payload as Song[]);
 
     // Validate each song has required fields
     for (const song of playlist) {

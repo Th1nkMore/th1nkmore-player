@@ -134,7 +134,11 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   },
   setIsPlaying: (isPlaying) => set({ isPlaying }),
   setVolume: (volume) => set({ volume: Math.min(1, Math.max(0, volume)) }),
-  seek: (time) => set({ currentTime: Math.max(0, Math.min(time, 999999)) }),
+  seek: (time) => {
+    const state = get();
+    const maxTime = Math.max(0, state.duration);
+    set({ currentTime: Math.max(0, Math.min(time, maxTime)) });
+  },
   setTrack: (trackId) => {
     const state = get();
     // If switching to a different track, stop and clear previous state first
@@ -154,12 +158,23 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   },
   removeFromQueue: (songId) => {
     const state = get();
+    const currentIndex = state.queue.findIndex((song) => song.id === songId);
     const newQueue = state.queue.filter((s) => s.id !== songId);
-    set({ queue: newQueue });
-    // If removing the current track, stop playback
+
     if (state.currentTrackId === songId) {
-      set({ currentTrackId: null, isPlaying: false });
+      const replacementTrack =
+        currentIndex >= 0
+          ? (newQueue[Math.min(currentIndex, newQueue.length - 1)] ?? null)
+          : null;
+
+      set({
+        queue: newQueue,
+        ...resetPlaybackState(replacementTrack?.id ?? null),
+      });
+      return;
     }
+
+    set({ queue: newQueue });
   },
   reorderQueue: (oldIndex, newIndex) => {
     const state = get();
@@ -181,7 +196,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     if (nextTrack) {
       set(resetPlaybackState(nextTrack.id));
     } else {
-      set(resetPlaybackState());
+      set(resetPlaybackState(null));
     }
   },
   playPrevious: () => {
