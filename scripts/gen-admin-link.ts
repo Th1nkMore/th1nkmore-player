@@ -12,9 +12,9 @@
  * - NEXT_PUBLIC_BASE_URL in .env.local (optional, defaults to http://localhost:3000)
  */
 
+import { resolve } from "node:path";
 import { config } from "dotenv";
 import { SignJWT } from "jose";
-import { resolve } from "path";
 
 // Load environment variables from .env.local
 config({ path: resolve(process.cwd(), ".env.local") });

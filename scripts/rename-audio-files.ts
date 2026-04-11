@@ -7,6 +7,7 @@
  * R2 doesn't support direct rename, so we copy to new name and delete old
  */
 
+import { resolve } from "node:path";
 import {
   CopyObjectCommand,
   DeleteObjectCommand,
@@ -16,7 +17,6 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import { config } from "dotenv";
-import { resolve } from "path";
 import type { Song } from "../src/types/music";
 
 // Load environment variables

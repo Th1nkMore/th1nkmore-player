@@ -6,6 +6,7 @@
  * Lists all audio files in R2 bucket and generates/uploads playlist.json
  */
 
+import { resolve } from "node:path";
 import {
   GetObjectCommand,
   ListObjectsV2Command,
@@ -13,7 +14,6 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import { config } from "dotenv";
-import { resolve } from "path";
 import type { Song } from "../src/types/music";
 
 // Load environment variables
@@ -250,7 +250,7 @@ async function generateAndUploadPlaylist() {
 
     console.log("✅ Playlist uploaded successfully!");
     console.log(
-      `\n📋 Playlist URL: ${R2_PUBLIC_URL.endsWith("/") ? R2_PUBLIC_URL : R2_PUBLIC_URL + "/"}playlist.json`,
+      `\n📋 Playlist URL: ${R2_PUBLIC_URL.endsWith("/") ? R2_PUBLIC_URL : `${R2_PUBLIC_URL}/`}playlist.json`,
     );
     console.log(`\n🎵 Songs in playlist:`);
     newSongs.forEach((song, index) => {

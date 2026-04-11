@@ -8,8 +8,8 @@
  * Usage: pnpm tsx scripts/test-upload.ts
  */
 
+import { resolve } from "node:path";
 import { config } from "dotenv";
-import { resolve } from "path";
 
 // Load environment variables
 config({ path: resolve(process.cwd(), ".env.local") });

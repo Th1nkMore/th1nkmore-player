@@ -6,9 +6,9 @@
  * Fetches the playlist from R2 via the API to verify it was uploaded correctly
  */
 
+import { resolve } from "node:path";
 import { config } from "dotenv";
 import { SignJWT } from "jose";
-import { resolve } from "path";
 
 // Load environment variables
 config({ path: resolve(process.cwd(), ".env.local") });

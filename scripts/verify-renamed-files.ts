@@ -6,13 +6,13 @@
  * Checks that all files and playlist URLs use underscores
  */
 
+import { resolve } from "node:path";
 import {
   GetObjectCommand,
   ListObjectsV2Command,
   S3Client,
 } from "@aws-sdk/client-s3";
 import { config } from "dotenv";
-import { resolve } from "path";
 
 // Load environment variables
 config({ path: resolve(process.cwd(), ".env.local") });
@@ -80,7 +80,7 @@ async function verifyRenamedFiles() {
 
     const audioFiles = files
       .filter((obj) => obj.Key?.startsWith("audio/"))
-      .map((obj) => obj.Key!.replace("audio/", ""));
+      .map((obj) => obj.Key?.replace("audio/", ""));
 
     // Check for files with spaces
     const filesWithSpaces = audioFiles.filter((f) => f.includes(" "));

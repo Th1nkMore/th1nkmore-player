@@ -4,9 +4,9 @@
  * Check Playlist Directly from R2
  */
 
+import { resolve } from "node:path";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { config } from "dotenv";
-import { resolve } from "path";
 
 // Load environment variables
 config({ path: resolve(process.cwd(), ".env.local") });

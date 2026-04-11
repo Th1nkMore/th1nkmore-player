@@ -6,13 +6,13 @@
  * Directly tests R2 connection to identify configuration issues
  */
 
+import { resolve } from "node:path";
 import {
   GetObjectCommand,
   ListObjectsV2Command,
   S3Client,
 } from "@aws-sdk/client-s3";
 import { config } from "dotenv";
-import { resolve } from "path";
 
 // Load environment variables
 config({ path: resolve(process.cwd(), ".env.local") });
