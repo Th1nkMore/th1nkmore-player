@@ -78,10 +78,26 @@ async function streamToString(body: unknown): Promise<string> {
 }
 
 function normalizePlaylist(playlist: Song[]): Song[] {
-  return playlist.map((song) => ({
-    ...song,
-    language: normalizeLanguage(song.language),
-  }));
+  return playlist.map((song) => {
+    let audioUrl = song.audioUrl;
+    if (audioUrl) {
+      try {
+        const url = new URL(audioUrl);
+        if (url.hostname.endsWith(".space.com")) {
+          url.hostname = url.hostname.replace(/\.space\.com$/, ".space");
+          audioUrl = url.toString();
+        }
+      } catch {
+        // ignore invalid urls
+      }
+    }
+
+    return {
+      ...song,
+      audioUrl,
+      language: normalizeLanguage(song.language),
+    };
+  });
 }
 
 /**
