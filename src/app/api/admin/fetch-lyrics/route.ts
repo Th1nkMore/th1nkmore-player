@@ -27,8 +27,8 @@ export async function POST(request: NextRequest) {
     const songId = idMatch[1];
 
     // Fetch lyrics from NetEase Music API
-    const apiUrl = `https://music.163.com/api/song/media?id=${songId}`;
-    const response = await fetch(apiUrl, {
+    const lyricsApiUrl = `https://music.163.com/api/song/media?id=${songId}`;
+    const lyricsResponse = await fetch(lyricsApiUrl, {
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
@@ -36,15 +36,42 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (!response.ok) {
+    // Fetch song details from NetEase Music API
+    const detailApiUrl = `https://music.163.com/api/song/detail/?id=${songId}&ids=[${songId}]`;
+    const detailResponse = await fetch(detailApiUrl, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        Referer: "https://music.163.com/",
+      },
+    });
+
+    let songInfo = null;
+    if (detailResponse.ok) {
+      const detailData = await detailResponse.json();
+      if (detailData.songs && detailData.songs.length > 0) {
+        const song = detailData.songs[0];
+        songInfo = {
+          title: song.name,
+          artist: song.artists?.map((a: { name: string }) => a.name).join(", "),
+          album: song.album?.name,
+          duration: Math.floor(song.duration / 1000), // convert ms to seconds
+        };
+      }
+    }
+
+    if (!lyricsResponse.ok) {
       return NextResponse.json(
-        { error: `Failed to fetch lyrics: ${response.status}` },
-        { status: response.status },
+        {
+          error: `Failed to fetch lyrics: ${lyricsResponse.status}`,
+          songInfo,
+        },
+        { status: lyricsResponse.status },
       );
     }
 
-    const data = await response.json();
-    const lyrics = data.lyric || "";
+    const lyricsData = await lyricsResponse.json();
+    const lyrics = lyricsData.lyric || "";
 
     if (!lyrics) {
       return NextResponse.json(
@@ -70,6 +97,7 @@ export async function POST(request: NextRequest) {
       success: true,
       songId,
       lyrics: finalLyrics,
+      songInfo,
     });
   } catch (error) {
     console.error("Error fetching lyrics:", error);

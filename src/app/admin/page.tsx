@@ -1,16 +1,14 @@
 "use client";
 
+import * as mm from "music-metadata-browser";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { EditPlaylist } from "@/components/admin/EditPlaylist";
+import { TerminalOutput } from "@/components/admin/TerminalOutput";
 import { UploadForm } from "@/components/admin/UploadForm";
-import { normalizeLanguage, slugifySegment } from "@/lib/utils";
+import { createSongFromFormData } from "@/lib/admin-utils";
+import { useAdminLogs } from "@/lib/hooks/useAdminLogs";
+import { normalizeLanguage } from "@/lib/utils";
 import type { Song } from "@/types/music";
-
-type LogEntry = {
-  id: string;
-  message: string;
-  timestamp: Date;
-};
 
 type Tab = "upload" | "edit";
 
@@ -32,14 +30,13 @@ export default function AdminPage() {
     metadata: {},
   });
   const [audioFile, setAudioFile] = useState<File | null>(null);
-  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const { logs, addLog, clearLogs } = useAdminLogs();
   const [isDeploying, setIsDeploying] = useState(false);
   const [isFetchingLyrics, setIsFetchingLyrics] = useState(false);
   const [neteaseUrl, setNeteaseUrl] = useState("");
   const [neteaseUrlEdit, setNeteaseUrlEdit] = useState("");
   const [isFetchingLyricsEdit, setIsFetchingLyricsEdit] = useState(false);
   const [currentTime, setCurrentTime] = useState<string>("");
-  const logCounterRef = useRef(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Update time on client side only to avoid hydration mismatch
@@ -50,16 +47,6 @@ export default function AdminPage() {
     updateTime();
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
-  }, []);
-
-  const addLog = useCallback((message: string) => {
-    logCounterRef.current += 1;
-    const entry: LogEntry = {
-      id: `${Date.now()}-${logCounterRef.current}`,
-      message,
-      timestamp: new Date(),
-    };
-    setLogs((prev) => [...prev, entry]);
   }, []);
 
   const loadPlaylist = useCallback(async () => {
@@ -120,7 +107,7 @@ export default function AdminPage() {
 
   const handleSavePlaylist = async () => {
     setIsSavingPlaylist(true);
-    setLogs([]);
+    clearLogs();
 
     try {
       addLog("> Saving playlist...");
@@ -151,16 +138,40 @@ export default function AdminPage() {
     setEditedSong({ ...editedSong, [field]: value });
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Metadata extraction logic is inherently complex
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setAudioFile(file);
+    if (!file) return;
+
+    setAudioFile(file);
+    addLog(
+      `> Selected file: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`,
+    );
+
+    try {
+      addLog("> Extracting metadata from file...");
+      const metadata = await mm.parseBlob(file);
+      const { common, format } = metadata;
+
+      const updatedFormData = { ...formData };
+      if (common.title) updatedFormData.title = common.title;
+      if (common.artist) updatedFormData.artist = common.artist;
+      if (common.album) updatedFormData.album = common.album;
+      if (format.duration)
+        updatedFormData.duration = Math.floor(format.duration);
+
+      setFormData(updatedFormData);
       addLog(
-        `> Selected file: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`,
+        `> Metadata extracted: ${common.title || "Unknown"} - ${common.artist || "Unknown"}`,
+      );
+    } catch (error) {
+      addLog(
+        `> Warning: Could not extract metadata from file: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
   };
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: API fetching and form updating involves multiple steps
   const handleFetchLyrics = async () => {
     if (!neteaseUrl) {
       addLog("> Error: Please enter a NetEase Music URL");
@@ -183,26 +194,36 @@ export default function AdminPage() {
       }
 
       const data = await response.json();
-      setFormData({ ...formData, lyrics: data.lyrics });
-      addLog(`> Successfully fetched lyrics for song ID: ${data.songId}`);
+      const updatedFormData = { ...formData, lyrics: data.lyrics };
+
+      if (data.songInfo) {
+        const { title, artist, album, duration } = data.songInfo;
+        if (title) updatedFormData.title = title;
+        if (artist) updatedFormData.artist = artist;
+        if (album) updatedFormData.album = album;
+        if (duration) updatedFormData.duration = duration;
+      }
+
+      setFormData(updatedFormData);
+      addLog(
+        `> Successfully fetched lyrics and metadata for song ID: ${data.songId}`,
+      );
       addLog(`> Lyrics loaded (${data.lyrics.split("\n").length} lines)`);
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
-      addLog(`> Error: ${errorMessage}`);
+      addLog(
+        `> Error: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     } finally {
       setIsFetchingLyrics(false);
     }
   };
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: API fetching and form updating involves multiple steps
   const handleFetchLyricsEdit = async () => {
-    if (!neteaseUrlEdit) {
-      addLog("> Error: Please enter a NetEase Music URL");
-      return;
-    }
-
-    if (!editedSong) {
-      addLog("> Error: No song is being edited");
+    if (!(neteaseUrlEdit && editedSong)) {
+      addLog(
+        `> Error: ${!neteaseUrlEdit ? "Please enter a NetEase Music URL" : "No song is being edited"}`,
+      );
       return;
     }
 
@@ -223,13 +244,24 @@ export default function AdminPage() {
 
       const data = await response.json();
       updateEditedSong("lyrics", data.lyrics);
-      addLog(`> Successfully fetched lyrics for song ID: ${data.songId}`);
+
+      if (data.songInfo) {
+        const { title, artist, album, duration } = data.songInfo;
+        if (title) updateEditedSong("title", title);
+        if (artist) updateEditedSong("artist", artist);
+        if (album) updateEditedSong("album", album);
+        if (duration) updateEditedSong("duration", duration);
+      }
+
+      addLog(
+        `> Successfully fetched lyrics and metadata for song ID: ${data.songId}`,
+      );
       addLog(`> Lyrics loaded (${data.lyrics.split("\n").length} lines)`);
       setNeteaseUrlEdit(""); // Clear URL after successful fetch
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
-      addLog(`> Error: ${errorMessage}`);
+      addLog(
+        `> Error: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     } finally {
       setIsFetchingLyricsEdit(false);
     }
@@ -308,37 +340,6 @@ export default function AdminPage() {
     addLog("> Manifest updated successfully");
   };
 
-  const createSongFromFormData = (
-    title: string,
-    artist: string,
-    album: string,
-    publicUrl: string,
-    existingSongs: Song[],
-  ): Song => {
-    const baseId =
-      [artist, title].map(slugifySegment).filter(Boolean).join("-") || "song";
-    const existingIds = new Set(existingSongs.map((song) => song.id));
-    let candidateId = baseId;
-    let suffix = 2;
-
-    while (existingIds.has(candidateId)) {
-      candidateId = `${baseId}-${suffix}`;
-      suffix += 1;
-    }
-
-    return {
-      id: candidateId,
-      title: title || "",
-      artist: artist || "",
-      album: album || "",
-      duration: formData.duration || 0,
-      lyrics: formData.lyrics || "",
-      audioUrl: publicUrl,
-      metadata: formData.metadata || {},
-      language: normalizeLanguage(formData.language || "en"),
-    };
-  };
-
   const resetUploadForm = () => {
     setFormData({
       title: "",
@@ -369,7 +370,7 @@ export default function AdminPage() {
     const { title, artist, album } = formData;
 
     setIsDeploying(true);
-    setLogs([]);
+    clearLogs();
 
     try {
       addLog("> Authenticating...");
@@ -387,6 +388,7 @@ export default function AdminPage() {
         album,
         publicUrl,
         currentPlaylist,
+        formData,
       );
       await updatePlaylistWithNewSong(newSong, currentPlaylist);
 
@@ -490,34 +492,7 @@ export default function AdminPage() {
         </div>
 
         {/* Right Column - Terminal Output */}
-        <div className="flex flex-col bg-black overflow-hidden">
-          <div className="border-b border-gray-800 px-4 py-2">
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
-              TERMINAL OUTPUT
-            </div>
-          </div>
-          <div className="flex-1 overflow-y-auto scrollbar-none p-4 space-y-1 font-mono text-[11px]">
-            {logs.length === 0 ? (
-              <div className="text-gray-600">
-                {"> Waiting for deployment..."}
-              </div>
-            ) : (
-              logs.map((log) => (
-                <div key={log.id} className="text-gray-400">
-                  <span className="text-gray-600">
-                    {log.timestamp.toLocaleTimeString()}
-                  </span>{" "}
-                  {log.message}
-                </div>
-              ))
-            )}
-            {isDeploying && (
-              <div className="text-gray-500 animate-pulse">
-                {"> Processing..."}
-              </div>
-            )}
-          </div>
-        </div>
+        <TerminalOutput logs={logs} isDeploying={isDeploying} />
       </div>
     </div>
   );

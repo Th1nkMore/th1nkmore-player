@@ -34,6 +34,7 @@ function getClientAssetBaseUrl(): string | null {
 /**
  * Fixes audio URL by correcting domain and ensuring proper filename encoding.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: URL fixing logic involves several string and URL manipulations
 function fixAudioUrl(audioUrl: string): string {
   let fixedUrl = audioUrl;
 
@@ -41,8 +42,14 @@ function fixAudioUrl(audioUrl: string): string {
   try {
     const url = new URL(fixedUrl);
 
+    // Replace incorrect .space.com domain with .space
+    if (url.hostname.endsWith(".space.com")) {
+      url.hostname = url.hostname.replace(/\.space\.com$/, ".space");
+      fixedUrl = url.toString();
+    }
+
     const clientAssetBaseUrl = getClientAssetBaseUrl();
-    if (clientAssetBaseUrl && url.hostname.endsWith(".space.com")) {
+    if (clientAssetBaseUrl && url.hostname === "files.th1nkmore.space") {
       fixedUrl = `${clientAssetBaseUrl}/${url.pathname.replace(/^\/+/, "")}`;
     }
 
