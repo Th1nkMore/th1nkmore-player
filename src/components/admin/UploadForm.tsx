@@ -216,6 +216,17 @@ export function UploadForm({
             <Upload className="h-3 w-3" />
             {audioFile ? audioFile.name : "Select Source..."}
           </Button>
+
+          {audioFile && (
+            <div className="mt-2 p-3 rounded-md bg-[var(--sidebar-bg)] border border-[var(--border)]">
+              {/* biome-ignore lint/a11y/useMediaCaption: Music preview doesn't need captions */}
+              <audio
+                controls
+                src={URL.createObjectURL(audioFile)}
+                className="w-full h-8"
+              />
+            </div>
+          )}
         </div>
 
         <Button

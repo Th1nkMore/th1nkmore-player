@@ -184,8 +184,12 @@ function SongItem({
           </Button>
         </div>
       </div>
-      <div className="text-[10px] text-gray-600 font-mono break-all">
+      <div className="text-[10px] text-gray-600 font-mono break-all mb-2">
         {song.audioUrl}
+      </div>
+      <div className="mt-2 p-2 rounded-md bg-[var(--editor-bg)] border border-[var(--border)]">
+        {/* biome-ignore lint/a11y/useMediaCaption: Music preview doesn't need captions */}
+        <audio controls src={song.audioUrl} className="w-full h-8" />
       </div>
     </div>
   );
