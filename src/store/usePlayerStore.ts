@@ -3,6 +3,77 @@ import type { Song } from "@/types/music";
 
 export type PlayOrder = "sequential" | "shuffle" | "repeat" | "repeat-one";
 
+function resetPlaybackState(trackId?: string | null) {
+  return {
+    isPlaying: false,
+    currentTime: 0,
+    duration: 0,
+    ...(trackId !== undefined ? { currentTrackId: trackId } : {}),
+  };
+}
+
+function getRandomTrack(queue: Song[], currentTrackId: string): Song | null {
+  const availableTracks = queue.filter((song) => song.id !== currentTrackId);
+  if (availableTracks.length === 0) {
+    return null;
+  }
+
+  const randomIndex = Math.floor(Math.random() * availableTracks.length);
+  return availableTracks[randomIndex] ?? null;
+}
+
+function getNextTrack(
+  queue: Song[],
+  currentTrackId: string,
+  playOrder: PlayOrder,
+): Song | null {
+  const currentIndex = queue.findIndex((song) => song.id === currentTrackId);
+  if (currentIndex < 0) {
+    return null;
+  }
+
+  if (playOrder === "repeat-one") {
+    return queue[currentIndex] ?? null;
+  }
+
+  if (playOrder === "shuffle") {
+    return getRandomTrack(queue, currentTrackId);
+  }
+
+  if (playOrder === "repeat") {
+    return queue[(currentIndex + 1) % queue.length] ?? null;
+  }
+
+  return queue[currentIndex + 1] ?? null;
+}
+
+function getPreviousTrack(
+  queue: Song[],
+  currentTrackId: string,
+  playOrder: PlayOrder,
+): Song | null {
+  const currentIndex = queue.findIndex((song) => song.id === currentTrackId);
+  if (currentIndex < 0) {
+    return null;
+  }
+
+  if (playOrder === "repeat-one") {
+    return queue[currentIndex] ?? null;
+  }
+
+  if (playOrder === "shuffle") {
+    return getRandomTrack(queue, currentTrackId);
+  }
+
+  if (playOrder === "repeat") {
+    const previousIndex =
+      currentIndex === 0 ? queue.length - 1 : currentIndex - 1;
+    return queue[previousIndex] ?? null;
+  }
+
+  return currentIndex > 0 ? (queue[currentIndex - 1] ?? null) : null;
+}
+
 type PlayerState = {
   isPlaying: boolean;
   volume: number;
@@ -43,12 +114,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
       // If switching to a different song, stop and clear previous state first
       if (state.currentTrackId && state.currentTrackId !== song.id) {
-        // Stop and clear previous song's state
-        set({
-          isPlaying: false,
-          currentTime: 0,
-          duration: 0,
-        });
+        set(resetPlaybackState());
       }
 
       // Ensure song is in queue
@@ -64,26 +130,20 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   },
   pause: () => set({ isPlaying: false }),
   stop: () => {
-    // Stop playback and clear all playback state
-    set({
-      isPlaying: false,
-      currentTime: 0,
-      duration: 0,
-    });
+    set(resetPlaybackState());
   },
   setIsPlaying: (isPlaying) => set({ isPlaying }),
   setVolume: (volume) => set({ volume: Math.min(1, Math.max(0, volume)) }),
-  seek: (time) => set({ currentTime: Math.max(0, Math.min(time, 999999)) }),
+  seek: (time) => {
+    const state = get();
+    const maxTime = Math.max(0, state.duration);
+    set({ currentTime: Math.max(0, Math.min(time, maxTime)) });
+  },
   setTrack: (trackId) => {
     const state = get();
     // If switching to a different track, stop and clear previous state first
     if (state.currentTrackId && state.currentTrackId !== trackId) {
-      set({
-        isPlaying: false,
-        currentTime: 0,
-        duration: 0,
-        currentTrackId: trackId,
-      });
+      set(resetPlaybackState(trackId));
     } else {
       set({ currentTrackId: trackId });
     }
@@ -98,12 +158,23 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   },
   removeFromQueue: (songId) => {
     const state = get();
+    const currentIndex = state.queue.findIndex((song) => song.id === songId);
     const newQueue = state.queue.filter((s) => s.id !== songId);
-    set({ queue: newQueue });
-    // If removing the current track, stop playback
+
     if (state.currentTrackId === songId) {
-      set({ currentTrackId: null, isPlaying: false });
+      const replacementTrack =
+        currentIndex >= 0
+          ? (newQueue[Math.min(currentIndex, newQueue.length - 1)] ?? null)
+          : null;
+
+      set({
+        queue: newQueue,
+        ...resetPlaybackState(replacementTrack?.id ?? null),
+      });
+      return;
     }
+
+    set({ queue: newQueue });
   },
   reorderQueue: (oldIndex, newIndex) => {
     const state = get();
@@ -116,122 +187,30 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     const state = get();
     if (!state.currentTrackId || state.queue.length === 0) return;
 
-    const currentIndex = state.queue.findIndex(
-      (s) => s.id === state.currentTrackId,
+    const nextTrack = getNextTrack(
+      state.queue,
+      state.currentTrackId,
+      state.playOrder,
     );
 
-    let nextTrack: Song | null = null;
-
-    switch (state.playOrder) {
-      case "repeat-one":
-        // Stay on current track
-        nextTrack = state.queue[currentIndex];
-        break;
-
-      case "shuffle": {
-        // Pick a random track that's not the current one
-        const availableTracks = state.queue.filter(
-          (s) => s.id !== state.currentTrackId,
-        );
-        if (availableTracks.length > 0) {
-          const randomIndex = Math.floor(
-            Math.random() * availableTracks.length,
-          );
-          nextTrack = availableTracks[randomIndex];
-        }
-        break;
-      }
-
-      case "repeat":
-        // Loop through queue
-        if (currentIndex >= 0) {
-          const nextIndex = (currentIndex + 1) % state.queue.length;
-          nextTrack = state.queue[nextIndex];
-        }
-        break;
-
-      case "sequential":
-      default:
-        // Play next in queue, stop at end if no more tracks
-        if (currentIndex >= 0 && currentIndex < state.queue.length - 1) {
-          nextTrack = state.queue[currentIndex + 1];
-        }
-        break;
-    }
-
     if (nextTrack) {
-      // Stop and clear previous song's state before switching
-      set({
-        isPlaying: false,
-        currentTime: 0,
-        duration: 0,
-        currentTrackId: nextTrack.id,
-      });
+      set(resetPlaybackState(nextTrack.id));
     } else {
-      // No next track available (sequential mode reached end)
-      set({
-        isPlaying: false,
-        currentTime: 0,
-        duration: 0,
-      });
+      set(resetPlaybackState(null));
     }
   },
   playPrevious: () => {
     const state = get();
     if (!state.currentTrackId || state.queue.length === 0) return;
 
-    const currentIndex = state.queue.findIndex(
-      (s) => s.id === state.currentTrackId,
+    const previousTrack = getPreviousTrack(
+      state.queue,
+      state.currentTrackId,
+      state.playOrder,
     );
 
-    let previousTrack: Song | null = null;
-
-    switch (state.playOrder) {
-      case "repeat-one":
-        // Stay on current track
-        previousTrack = state.queue[currentIndex];
-        break;
-
-      case "shuffle": {
-        // Pick a random track that's not the current one
-        const availableTracks = state.queue.filter(
-          (s) => s.id !== state.currentTrackId,
-        );
-        if (availableTracks.length > 0) {
-          const randomIndex = Math.floor(
-            Math.random() * availableTracks.length,
-          );
-          previousTrack = availableTracks[randomIndex];
-        }
-        break;
-      }
-
-      case "repeat":
-        // Loop through queue backwards
-        if (currentIndex >= 0) {
-          const prevIndex =
-            currentIndex === 0 ? state.queue.length - 1 : currentIndex - 1;
-          previousTrack = state.queue[prevIndex];
-        }
-        break;
-
-      case "sequential":
-      default:
-        // Play previous in queue
-        if (currentIndex > 0) {
-          previousTrack = state.queue[currentIndex - 1];
-        }
-        break;
-    }
-
     if (previousTrack) {
-      // Stop and clear previous song's state before switching
-      set({
-        isPlaying: false,
-        currentTime: 0,
-        duration: 0,
-        currentTrackId: previousTrack.id,
-      });
+      set(resetPlaybackState(previousTrack.id));
     }
   },
   cyclePlayOrder: () => {

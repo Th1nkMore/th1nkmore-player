@@ -2,6 +2,7 @@ import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { type NextRequest, NextResponse } from "next/server";
 import { R2_BUCKET_NAME, r2Client } from "@/lib/r2";
+import { buildPublicAssetUrl } from "@/lib/storage";
 
 /**
  * POST /api/admin/sign-url
@@ -27,7 +28,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate a unique key for the file (store in audio/ directory)
-    const key = `audio/${filename}`;
+    const safeFilename = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const uniquePrefix = `${Date.now()}-${crypto.randomUUID()}`;
+    const key = `audio/${uniquePrefix}-${safeFilename}`;
 
     // Create PutObjectCommand
     const command = new PutObjectCommand({
@@ -41,26 +44,13 @@ export async function POST(request: NextRequest) {
       expiresIn: 300,
     });
 
-    // Construct public URL with proper encoding
-    // Split the key into path segments and encode the filename
-    const pathSegments = key.split("/");
-    const encodedSegments = pathSegments.map((segment, index) => {
-      // Don't encode the directory part, only the filename
-      if (index === pathSegments.length - 1) {
-        // Encode the filename (last segment)
-        return encodeURIComponent(segment);
-      }
-      return segment;
-    });
-    const encodedKey = encodedSegments.join("/");
-
-    // If R2_PUBLIC_URL is set (custom domain), use it; otherwise use R2 default URL
-    const baseUrl = process.env.R2_PUBLIC_URL
-      ? process.env.R2_PUBLIC_URL.endsWith("/")
-        ? process.env.R2_PUBLIC_URL.slice(0, -1)
-        : process.env.R2_PUBLIC_URL
-      : `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${R2_BUCKET_NAME}`;
-    const publicUrl = `${baseUrl}/${encodedKey}`;
+    const publicUrl = buildPublicAssetUrl(key);
+    if (!publicUrl) {
+      return NextResponse.json(
+        { error: "Public asset URL is not configured" },
+        { status: 500 },
+      );
+    }
 
     return NextResponse.json({
       uploadUrl,

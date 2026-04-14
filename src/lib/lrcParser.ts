@@ -20,9 +20,9 @@ export type LrcLine = {
 export function parseLrc(lrcString: string): LrcLine[] {
   const lines: LrcLine[] = [];
   const regex = /\[(\d{2}):(\d{2})\.(\d{2})\](.*)/g;
-  let match: RegExpExecArray | null;
+  let match = regex.exec(lrcString);
 
-  while ((match = regex.exec(lrcString)) !== null) {
+  while (match !== null) {
     const minutes = parseInt(match[1], 10);
     const seconds = parseInt(match[2], 10);
     const centiseconds = parseInt(match[3], 10);
@@ -36,6 +36,8 @@ export function parseLrc(lrcString: string): LrcLine[] {
         content,
       });
     }
+
+    match = regex.exec(lrcString);
   }
 
   // Sort by time in case lines are out of order

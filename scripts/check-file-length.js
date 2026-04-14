@@ -5,8 +5,8 @@
  * Ensures no TypeScript/TSX source files exceed 500 lines
  */
 
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 
 const MAX_LINES = 500;
 const ALLOWED_EXTENSIONS = [".ts", ".tsx"];

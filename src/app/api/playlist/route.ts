@@ -1,6 +1,8 @@
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { NextResponse } from "next/server";
 import { R2_BUCKET_NAME, r2Client } from "@/lib/r2";
+import { getPublicPlaylistUrl } from "@/lib/storage";
+import { normalizeLanguage } from "@/lib/utils";
 import type { Song } from "@/types/music";
 
 /**
@@ -76,6 +78,13 @@ async function streamToString(body: unknown): Promise<string> {
   }
 }
 
+function normalizePlaylist(playlist: Song[]): Song[] {
+  return playlist.map((song) => ({
+    ...song,
+    language: normalizeLanguage(song.language),
+  }));
+}
+
 /**
  * GET /api/playlist
  * Public endpoint to fetch the playlist.json from R2
@@ -95,7 +104,7 @@ export async function GET() {
 
         if (response.Body) {
           const bodyString = await streamToString(response.Body);
-          const playlist: Song[] = JSON.parse(bodyString);
+          const playlist = normalizePlaylist(JSON.parse(bodyString) as Song[]);
 
           return NextResponse.json(playlist, {
             headers: {
@@ -111,12 +120,14 @@ export async function GET() {
     }
 
     // Fallback: fetch from external public URL
-    const externalResponse = await fetch(
-      "https://files.th1nkmore.space/playlist.json",
-      {
-        next: { revalidate: 60 }, // Cache for 60 seconds
-      },
-    );
+    const publicPlaylistUrl = getPublicPlaylistUrl();
+    if (!publicPlaylistUrl) {
+      throw new Error("No public playlist URL is configured");
+    }
+
+    const externalResponse = await fetch(publicPlaylistUrl, {
+      next: { revalidate: 60 }, // Cache for 60 seconds
+    });
 
     if (!externalResponse.ok) {
       throw new Error(
@@ -124,7 +135,9 @@ export async function GET() {
       );
     }
 
-    const playlist: Song[] = await externalResponse.json();
+    const playlist = normalizePlaylist(
+      (await externalResponse.json()) as Song[],
+    );
 
     return NextResponse.json(playlist, {
       headers: {

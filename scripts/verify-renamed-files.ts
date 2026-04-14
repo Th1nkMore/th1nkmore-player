@@ -6,64 +6,26 @@
  * Checks that all files and playlist URLs use underscores
  */
 
+import { resolve } from "node:path";
 import {
   GetObjectCommand,
   ListObjectsV2Command,
-  S3Client,
+  type S3Client,
 } from "@aws-sdk/client-s3";
 import { config } from "dotenv";
-import { resolve } from "path";
+import type { Song } from "../src/types/music";
+import {
+  createR2Client,
+  getErrorInfo,
+  getR2Config,
+  streamToString,
+} from "./lib/r2";
 
 // Load environment variables
 config({ path: resolve(process.cwd(), ".env.local") });
 
-const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID!;
-const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID!;
-const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY!;
-const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME!;
-
-const r2Client = new S3Client({
-  region: "auto",
-  endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: R2_ACCESS_KEY_ID,
-    secretAccessKey: R2_SECRET_ACCESS_KEY,
-  },
-});
-
-async function streamToString(body: any): Promise<string> {
-  if (!body) return "";
-  if (typeof body === "string") return body;
-  if (body instanceof Blob) return await body.text();
-
-  if (body instanceof ReadableStream) {
-    const reader = body.getReader();
-    const decoder = new TextDecoder();
-    let result = "";
-
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        result += decoder.decode(value, { stream: true });
-      }
-    } finally {
-      reader.releaseLock();
-    }
-    return result;
-  }
-
-  if (body && typeof body === "object" && typeof body.on === "function") {
-    const chunks: Buffer[] = [];
-    return new Promise((resolve, reject) => {
-      body.on("data", (chunk: Buffer) => chunks.push(chunk));
-      body.on("end", () => resolve(Buffer.concat(chunks).toString("utf-8")));
-      body.on("error", reject);
-    });
-  }
-
-  return String(body);
-}
+const r2Config = getR2Config();
+const r2Client: S3Client = createR2Client(r2Config);
 
 async function verifyRenamedFiles() {
   try {
@@ -71,7 +33,7 @@ async function verifyRenamedFiles() {
 
     // List all audio files
     const listCommand = new ListObjectsV2Command({
-      Bucket: R2_BUCKET_NAME,
+      Bucket: r2Config.bucketName,
       Prefix: "audio/",
     });
 
@@ -80,7 +42,8 @@ async function verifyRenamedFiles() {
 
     const audioFiles = files
       .filter((obj) => obj.Key?.startsWith("audio/"))
-      .map((obj) => obj.Key!.replace("audio/", ""));
+      .map((obj) => obj.Key?.replace("audio/", ""))
+      .filter((key): key is string => typeof key === "string");
 
     // Check for files with spaces
     const filesWithSpaces = audioFiles.filter((f) => f.includes(" "));
@@ -93,7 +56,9 @@ async function verifyRenamedFiles() {
 
     if (filesWithSpaces.length > 0) {
       console.log("❌ Files still with spaces:");
-      filesWithSpaces.forEach((f) => console.log(`   - ${f}`));
+      filesWithSpaces.forEach((f) => {
+        console.log(`   - ${f}`);
+      });
       console.log();
     } else {
       console.log("✅ All files use underscores (no spaces found)\n");
@@ -102,7 +67,7 @@ async function verifyRenamedFiles() {
     // Check playlist
     console.log("📋 Checking playlist URLs...\n");
     const getPlaylistCommand = new GetObjectCommand({
-      Bucket: R2_BUCKET_NAME,
+      Bucket: r2Config.bucketName,
       Key: "playlist.json",
     });
 
@@ -113,12 +78,12 @@ async function verifyRenamedFiles() {
     }
 
     const bodyString = await streamToString(playlistResponse.Body);
-    const playlist = JSON.parse(bodyString);
+    const playlist = JSON.parse(bodyString) as Song[];
 
-    const urlsWithSpaces = playlist.filter((song: any) =>
+    const urlsWithSpaces = playlist.filter((song) =>
       song.audioUrl.includes(" "),
     );
-    const urlsWithUnderscores = playlist.filter((song: any) =>
+    const urlsWithUnderscores = playlist.filter((song) =>
       song.audioUrl.includes("_"),
     );
 
@@ -129,7 +94,7 @@ async function verifyRenamedFiles() {
 
     if (urlsWithSpaces.length > 0) {
       console.log("❌ URLs still with spaces:");
-      urlsWithSpaces.forEach((song: any) => {
+      urlsWithSpaces.forEach((song) => {
         console.log(`   - ${song.title}: ${song.audioUrl}`);
       });
       console.log();
@@ -147,8 +112,9 @@ async function verifyRenamedFiles() {
         "⚠️  Verification incomplete. Some files/URLs still have spaces.\n",
       );
     }
-  } catch (error: any) {
-    console.error("❌ Error:", error.message);
+  } catch (error) {
+    const errorInfo = getErrorInfo(error);
+    console.error("❌ Error:", errorInfo.message);
     process.exit(1);
   }
 }

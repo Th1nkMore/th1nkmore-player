@@ -147,12 +147,12 @@ export function WaveformMinimap({
     generateWaveform(canvas, songId, effectiveDuration);
   }, [songId, effectiveDuration]);
 
-  const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleSeek = (clientX: number) => {
     const canvas = canvasRef.current;
     if (!canvas || effectiveDuration === 0) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
+    const x = clientX - rect.left;
     const percentage = Math.max(0, Math.min(1, x / rect.width));
     const seekTime = percentage * effectiveDuration;
     seek(seekTime);
@@ -168,14 +168,14 @@ export function WaveformMinimap({
         className,
       )}
     >
-      <canvas
-        ref={canvasRef}
-        onClick={handleClick}
-        className="h-24 w-full cursor-pointer"
-        role="button"
+      <button
+        type="button"
+        onClick={(e) => handleSeek(e.clientX)}
+        className="block h-24 w-full cursor-pointer"
         aria-label="Waveform - click to seek"
-        tabIndex={0}
-      />
+      >
+        <canvas ref={canvasRef} className="h-24 w-full" />
+      </button>
       {/* Play Head Line */}
       {effectiveDuration > 0 && (
         <div

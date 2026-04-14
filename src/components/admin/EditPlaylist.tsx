@@ -86,7 +86,7 @@ function SongItem({
             >
               <option value="en">en</option>
               <option value="zh">zh</option>
-              <option value="jp">jp</option>
+              <option value="ja">ja</option>
             </select>
           </div>
         </div>
