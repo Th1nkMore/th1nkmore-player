@@ -18,7 +18,7 @@ describe("admin login route", () => {
       },
     });
 
-    const response = await POST(request);
+    const response = await POST(request as never);
 
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toEqual({
@@ -39,7 +39,7 @@ describe("admin login route", () => {
       },
     });
 
-    const response = await POST(request);
+    const response = await POST(request as never);
 
     expect(response.status).toBe(401);
     await expect(response.json()).resolves.toEqual({
@@ -60,7 +60,7 @@ describe("admin login route", () => {
       },
     });
 
-    const response = await POST(request);
+    const response = await POST(request as never);
     const setCookie = response.headers.get("set-cookie");
 
     expect(response.status).toBe(200);

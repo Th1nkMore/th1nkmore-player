@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { verifyAdminPassword } from "@/lib/admin-password";
 import { generateAuthToken, setAdminCookieInResponse } from "@/lib/auth";
 
@@ -8,7 +8,7 @@ function getErrorMessage(error: unknown): string {
     : "Unknown authentication error";
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { password } = body as { password?: unknown };

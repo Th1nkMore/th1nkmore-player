@@ -7,7 +7,7 @@ async function importRoute() {
 describe("admin logout route", () => {
   it("clears the admin session cookie", async () => {
     const { POST } = await importRoute();
-    const response = await POST();
+    const response = await POST(new Request("http://localhost") as never);
     const setCookie = response.headers.get("set-cookie");
 
     expect(response.status).toBe(200);
