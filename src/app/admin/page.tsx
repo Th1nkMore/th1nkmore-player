@@ -2,10 +2,16 @@
 
 import * as mm from "music-metadata-browser";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { AdminRecordingWorkspace } from "@/components/admin/AdminRecordingWorkspace";
 import { EditPlaylist } from "@/components/admin/EditPlaylist";
 import { TerminalOutput } from "@/components/admin/TerminalOutput";
 import { UploadForm } from "@/components/admin/UploadForm";
-import { createSongFromFormData } from "@/lib/admin-utils";
+import {
+  createSongFromFormData,
+  fetchAdminPlaylist,
+  saveAdminPlaylist,
+  uploadAudioFileToR2,
+} from "@/lib/admin-utils";
 import { useAdminLogs } from "@/lib/hooks/useAdminLogs";
 import {
   createEmptySongDraft,
@@ -15,7 +21,7 @@ import {
 import { normalizeLanguage } from "@/lib/utils";
 import type { Song } from "@/types/music";
 
-type Tab = "upload" | "edit";
+type Tab = "upload" | "record" | "edit";
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<Tab>("upload");
@@ -108,16 +114,7 @@ export default function AdminPage() {
 
     try {
       addLog("> Saving playlist...");
-      const response = await fetch("/api/admin/playlist", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(playlist),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save playlist");
-      }
-
+      await saveAdminPlaylist(playlist);
       addLog("> Playlist saved successfully!");
       addLog(`> Updated ${playlist.length} song(s)`);
     } catch (error) {
@@ -264,42 +261,6 @@ export default function AdminPage() {
     }
   };
 
-  const uploadFileToR2 = async (file: File) => {
-    addLog("> Requesting upload URL...");
-    const signUrlResponse = await fetch("/api/admin/sign-url", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        filename: file.name,
-        contentType: file.type || "audio/mpeg",
-      }),
-    });
-
-    if (!signUrlResponse.ok) {
-      const error = await signUrlResponse.json();
-      throw new Error(error.error || "Failed to get upload URL");
-    }
-
-    const { uploadUrl, publicUrl, key } = await signUrlResponse.json();
-    addLog(`> Upload URL generated: ${key}`);
-
-    addLog("> Uploading audio binary...");
-    const uploadResponse = await fetch(uploadUrl, {
-      method: "PUT",
-      body: file,
-      headers: {
-        "Content-Type": file.type || "audio/mpeg",
-      },
-    });
-
-    if (!uploadResponse.ok) {
-      throw new Error("Failed to upload file to R2");
-    }
-
-    addLog("> Upload complete");
-    return publicUrl;
-  };
-
   const updatePlaylistWithNewSong = async (
     newSong: Song,
     currentPlaylist?: Song[],
@@ -307,11 +268,7 @@ export default function AdminPage() {
     let playlistToUpdate = currentPlaylist;
     if (!playlistToUpdate) {
       addLog("> Fetching current manifest...");
-      const playlistResponse = await fetch("/api/admin/playlist");
-      if (!playlistResponse.ok) {
-        throw new Error("Failed to fetch playlist");
-      }
-      playlistToUpdate = await playlistResponse.json();
+      playlistToUpdate = await fetchAdminPlaylist();
     }
 
     const songs = playlistToUpdate ?? [];
@@ -325,17 +282,7 @@ export default function AdminPage() {
 
     const updatedPlaylist = [...normalizedPlaylist, newSong];
     addLog("> Updating manifest...");
-
-    const updateResponse = await fetch("/api/admin/playlist", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updatedPlaylist),
-    });
-
-    if (!updateResponse.ok) {
-      throw new Error("Failed to update playlist");
-    }
-
+    await saveAdminPlaylist(updatedPlaylist);
     addLog("> Manifest updated successfully");
   };
 
@@ -367,12 +314,8 @@ export default function AdminPage() {
       addLog("> Authenticating...");
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      const publicUrl = await uploadFileToR2(audioFile);
-      const currentPlaylistResponse = await fetch("/api/admin/playlist");
-      if (!currentPlaylistResponse.ok) {
-        throw new Error("Failed to fetch playlist");
-      }
-      const currentPlaylist: Song[] = await currentPlaylistResponse.json();
+      const publicUrl = await uploadAudioFileToR2(audioFile, addLog);
+      const currentPlaylist = await fetchAdminPlaylist();
       const newSong = createSongFromFormData(
         title,
         artist,
@@ -399,6 +342,19 @@ export default function AdminPage() {
     } finally {
       setIsDeploying(false);
     }
+  };
+
+  const handleUseRecordingAsUploadSource = (
+    recordedFile: File,
+    durationSeconds: number,
+  ) => {
+    setAudioFile(recordedFile);
+    setFormData({
+      ...formData,
+      duration: durationSeconds,
+      sourceType: "recording",
+    });
+    setActiveTab("upload");
   };
 
   return (
@@ -428,6 +384,17 @@ export default function AdminPage() {
             }`}
           >
             Upload New
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("record")}
+            className={`px-4 py-2 text-[11px] font-semibold uppercase tracking-wide transition-colors ${
+              activeTab === "record"
+                ? "text-gray-300 border-b-2 border-gray-400"
+                : "text-gray-500 hover:text-gray-400"
+            }`}
+          >
+            Record Audio
           </button>
           <button
             type="button"
@@ -461,6 +428,11 @@ export default function AdminPage() {
               handleFetchLyrics={handleFetchLyrics}
               handleDeploy={handleDeploy}
             />
+          ) : activeTab === "record" ? (
+            <AdminRecordingWorkspace
+              addLog={addLog}
+              onUseRecordedFile={handleUseRecordingAsUploadSource}
+            />
           ) : (
             <EditPlaylist
               playlist={playlist}
@@ -483,7 +455,7 @@ export default function AdminPage() {
         </div>
 
         {/* Right Column - Terminal Output */}
-        <TerminalOutput logs={logs} isDeploying={isDeploying} />
+        <TerminalOutput logs={logs} isBusy={isDeploying} />
       </div>
     </div>
   );
