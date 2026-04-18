@@ -1,6 +1,13 @@
 "use client";
 
-import { Loader2, Mic, RotateCcw, Square, Upload } from "lucide-react";
+import {
+  Download,
+  Loader2,
+  Mic,
+  RotateCcw,
+  Square,
+  Upload,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { RecordingState } from "@/lib/hooks/useAudioRecorder";
@@ -8,11 +15,13 @@ import type { RecordingState } from "@/lib/hooks/useAudioRecorder";
 type RecordingPanelProps = {
   elapsedSeconds: number;
   isBusy: boolean;
+  isExporting: boolean;
   isSupported: boolean;
   mimeType: string;
   previewUrl: string | null;
   recordedBlob: Blob | null;
   recordingState: RecordingState;
+  onExportMp3: () => void;
   onReset: () => void;
   onStart: () => void;
   onStop: () => void;
@@ -28,11 +37,13 @@ function formatDuration(totalSeconds: number) {
 export function RecordingPanel({
   elapsedSeconds,
   isBusy,
+  isExporting,
   isSupported,
   mimeType,
   previewUrl,
   recordedBlob,
   recordingState,
+  onExportMp3,
   onReset,
   onStart,
   onStop,
@@ -113,6 +124,20 @@ export function RecordingPanel({
           >
             <Upload className="h-3 w-3" />
             Use In Upload
+          </Button>
+          <Button
+            type="button"
+            onClick={onExportMp3}
+            disabled={!recordedBlob || isExporting}
+            variant="outline"
+            className="font-mono"
+          >
+            {isExporting ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Download className="h-3 w-3" />
+            )}
+            Export MP3
           </Button>
         </div>
 
