@@ -65,6 +65,7 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
     handleSeek,
   } = usePlaybackControls();
   const t = useTranslations("terminal");
+  const tControls = useTranslations("controls");
 
   const [logs, setLogs] = useState<LogEntry[]>([
     {
@@ -230,7 +231,7 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
             type="button"
             onClick={onClose}
             className="p-1.5 mr-1 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
-            aria-label="Close terminal"
+            aria-label={tControls("closeTerminal")}
           >
             <X className="h-3.5 w-3.5" strokeWidth={2} />
           </button>
@@ -270,7 +271,9 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
                 handleSeekWithLog(percent * duration);
               }}
               className="w-full h-1.5 bg-border rounded-full overflow-hidden cursor-pointer group"
-              aria-label={`Progress: ${Math.round(percentage)}%`}
+              aria-label={tControls("progressPercent", {
+                percent: Math.round(percentage),
+              })}
             >
               <div
                 className="h-full bg-muted-foreground group-hover:bg-foreground transition-colors"
@@ -289,7 +292,7 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
               type="button"
               onClick={handlePreviousWithLog}
               className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
-              aria-label="Previous"
+              aria-label={tControls("previous")}
             >
               <SkipBack className="h-3.5 w-3.5" />
             </button>
@@ -297,7 +300,7 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
               type="button"
               onClick={handlePlayPauseWithLog}
               className="p-2 text-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
-              aria-label={isPlaying ? "Pause" : "Play"}
+              aria-label={isPlaying ? tControls("pause") : tControls("play")}
             >
               {isPlaying ? (
                 <Pause className="h-4 w-4" />
@@ -309,7 +312,7 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
               type="button"
               onClick={handleNextWithLog}
               className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
-              aria-label="Next"
+              aria-label={tControls("next")}
             >
               <SkipForward className="h-3.5 w-3.5" />
             </button>
@@ -342,7 +345,7 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
               type="button"
               onClick={() => handleVolumeChange(Math.max(0, volume - 0.1))}
               className="p-0.5 text-muted-foreground hover:text-foreground rounded transition-colors"
-              aria-label="Decrease volume"
+              aria-label={tControls("decreaseVolume")}
             >
               <Minus className="h-3 w-3" />
             </button>
@@ -355,7 +358,9 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
                 handleVolumeChange(percent);
               }}
               className="flex-1 h-1.5 bg-border rounded-full overflow-hidden cursor-pointer group"
-              aria-label={`Volume: ${Math.round(volume * 100)}%`}
+              aria-label={tControls("volumePercent", {
+                percent: Math.round(volume * 100),
+              })}
             >
               <div
                 className="h-full bg-muted-foreground/60 group-hover:bg-muted-foreground transition-colors"
@@ -366,7 +371,7 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
               type="button"
               onClick={() => handleVolumeChange(Math.min(1, volume + 0.1))}
               className="p-0.5 text-muted-foreground hover:text-foreground rounded transition-colors"
-              aria-label="Increase volume"
+              aria-label={tControls("increaseVolume")}
             >
               <Plus className="h-3 w-3" />
             </button>

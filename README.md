@@ -56,7 +56,7 @@ pnpm dev
 App routes:
 
 - `/en`, `/zh`, `/ja`, `/de`: public app
-- `/admin?token=...`: admin panel via magic link
+- `/admin/login`: admin sign-in page
 
 ## Environment Variables
 
@@ -64,7 +64,7 @@ Create `.env.local` with:
 
 ```env
 ADMIN_SECRET=your-secret-key-here-minimum-32-characters-recommended
-NEXT_PUBLIC_BASE_URL=http://localhost:3000
+ADMIN_PASSWORD=choose-a-long-random-admin-password
 NEXT_PUBLIC_ASSET_BASE_URL=https://your-public-assets-domain.example.com
 R2_ACCOUNT_ID=your-r2-account-id
 R2_ACCESS_KEY_ID=your-r2-access-key-id
@@ -88,16 +88,16 @@ pnpm build
 pnpm start
 pnpm lint
 pnpm type-check
-pnpm gen-token
 ```
 
 ## Admin Workflow
 
-1. Run `pnpm gen-token` to generate an admin magic link.
-2. Open `/admin?token=...`.
-3. Upload an audio file to R2 with a signed URL.
-4. Append or edit entries in the playlist source.
-5. Optionally import LRC lyrics from a NetEase Music link.
+1. Set `ADMIN_SECRET` and `ADMIN_PASSWORD` in `.env.local`.
+2. Open `/admin/login`.
+3. Sign in with the configured admin password.
+4. Upload an audio file to R2 with a signed URL.
+5. Append or edit entries in the playlist source.
+6. Optionally import LRC lyrics from a NetEase Music link.
 
 ## Branching Workflow
 

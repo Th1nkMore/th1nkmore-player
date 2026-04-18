@@ -7,8 +7,8 @@ export type ScreenMode = "mobile-portrait" | "mobile-landscape" | "desktop";
 /**
  * Hook to detect the current screen mode based on viewport dimensions
  *
- * - desktop: width >= 768 && height >= 500
- * - mobile-landscape: width >= 480 && height < 500 (landscape phone)
+ * - desktop: width >= 1024, or large/tall viewports that can sustain 3 panels
+ * - mobile-landscape: medium-width screens in landscape or short viewports
  * - mobile-portrait: other cases (portrait phone/small screens)
  */
 export function useScreenMode(): ScreenMode {
@@ -18,15 +18,19 @@ export function useScreenMode(): ScreenMode {
     const checkScreenMode = () => {
       const width = window.innerWidth;
       const height = window.innerHeight;
+      const isLandscape = width > height;
 
-      // Priority 1: Width-based Desktop (matches Tailwind 'md' breakpoint)
-      if (width >= 768) {
+      // Reserve the three-panel desktop layout for viewports that can keep
+      // content readable without crushing side panels into each other.
+      if (width >= 1024 || (width >= 900 && height >= 700)) {
         setScreenMode("desktop");
-      } else if (width >= 480 && height < 500) {
-        // Priority 2: Landscape phone (wider than tall, limited height)
+      } else if (
+        (width >= 640 && isLandscape) ||
+        (width >= 480 && height < 560)
+      ) {
+        // Landscape phones and smaller tablets should stay in a simplified layout.
         setScreenMode("mobile-landscape");
       } else {
-        // Default: Portrait phone / small screens
         setScreenMode("mobile-portrait");
       }
     };

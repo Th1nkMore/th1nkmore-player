@@ -35,6 +35,7 @@ export function SongItem({
   onProperties,
 }: SongItemProps) {
   const t = useTranslations("fileExplorer");
+  const tControls = useTranslations("controls");
 
   return (
     <motion.div
@@ -67,8 +68,8 @@ export function SongItem({
             style={{ paddingLeft: "36px" }}
             aria-label={
               isTouchDevice
-                ? `Open ${title}`
-                : `Open ${title}. Double click to add to queue.`
+                ? tControls("openTrack", { title })
+                : tControls("openTrackWithHint", { title })
             }
           >
             <FileAudio className="h-3 w-3 shrink-0" aria-hidden="true" />
@@ -116,7 +117,7 @@ export function SongItem({
             onAddToQueue();
           }}
           className="shrink-0 p-1.5 mr-1 text-muted-foreground/60 hover:text-primary hover:bg-accent rounded transition-colors active:bg-accent"
-          aria-label={`Add ${title} to queue`}
+          aria-label={tControls("addTrackToQueue", { title })}
           whileTap={{ scale: 0.9 }}
         >
           <Plus className="h-3.5 w-3.5" />

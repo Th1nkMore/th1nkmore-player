@@ -12,7 +12,7 @@ function getSecret() {
 }
 
 const COOKIE_NAME = "admin_session";
-const COOKIE_MAX_AGE = 60 * 60; // 1 hour in seconds
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days in seconds
 
 /**
  * Verifies a JWT token using the ADMIN_SECRET
@@ -24,7 +24,9 @@ export async function verifyAuthToken(
 ): Promise<{ sub: string; exp: number } | null> {
   try {
     const secret = getSecret();
-    const { payload } = await jwtVerify(token, secret);
+    const { payload } = await jwtVerify(token, secret, {
+      algorithms: ["HS256"],
+    });
     return payload as { sub: string; exp: number };
   } catch (error) {
     console.error("Token verification failed:", error);
@@ -54,10 +56,17 @@ export function setAdminCookieInResponse(
   response.cookies.set(COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: "strict",
     maxAge: COOKIE_MAX_AGE,
     path: "/",
   });
+  return response;
+}
+
+export function clearAdminCookieInResponse(
+  response: NextResponse,
+): NextResponse {
+  response.cookies.delete(COOKIE_NAME);
   return response;
 }
 
@@ -70,7 +79,7 @@ export async function setUserCookie(token: string): Promise<void> {
   cookieStore.set(COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: "strict",
     maxAge: COOKIE_MAX_AGE,
     path: "/",
   });

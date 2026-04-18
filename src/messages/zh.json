@@ -81,10 +81,40 @@
     "bootingSystem": "系统启动中...",
     "loadingPlaylist": "加载播放列表..."
   },
+  "layout": {
+    "openMenu": "打开菜单",
+    "openInspector": "打开检查器",
+    "hideTerminal": "隐藏终端",
+    "showTerminal": "显示终端",
+    "fileExplorer": "文件浏览器",
+    "inspector": "检查器",
+    "mobileNavigation": "移动端导航"
+  },
   "mobileNav": {
     "lyrics": "歌词",
     "songs": "歌曲",
     "settings": "设置"
+  },
+  "controls": {
+    "previous": "上一首",
+    "next": "下一首",
+    "play": "播放",
+    "pause": "暂停",
+    "playOrder": "播放顺序",
+    "decreaseVolume": "降低音量",
+    "increaseVolume": "提高音量",
+    "closeTerminal": "关闭终端",
+    "progressPercent": "进度：{percent}%",
+    "volumePercent": "音量：{percent}%",
+    "switchToTrack": "切换到 {title}",
+    "closeTrack": "关闭 {title}",
+    "playTrack": "播放 {title}",
+    "removeTrackFromQueue": "将 {title} 从队列移除",
+    "addTrackToQueue": "将 {title} 添加到队列",
+    "openTrack": "打开 {title}",
+    "openTrackWithHint": "打开 {title}。双击可添加到队列。",
+    "goToTime": "跳转到 {time}",
+    "seekWaveform": "波形图，点击后跳转播放位置"
   },
   "player": {
     "nowPlaying": "正在播放",

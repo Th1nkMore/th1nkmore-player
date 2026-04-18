@@ -46,6 +46,7 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
     usePlaybackControls();
   const t = useTranslations("terminal");
   const tPlayer = useTranslations("player");
+  const tControls = useTranslations("controls");
 
   const currentTrack = useMemo(
     () => (currentTrackId ? getFileById(currentTrackId) : null),
@@ -73,8 +74,8 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="pb-[env(safe-area-inset-bottom)]">
-        <div className="mx-auto w-full max-w-md px-6 py-4">
+      <DrawerContent className="max-h-[min(92dvh,42rem)] pb-[env(safe-area-inset-bottom)]">
+        <div className="mx-auto w-full max-w-lg px-4 py-4 sm:px-6">
           {/* Track Info */}
           <div className="text-center mb-6">
             <DrawerTitle className="text-base font-semibold text-foreground truncate">
@@ -106,7 +107,7 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
               type="button"
               onClick={handlePrevious}
               className="p-2.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-colors"
-              aria-label="Previous"
+              aria-label={tControls("previous")}
             >
               <SkipBack className="h-5 w-5" />
             </button>
@@ -114,7 +115,7 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
               type="button"
               onClick={handlePlayPause}
               className="p-4 bg-foreground text-background rounded-full hover:bg-foreground/90 transition-colors"
-              aria-label={isPlaying ? "Pause" : "Play"}
+              aria-label={isPlaying ? tControls("pause") : tControls("play")}
             >
               {isPlaying ? (
                 <Pause className="h-6 w-6" />
@@ -126,19 +127,19 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
               type="button"
               onClick={handleNext}
               className="p-2.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-colors"
-              aria-label="Next"
+              aria-label={tControls("next")}
             >
               <SkipForward className="h-5 w-5" />
             </button>
           </div>
 
           {/* Play Order + Volume */}
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             {/* Play Order */}
             <button
               type="button"
               onClick={cyclePlayOrder}
-              className="flex items-center gap-2 px-3 py-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
+              className="flex items-center justify-center gap-2 rounded-md px-3 py-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:justify-start"
               aria-label={playOrderText}
             >
               <PlayOrderIcon className="h-4 w-4" />
@@ -146,14 +147,14 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
             </button>
 
             {/* Volume */}
-            <div className="flex items-center gap-1.5 flex-1 max-w-[180px]">
+            <div className="flex w-full min-w-0 items-center gap-1.5 sm:max-w-[220px]">
               <button
                 type="button"
                 onClick={() => setVolume(Math.max(0, volume - 0.1))}
                 className={cn(
                   "p-1 text-muted-foreground hover:text-foreground rounded transition-colors",
                 )}
-                aria-label="Decrease volume"
+                aria-label={tControls("decreaseVolume")}
               >
                 <Minus className="h-3 w-3" />
               </button>
@@ -172,7 +173,7 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
                 type="button"
                 onClick={() => setVolume(Math.min(1, volume + 0.1))}
                 className="p-1 text-muted-foreground hover:text-foreground rounded transition-colors"
-                aria-label="Increase volume"
+                aria-label={tControls("increaseVolume")}
               >
                 <Plus className="h-3 w-3" />
               </button>

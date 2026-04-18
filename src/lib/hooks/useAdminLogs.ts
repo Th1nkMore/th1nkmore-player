@@ -1,7 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { Song } from "@/types/music";
+import { useCallback, useRef, useState } from "react";
 
 type LogEntry = {
   id: string;

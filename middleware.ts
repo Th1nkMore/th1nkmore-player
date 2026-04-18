@@ -15,12 +15,26 @@ function isAdminApiRoute(pathname: string): boolean {
   return pathname.startsWith("/api/admin");
 }
 
+function isAdminAuthBypassRoute(pathname: string): boolean {
+  return (
+    pathname === "/admin/login" ||
+    pathname === "/api/admin/login" ||
+    pathname === "/api/admin/logout"
+  );
+}
+
 function getUnauthorizedResponse(request: NextRequest): NextResponse {
   if (isAdminApiRoute(request.nextUrl.pathname)) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  return NextResponse.redirect(new URL("/", request.url));
+  const loginUrl = new URL("/admin/login", request.url);
+  const nextPath = `${request.nextUrl.pathname}${request.nextUrl.search}`;
+  if (nextPath !== "/admin/login") {
+    loginUrl.searchParams.set("next", nextPath);
+  }
+
+  return NextResponse.redirect(loginUrl);
 }
 
 function getUnconfiguredResponse(request: NextRequest): NextResponse {
@@ -34,24 +48,24 @@ function getUnconfiguredResponse(request: NextRequest): NextResponse {
 }
 
 async function handleAdminRequest(request: NextRequest): Promise<NextResponse> {
-  const {
-    verifyAuthToken,
-    getAdminCookieFromRequest,
-    setAdminCookieInResponse,
-  } = await import("./src/lib/auth");
-  const { searchParams } = request.nextUrl;
+  const { verifyAuthToken, getAdminCookieFromRequest } = await import(
+    "./src/lib/auth"
+  );
+  const { pathname } = request.nextUrl;
+  const isBypassRoute = isAdminAuthBypassRoute(pathname);
 
   const cookieToken = getAdminCookieFromRequest(request);
-  if (cookieToken && (await verifyAuthToken(cookieToken))) {
+  const session = cookieToken ? await verifyAuthToken(cookieToken) : null;
+
+  if (isBypassRoute) {
+    if (pathname === "/admin/login" && session) {
+      return NextResponse.redirect(new URL("/admin", request.url));
+    }
     return NextResponse.next();
   }
 
-  const queryToken = searchParams.get("token");
-  if (queryToken && (await verifyAuthToken(queryToken))) {
-    const url = request.nextUrl.clone();
-    url.searchParams.delete("token");
-    const response = NextResponse.redirect(url);
-    return setAdminCookieInResponse(response, queryToken);
+  if (session) {
+    return NextResponse.next();
   }
 
   return getUnauthorizedResponse(request);

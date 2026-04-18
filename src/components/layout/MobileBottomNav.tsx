@@ -18,6 +18,7 @@ export function MobileBottomNav({
   className,
 }: MobileBottomNavProps) {
   const t = useTranslations("mobileNav");
+  const tLayout = useTranslations("layout");
 
   const tabs: Array<{ id: MobileTab; icon: typeof Music2; label: string }> = [
     { id: "lyrics", icon: Music2, label: t("lyrics") },
@@ -28,10 +29,10 @@ export function MobileBottomNav({
   return (
     <nav
       className={cn(
-        "flex items-center justify-around bg-sidebar border-t border-border pb-[env(safe-area-inset-bottom)]",
+        "flex items-center justify-around border-t border-border bg-sidebar pb-[env(safe-area-inset-bottom)]",
         className,
       )}
-      aria-label="Mobile navigation"
+      aria-label={tLayout("mobileNavigation")}
     >
       {tabs.map(({ id, icon: Icon, label }) => (
         <button
@@ -41,14 +42,14 @@ export function MobileBottomNav({
           aria-selected={activeTab === id}
           onClick={() => onTabChange(id)}
           className={cn(
-            "flex-1 flex flex-col items-center gap-1 py-2 px-3 transition-colors",
+            "flex min-w-0 flex-1 flex-col items-center gap-1 px-2 py-2 transition-colors sm:px-3",
             activeTab === id
               ? "text-primary bg-accent/30"
               : "text-muted-foreground hover:text-foreground hover:bg-accent/20",
           )}
         >
           <Icon className="h-5 w-5" aria-hidden="true" />
-          <span className="text-[10px] font-medium">{label}</span>
+          <span className="truncate text-[10px] font-medium">{label}</span>
         </button>
       ))}
     </nav>

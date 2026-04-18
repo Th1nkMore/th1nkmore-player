@@ -7,9 +7,7 @@ Add the following variables to your `.env.local` file:
 ```env
 # Admin Authentication
 ADMIN_SECRET=your-secret-key-here-minimum-32-characters-recommended
-
-# Base URL for magic links (optional, defaults to http://localhost:3000)
-NEXT_PUBLIC_BASE_URL=http://localhost:3000
+ADMIN_PASSWORD=choose-a-long-random-admin-password
 NEXT_PUBLIC_ASSET_BASE_URL=https://your-public-assets-domain.example.com
 
 # Cloudflare R2 Configuration
@@ -21,26 +19,23 @@ R2_PUBLIC_URL=https://your-public-assets-domain.example.com
 PLAYLIST_PUBLIC_URL=https://your-public-assets-domain.example.com
 ```
 
-## Generating Admin Magic Links
+## Signing In
 
-To generate a magic link for admin access:
+To access the admin area:
 
 ```bash
-pnpm gen-token
+open http://localhost:3000/admin/login
 ```
 
-This will:
-1. Read `ADMIN_SECRET` and `NEXT_PUBLIC_BASE_URL` from `.env.local`
-2. Generate a JWT token valid for 1 hour
-3. Print a magic link in the format: `${BASE_URL}/admin?token=${jwt}`
+Then sign in with the value configured in `ADMIN_PASSWORD`.
 
 ## How It Works
 
-1. **Token Generation**: Run `pnpm gen-token` to generate a signed JWT token
-2. **Magic Link**: Click the generated link or visit `/admin?token=<jwt>`
-3. **Middleware Verification**: The middleware verifies the JWT token
-4. **Cookie Setting**: If valid, a secure `admin_session` cookie is set
-5. **Access Granted**: Subsequent requests to `/admin` or `/api/admin` are authenticated via the cookie
+1. **Password Check**: Submit the admin password to `/api/admin/login`
+2. **Session Signing**: The server signs a JWT session with `ADMIN_SECRET`
+3. **Cookie Setting**: A secure `admin_session` cookie is set
+4. **Middleware Verification**: The middleware verifies the session cookie
+5. **Access Granted**: Subsequent requests to `/admin` or protected `/api/admin` routes are authenticated via the cookie
 
 ## Storage Notes
 
@@ -56,7 +51,8 @@ The following routes are protected by authentication:
 
 ## Security Notes
 
-- Tokens expire after 1 hour
-- Cookies are `httpOnly` and `secure` (in production)
+- Sessions expire after 7 days
+- Cookies are `httpOnly`, `sameSite=strict`, and `secure` (in production)
 - The `ADMIN_SECRET` should be a strong, random string (minimum 32 characters recommended)
+- The `ADMIN_PASSWORD` should be a long random password and should not be reused elsewhere
 - Never commit `.env.local` to version control
