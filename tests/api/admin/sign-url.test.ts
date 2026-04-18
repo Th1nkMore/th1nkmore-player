@@ -97,10 +97,123 @@ describe("admin sign-url route", () => {
     expect(response.status).toBe(200);
     expect(getSignedUrlMock).toHaveBeenCalledOnce();
     expect(body).toEqual({
+      assetKind: "audio",
       uploadUrl: "https://upload.example.com/presigned",
       publicUrl:
         "https://cdn.example.com/audio/1717171717171-uuid-123-my_song_.mp3",
       key: "audio/1717171717171-uuid-123-my_song_.mp3",
+    });
+  });
+
+  it("supports recording uploads with a dedicated key prefix", async () => {
+    getSignedUrlMock.mockResolvedValueOnce(
+      "https://upload.example.com/presigned",
+    );
+    buildPublicAssetUrlMock.mockReturnValueOnce(
+      "https://cdn.example.com/recordings/1717171717171-uuid-123-session.webm",
+    );
+
+    const { POST } = await importRoute();
+    const request = new Request("http://localhost/api/admin/sign-url", {
+      method: "POST",
+      body: JSON.stringify({
+        assetKind: "recording",
+        filename: "session.webm",
+        contentType: "audio/webm",
+      }),
+      headers: {
+        "content-type": "application/json",
+      },
+    });
+
+    const response = await POST(request as never);
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({
+      assetKind: "recording",
+      uploadUrl: "https://upload.example.com/presigned",
+      publicUrl:
+        "https://cdn.example.com/recordings/1717171717171-uuid-123-session.webm",
+      key: "recordings/1717171717171-uuid-123-session.webm",
+    });
+  });
+
+  it("supports accompaniment uploads with a dedicated key prefix", async () => {
+    getSignedUrlMock.mockResolvedValueOnce(
+      "https://upload.example.com/presigned",
+    );
+    buildPublicAssetUrlMock.mockReturnValueOnce(
+      "https://cdn.example.com/accompaniments/1717171717171-uuid-123-guide.mp3",
+    );
+
+    const { POST } = await importRoute();
+    const request = new Request("http://localhost/api/admin/sign-url", {
+      method: "POST",
+      body: JSON.stringify({
+        assetKind: "accompaniment",
+        filename: "guide.mp3",
+        contentType: "audio/mpeg",
+      }),
+      headers: {
+        "content-type": "application/json",
+      },
+    });
+
+    const response = await POST(request as never);
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({
+      assetKind: "accompaniment",
+      uploadUrl: "https://upload.example.com/presigned",
+      publicUrl:
+        "https://cdn.example.com/accompaniments/1717171717171-uuid-123-guide.mp3",
+      key: "accompaniments/1717171717171-uuid-123-guide.mp3",
+    });
+  });
+
+  it("rejects non-audio content types", async () => {
+    const { POST } = await importRoute();
+    const request = new Request("http://localhost/api/admin/sign-url", {
+      method: "POST",
+      body: JSON.stringify({
+        filename: "track.txt",
+        contentType: "text/plain",
+      }),
+      headers: {
+        "content-type": "application/json",
+      },
+    });
+
+    const response = await POST(request as never);
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "contentType must be an audio/* mime type",
+    });
+  });
+
+  it("rejects unsupported asset kinds", async () => {
+    const { POST } = await importRoute();
+    const request = new Request("http://localhost/api/admin/sign-url", {
+      method: "POST",
+      body: JSON.stringify({
+        assetKind: "video",
+        filename: "track.mp3",
+        contentType: "audio/mpeg",
+      }),
+      headers: {
+        "content-type": "application/json",
+      },
+    });
+
+    const response = await POST(request as never);
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error:
+        "assetKind must be one of: accompaniment, audio, recording, export",
     });
   });
 

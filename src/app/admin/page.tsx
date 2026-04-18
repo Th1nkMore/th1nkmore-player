@@ -2,15 +2,30 @@
 
 import * as mm from "music-metadata-browser";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { AdminRecordingWorkspace } from "@/components/admin/AdminRecordingWorkspace";
 import { EditPlaylist } from "@/components/admin/EditPlaylist";
 import { TerminalOutput } from "@/components/admin/TerminalOutput";
 import { UploadForm } from "@/components/admin/UploadForm";
-import { createSongFromFormData } from "@/lib/admin-utils";
+import {
+  fetchLyricsFromAdmin,
+  mergeFetchedSongInfo,
+  persistSongAssetToLibrary,
+  saveAdminPlaylist,
+} from "@/lib/admin-utils";
 import { useAdminLogs } from "@/lib/hooks/useAdminLogs";
-import { normalizeLanguage } from "@/lib/utils";
+import {
+  convertPlainLyricsWorkflow,
+  describeLyrics,
+  normalizeLyricsWorkflow,
+} from "@/lib/lyrics";
+import {
+  createEmptySongDraft,
+  normalizePlaylistSongs,
+  normalizeSong,
+} from "@/lib/song";
 import type { Song } from "@/types/music";
 
-type Tab = "upload" | "edit";
+type Tab = "upload" | "record" | "edit";
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<Tab>("upload");
@@ -20,15 +35,7 @@ export default function AdminPage() {
   const [isLoadingPlaylist, setIsLoadingPlaylist] = useState(false);
   const [isSavingPlaylist, setIsSavingPlaylist] = useState(false);
 
-  const [formData, setFormData] = useState<Partial<Song>>({
-    title: "",
-    artist: "",
-    album: "",
-    duration: 0,
-    lyrics: "",
-    language: "en",
-    metadata: {},
-  });
+  const [formData, setFormData] = useState<Partial<Song>>(createEmptySongDraft);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const { logs, addLog, clearLogs } = useAdminLogs();
   const [isDeploying, setIsDeploying] = useState(false);
@@ -55,7 +62,7 @@ export default function AdminPage() {
       const response = await fetch("/api/admin/playlist");
       if (response.ok) {
         const data = await response.json();
-        setPlaylist(data);
+        setPlaylist(normalizePlaylistSongs(data as Song[]));
       } else {
         addLog("> Error: Failed to load playlist");
       }
@@ -77,7 +84,7 @@ export default function AdminPage() {
 
   const handleEditSong = (song: Song) => {
     setEditingSongId(song.id);
-    setEditedSong({ ...song });
+    setEditedSong(normalizeSong(song));
     setNeteaseUrlEdit(""); // Reset NetEase URL when starting to edit
   };
 
@@ -91,7 +98,7 @@ export default function AdminPage() {
     if (!editedSong) return;
 
     const updatedPlaylist = playlist.map((song) =>
-      song.id === editedSong.id ? editedSong : song,
+      song.id === editedSong.id ? normalizeSong(editedSong) : song,
     );
     setPlaylist(updatedPlaylist);
     setEditingSongId(null);
@@ -111,16 +118,7 @@ export default function AdminPage() {
 
     try {
       addLog("> Saving playlist...");
-      const response = await fetch("/api/admin/playlist", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(playlist),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save playlist");
-      }
-
+      await saveAdminPlaylist(playlist);
       addLog("> Playlist saved successfully!");
       addLog(`> Updated ${playlist.length} song(s)`);
     } catch (error) {
@@ -171,7 +169,6 @@ export default function AdminPage() {
     }
   };
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: API fetching and form updating involves multiple steps
   const handleFetchLyrics = async () => {
     if (!neteaseUrl) {
       addLog("> Error: Please enter a NetEase Music URL");
@@ -182,33 +179,20 @@ export default function AdminPage() {
     addLog("> Fetching lyrics from NetEase Music...");
 
     try {
-      const response = await fetch("/api/admin/fetch-lyrics", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: neteaseUrl }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to fetch lyrics");
-      }
-
-      const data = await response.json();
-      const updatedFormData = { ...formData, lyrics: data.lyrics };
-
-      if (data.songInfo) {
-        const { title, artist, album, duration } = data.songInfo;
-        if (title) updatedFormData.title = title;
-        if (artist) updatedFormData.artist = artist;
-        if (album) updatedFormData.album = album;
-        if (duration) updatedFormData.duration = duration;
-      }
+      const data = await fetchLyricsFromAdmin(neteaseUrl);
+      const updatedLyrics = normalizeLyricsWorkflow(data.lyrics);
+      const updatedFormData = mergeFetchedSongInfo(
+        { ...formData, lyrics: updatedLyrics },
+        data.songInfo,
+      );
 
       setFormData(updatedFormData);
       addLog(
         `> Successfully fetched lyrics and metadata for song ID: ${data.songId}`,
       );
-      addLog(`> Lyrics loaded (${data.lyrics.split("\n").length} lines)`);
+      addLog(
+        `> Lyrics loaded (${describeLyrics(updatedLyrics).lineCount} lines)`,
+      );
     } catch (error) {
       addLog(
         `> Error: ${error instanceof Error ? error.message : "Unknown error"}`,
@@ -218,7 +202,6 @@ export default function AdminPage() {
     }
   };
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: API fetching and form updating involves multiple steps
   const handleFetchLyricsEdit = async () => {
     if (!(neteaseUrlEdit && editedSong)) {
       addLog(
@@ -231,32 +214,20 @@ export default function AdminPage() {
     addLog("> Fetching lyrics from NetEase Music...");
 
     try {
-      const response = await fetch("/api/admin/fetch-lyrics", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: neteaseUrlEdit }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to fetch lyrics");
-      }
-
-      const data = await response.json();
-      updateEditedSong("lyrics", data.lyrics);
-
-      if (data.songInfo) {
-        const { title, artist, album, duration } = data.songInfo;
-        if (title) updateEditedSong("title", title);
-        if (artist) updateEditedSong("artist", artist);
-        if (album) updateEditedSong("album", album);
-        if (duration) updateEditedSong("duration", duration);
-      }
+      const data = await fetchLyricsFromAdmin(neteaseUrlEdit);
+      const updatedLyrics = normalizeLyricsWorkflow(data.lyrics);
+      const nextEditedSong = mergeFetchedSongInfo(
+        { ...editedSong, lyrics: updatedLyrics },
+        data.songInfo,
+      );
+      setEditedSong(nextEditedSong);
 
       addLog(
         `> Successfully fetched lyrics and metadata for song ID: ${data.songId}`,
       );
-      addLog(`> Lyrics loaded (${data.lyrics.split("\n").length} lines)`);
+      addLog(
+        `> Lyrics loaded (${describeLyrics(updatedLyrics).lineCount} lines)`,
+      );
       setNeteaseUrlEdit(""); // Clear URL after successful fetch
     } catch (error) {
       addLog(
@@ -267,89 +238,53 @@ export default function AdminPage() {
     }
   };
 
-  const uploadFileToR2 = async (file: File) => {
-    addLog("> Requesting upload URL...");
-    const signUrlResponse = await fetch("/api/admin/sign-url", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        filename: file.name,
-        contentType: file.type || "audio/mpeg",
-      }),
-    });
-
-    if (!signUrlResponse.ok) {
-      const error = await signUrlResponse.json();
-      throw new Error(error.error || "Failed to get upload URL");
-    }
-
-    const { uploadUrl, publicUrl, key } = await signUrlResponse.json();
-    addLog(`> Upload URL generated: ${key}`);
-
-    addLog("> Uploading audio binary...");
-    const uploadResponse = await fetch(uploadUrl, {
-      method: "PUT",
-      body: file,
-      headers: {
-        "Content-Type": file.type || "audio/mpeg",
-      },
-    });
-
-    if (!uploadResponse.ok) {
-      throw new Error("Failed to upload file to R2");
-    }
-
-    addLog("> Upload complete");
-    return publicUrl;
+  const handleNormalizeLyrics = () => {
+    const normalizedLyrics = normalizeLyricsWorkflow(formData.lyrics || "");
+    setFormData({ ...formData, lyrics: normalizedLyrics });
+    addLog("> Lyrics normalized");
   };
 
-  const updatePlaylistWithNewSong = async (
-    newSong: Song,
-    currentPlaylist?: Song[],
-  ) => {
-    let playlistToUpdate = currentPlaylist;
-    if (!playlistToUpdate) {
-      addLog("> Fetching current manifest...");
-      const playlistResponse = await fetch("/api/admin/playlist");
-      if (!playlistResponse.ok) {
-        throw new Error("Failed to fetch playlist");
-      }
-      playlistToUpdate = await playlistResponse.json();
+  const handleConvertLyricsToLrc = () => {
+    const duration = formData.duration || 0;
+    if (duration <= 0) {
+      addLog("> Error: Duration is required to convert plain lyrics to LRC");
+      return;
     }
 
-    const songs = playlistToUpdate ?? [];
-    const normalizedPlaylist = songs.map((song) => ({
-      ...song,
-      language: normalizeLanguage(song.language),
-    }));
-    addLog(`> Found ${normalizedPlaylist.length} existing tracks`);
+    const convertedLyrics = convertPlainLyricsWorkflow(
+      formData.lyrics || "",
+      duration,
+    );
+    setFormData({ ...formData, lyrics: convertedLyrics });
+    addLog("> Plain lyrics converted to estimated LRC");
+  };
 
-    const updatedPlaylist = [...normalizedPlaylist, newSong];
-    addLog("> Updating manifest...");
+  const handleNormalizeEditedLyrics = () => {
+    if (!editedSong) return;
 
-    const updateResponse = await fetch("/api/admin/playlist", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updatedPlaylist),
-    });
+    updateEditedSong(
+      "lyrics",
+      normalizeLyricsWorkflow(editedSong.lyrics || ""),
+    );
+    addLog("> Edited lyrics normalized");
+  };
 
-    if (!updateResponse.ok) {
-      throw new Error("Failed to update playlist");
+  const handleConvertEditedLyricsToLrc = () => {
+    if (!editedSong) return;
+    if (editedSong.duration <= 0) {
+      addLog("> Error: Duration is required to convert plain lyrics to LRC");
+      return;
     }
 
-    addLog("> Manifest updated successfully");
+    updateEditedSong(
+      "lyrics",
+      convertPlainLyricsWorkflow(editedSong.lyrics || "", editedSong.duration),
+    );
+    addLog("> Edited plain lyrics converted to estimated LRC");
   };
 
   const resetUploadForm = () => {
-    setFormData({
-      title: "",
-      artist: "",
-      album: "",
-      duration: 0,
-      lyrics: "",
-      language: "en",
-      metadata: {},
-    });
+    setFormData(createEmptySongDraft());
     setAudioFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -367,30 +302,18 @@ export default function AdminPage() {
       return;
     }
 
-    const { title, artist, album } = formData;
-
     setIsDeploying(true);
     clearLogs();
 
     try {
       addLog("> Authenticating...");
       await new Promise((resolve) => setTimeout(resolve, 500));
-
-      const publicUrl = await uploadFileToR2(audioFile);
-      const currentPlaylistResponse = await fetch("/api/admin/playlist");
-      if (!currentPlaylistResponse.ok) {
-        throw new Error("Failed to fetch playlist");
-      }
-      const currentPlaylist: Song[] = await currentPlaylistResponse.json();
-      const newSong = createSongFromFormData(
-        title,
-        artist,
-        album,
-        publicUrl,
-        currentPlaylist,
+      const newSong = await persistSongAssetToLibrary({
+        addLog,
+        assetKind: formData.sourceType === "recording" ? "recording" : "audio",
+        file: audioFile,
         formData,
-      );
-      await updatePlaylistWithNewSong(newSong, currentPlaylist);
+      });
 
       addLog("> Deployment successful!");
       addLog(`> New track: ${newSong.title} by ${newSong.artist}`);
@@ -409,6 +332,47 @@ export default function AdminPage() {
       setIsDeploying(false);
     }
   };
+
+  const handleUseRecordingAsUploadSource = (
+    recordedFile: File,
+    durationSeconds: number,
+  ) => {
+    setAudioFile(recordedFile);
+    setFormData({
+      ...formData,
+      duration: durationSeconds,
+      sourceType: "recording",
+    });
+    setActiveTab("upload");
+  };
+
+  const handleSaveRecordingToLibrary = async (
+    recordedFile: File,
+    durationSeconds: number,
+    draft: Partial<Song>,
+    accompanimentFile?: File | null,
+  ) => {
+    const recordingFormData: Partial<Song> = {
+      ...draft,
+      duration: durationSeconds,
+      sourceType: "recording",
+    };
+    const newSong = await persistSongAssetToLibrary({
+      addLog,
+      accompanimentFile,
+      assetKind: "recording",
+      file: recordedFile,
+      formData: recordingFormData,
+    });
+
+    addLog(`> New recording: ${newSong.title} by ${newSong.artist}`);
+    if (activeTab === "edit") {
+      loadPlaylist();
+    }
+  };
+
+  const uploadLyricsDescriptor = describeLyrics(formData.lyrics || "");
+  const editedLyricsDescriptor = describeLyrics(editedSong?.lyrics || "");
 
   return (
     <div className="flex h-screen w-full flex-col bg-[var(--editor-bg)] font-mono text-[12px] supports-[height:100dvh]:h-[100dvh]">
@@ -440,6 +404,17 @@ export default function AdminPage() {
           </button>
           <button
             type="button"
+            onClick={() => setActiveTab("record")}
+            className={`px-4 py-2 text-[11px] font-semibold uppercase tracking-wide transition-colors ${
+              activeTab === "record"
+                ? "text-gray-300 border-b-2 border-gray-400"
+                : "text-gray-500 hover:text-gray-400"
+            }`}
+          >
+            Record Audio
+          </button>
+          <button
+            type="button"
             onClick={() => setActiveTab("edit")}
             className={`px-4 py-2 text-[11px] font-semibold uppercase tracking-wide transition-colors ${
               activeTab === "edit"
@@ -465,10 +440,20 @@ export default function AdminPage() {
               setNeteaseUrl={setNeteaseUrl}
               isFetchingLyrics={isFetchingLyrics}
               isDeploying={isDeploying}
+              lyricsFormat={uploadLyricsDescriptor.format}
+              lyricLineCount={uploadLyricsDescriptor.lineCount}
               fileInputRef={fileInputRef}
+              handleConvertLyricsToLrc={handleConvertLyricsToLrc}
               handleFileSelect={handleFileSelect}
               handleFetchLyrics={handleFetchLyrics}
               handleDeploy={handleDeploy}
+              handleNormalizeLyrics={handleNormalizeLyrics}
+            />
+          ) : activeTab === "record" ? (
+            <AdminRecordingWorkspace
+              addLog={addLog}
+              onSaveRecordedFile={handleSaveRecordingToLibrary}
+              onUseRecordedFile={handleUseRecordingAsUploadSource}
             />
           ) : (
             <EditPlaylist
@@ -482,17 +467,21 @@ export default function AdminPage() {
               handleSaveEdit={handleSaveEdit}
               handleDeleteSong={handleDeleteSong}
               handleSavePlaylist={handleSavePlaylist}
+              handleConvertEditedLyricsToLrc={handleConvertEditedLyricsToLrc}
+              handleNormalizeEditedLyrics={handleNormalizeEditedLyrics}
               updateEditedSong={updateEditedSong}
               neteaseUrlEdit={neteaseUrlEdit}
               setNeteaseUrlEdit={setNeteaseUrlEdit}
               isFetchingLyricsEdit={isFetchingLyricsEdit}
               handleFetchLyricsEdit={handleFetchLyricsEdit}
+              editedLyricFormat={editedLyricsDescriptor.format}
+              editedLyricLineCount={editedLyricsDescriptor.lineCount}
             />
           )}
         </div>
 
         {/* Right Column - Terminal Output */}
-        <TerminalOutput logs={logs} isDeploying={isDeploying} />
+        <TerminalOutput logs={logs} isBusy={isDeploying} />
       </div>
     </div>
   );

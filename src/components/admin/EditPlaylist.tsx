@@ -1,6 +1,7 @@
 "use client";
 
 import { Edit2, Loader2, Save, Trash2, X } from "lucide-react";
+import { LyricsTools } from "@/components/admin/LyricsTools";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,10 +19,15 @@ type SongItemProps = {
   onDelete: () => void;
   onSave: () => void;
   onCancel: () => void;
+  onConvertLyricsToLrc: () => void;
+  onNormalizeLyrics: () => void;
   onUpdate: (field: keyof Song, value: Song[keyof Song]) => void;
   onFetchLyrics: () => void;
+  lyricFormat: "lrc" | "plain" | "empty";
+  lyricLineCount: number;
 };
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Admin song editing intentionally groups many controls in one item card
 function SongItem({
   song,
   isEditing,
@@ -33,8 +39,12 @@ function SongItem({
   onDelete,
   onSave,
   onCancel,
+  onConvertLyricsToLrc,
+  onNormalizeLyrics,
   onUpdate,
   onFetchLyrics,
+  lyricFormat,
+  lyricLineCount,
 }: SongItemProps) {
   if (isEditing) {
     return (
@@ -91,6 +101,63 @@ function SongItem({
           </div>
         </div>
         <div>
+          <Label className="text-[10px] text-gray-500">Track Type</Label>
+          <select
+            value={editedSong?.trackType || "portfolio"}
+            onChange={(e) =>
+              onUpdate("trackType", e.target.value as Song["trackType"])
+            }
+            className="flex h-7 w-full rounded-md border border-[var(--border)] bg-[var(--editor-bg)] px-2 text-[11px] text-gray-300 font-mono"
+          >
+            <option value="portfolio">portfolio</option>
+            <option value="personal">personal</option>
+          </select>
+        </div>
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+          <div>
+            <Label className="text-[10px] text-gray-500">Source Type</Label>
+            <select
+              value={editedSong?.sourceType || "upload"}
+              onChange={(e) =>
+                onUpdate("sourceType", e.target.value as Song["sourceType"])
+              }
+              className="flex h-7 w-full rounded-md border border-[var(--border)] bg-[var(--editor-bg)] px-2 text-[11px] text-gray-300 font-mono"
+            >
+              <option value="upload">upload</option>
+              <option value="external-upload">external-upload</option>
+              <option value="recording">recording</option>
+            </select>
+          </div>
+          <div>
+            <Label className="text-[10px] text-gray-500">Visibility</Label>
+            <select
+              value={editedSong?.visibility || "public"}
+              onChange={(e) =>
+                onUpdate("visibility", e.target.value as Song["visibility"])
+              }
+              className="flex h-7 w-full rounded-md border border-[var(--border)] bg-[var(--editor-bg)] px-2 text-[11px] text-gray-300 font-mono"
+            >
+              <option value="public">public</option>
+              <option value="private">private</option>
+              <option value="unlisted">unlisted</option>
+            </select>
+          </div>
+          <div>
+            <Label className="text-[10px] text-gray-500">Asset Status</Label>
+            <select
+              value={editedSong?.assetStatus || "ready"}
+              onChange={(e) =>
+                onUpdate("assetStatus", e.target.value as Song["assetStatus"])
+              }
+              className="flex h-7 w-full rounded-md border border-[var(--border)] bg-[var(--editor-bg)] px-2 text-[11px] text-gray-300 font-mono"
+            >
+              <option value="ready">ready</option>
+              <option value="draft">draft</option>
+              <option value="archived">archived</option>
+            </select>
+          </div>
+        </div>
+        <div>
           <Label className="text-[10px] text-gray-500">Lyrics (LRC)</Label>
           <div className="mb-2">
             <Label className="text-[9px] text-gray-600 mb-1 block">
@@ -126,6 +193,17 @@ function SongItem({
             rows={4}
             className="flex w-full rounded-md border border-[var(--border)] bg-[var(--editor-bg)] px-2 py-1 text-[11px] text-gray-300 font-mono resize-none"
           />
+          <div className="mt-2">
+            <LyricsTools
+              format={lyricFormat}
+              lineCount={lyricLineCount}
+              canConvert={
+                lyricFormat === "plain" && (editedSong?.duration || 0) > 0
+              }
+              onConvert={onConvertLyricsToLrc}
+              onNormalize={onNormalizeLyrics}
+            />
+          </div>
         </div>
         <div className="flex gap-2">
           <Button
@@ -164,6 +242,12 @@ function SongItem({
               {String(song.duration % 60).padStart(2, "0")}
             </div>
           )}
+          <div className="mt-1 flex flex-wrap gap-2 text-[10px] text-gray-500 font-mono">
+            <span>type:{song.trackType || "portfolio"}</span>
+            <span>source:{song.sourceType || "upload"}</span>
+            <span>visibility:{song.visibility || "public"}</span>
+            <span>status:{song.assetStatus || "ready"}</span>
+          </div>
         </div>
         <div className="flex gap-1">
           <Button
@@ -206,11 +290,15 @@ type EditPlaylistProps = {
   handleSaveEdit: () => void;
   handleDeleteSong: (songId: string) => void;
   handleSavePlaylist: () => void;
+  handleConvertEditedLyricsToLrc: () => void;
+  handleNormalizeEditedLyrics: () => void;
   updateEditedSong: (field: keyof Song, value: Song[keyof Song]) => void;
   neteaseUrlEdit: string;
   setNeteaseUrlEdit: (url: string) => void;
   isFetchingLyricsEdit: boolean;
   handleFetchLyricsEdit: () => void;
+  editedLyricFormat: "lrc" | "plain" | "empty";
+  editedLyricLineCount: number;
 };
 
 export function EditPlaylist({
@@ -224,11 +312,15 @@ export function EditPlaylist({
   handleSaveEdit,
   handleDeleteSong,
   handleSavePlaylist,
+  handleConvertEditedLyricsToLrc,
+  handleNormalizeEditedLyrics,
   updateEditedSong,
   neteaseUrlEdit,
   setNeteaseUrlEdit,
   isFetchingLyricsEdit,
   handleFetchLyricsEdit,
+  editedLyricFormat,
+  editedLyricLineCount,
 }: EditPlaylistProps) {
   return (
     <ScrollArea className="flex-1 h-full">
@@ -278,8 +370,12 @@ export function EditPlaylist({
                   onDelete={() => handleDeleteSong(song.id)}
                   onSave={handleSaveEdit}
                   onCancel={handleCancelEdit}
+                  onConvertLyricsToLrc={handleConvertEditedLyricsToLrc}
+                  onNormalizeLyrics={handleNormalizeEditedLyrics}
                   onUpdate={updateEditedSong}
                   onFetchLyrics={handleFetchLyricsEdit}
+                  lyricFormat={editedLyricFormat}
+                  lyricLineCount={editedLyricLineCount}
                 />
               </div>
             ))}
