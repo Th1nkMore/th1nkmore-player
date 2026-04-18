@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { usePlayerStore } from "@/store/usePlayerStore";
@@ -123,6 +124,7 @@ export function WaveformMinimap({
   duration,
   className,
 }: WaveformMinimapProps) {
+  const tControls = useTranslations("controls");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { currentTime, seek, duration: playerDuration } = usePlayerStore();
 
@@ -172,7 +174,7 @@ export function WaveformMinimap({
         type="button"
         onClick={(e) => handleSeek(e.clientX)}
         className="block h-24 w-full cursor-pointer"
-        aria-label="Waveform - click to seek"
+        aria-label={tControls("seekWaveform")}
       >
         <canvas ref={canvasRef} className="h-24 w-full" />
       </button>

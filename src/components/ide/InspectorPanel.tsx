@@ -39,6 +39,7 @@ export function InspectorPanel({ className }: InspectorPanelProps) {
   }
 
   const effectiveDuration = duration > 0 ? duration : activeFile.duration;
+  const metadataEntries = Object.entries(activeFile.metadata);
 
   return (
     <div
@@ -53,30 +54,28 @@ export function InspectorPanel({ className }: InspectorPanelProps) {
 
       <WaveformMinimap songId={activeFile.id} duration={effectiveDuration} />
 
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 min-h-0">
         <div className="p-4 space-y-4">
           <div>
             <div className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
               {t("properties")}
             </div>
             <div className="space-y-2">
-              {Object.entries(activeFile.metadata).map(
-                ([key, value], index) => (
-                  <div key={key}>
-                    <div className="flex items-baseline gap-2 text-[11px]">
-                      <span className="text-muted-foreground font-mono min-w-[80px]">
-                        {key}:
-                      </span>
-                      <span className="text-foreground font-mono flex-1">
-                        {String(value)}
-                      </span>
-                    </div>
-                    {index < Object.entries(activeFile.metadata).length - 1 && (
-                      <Separator className="my-2 bg-border" />
-                    )}
+              {metadataEntries.map(([key, value], index) => (
+                <div key={key}>
+                  <div className="flex flex-col gap-1 text-[11px] sm:flex-row sm:items-baseline sm:gap-2">
+                    <span className="shrink-0 text-muted-foreground font-mono sm:min-w-[80px]">
+                      {key}:
+                    </span>
+                    <span className="min-w-0 break-words text-foreground font-mono">
+                      {String(value)}
+                    </span>
                   </div>
-                ),
-              )}
+                  {index < metadataEntries.length - 1 && (
+                    <Separator className="my-2 bg-border" />
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 
@@ -85,38 +84,38 @@ export function InspectorPanel({ className }: InspectorPanelProps) {
               {t("info")}
             </div>
             <div className="space-y-2 text-[11px]">
-              <div className="flex items-baseline gap-2">
-                <span className="text-muted-foreground font-mono min-w-[80px]">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-2">
+                <span className="shrink-0 text-muted-foreground font-mono sm:min-w-[80px]">
                   {t("titleLabel")}
                 </span>
-                <span className="text-foreground font-mono flex-1">
+                <span className="min-w-0 break-words text-foreground font-mono">
                   {activeFile.title}
                 </span>
               </div>
               <Separator className="my-2 bg-border" />
-              <div className="flex items-baseline gap-2">
-                <span className="text-muted-foreground font-mono min-w-[80px]">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-2">
+                <span className="shrink-0 text-muted-foreground font-mono sm:min-w-[80px]">
                   {t("artistLabel")}
                 </span>
-                <span className="text-foreground font-mono flex-1">
+                <span className="min-w-0 break-words text-foreground font-mono">
                   {activeFile.artist}
                 </span>
               </div>
               <Separator className="my-2 bg-border" />
-              <div className="flex items-baseline gap-2">
-                <span className="text-muted-foreground font-mono min-w-[80px]">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-2">
+                <span className="shrink-0 text-muted-foreground font-mono sm:min-w-[80px]">
                   {t("albumLabel")}
                 </span>
-                <span className="text-foreground font-mono flex-1">
+                <span className="min-w-0 break-words text-foreground font-mono">
                   {activeFile.album}
                 </span>
               </div>
               <Separator className="my-2 bg-border" />
-              <div className="flex items-baseline gap-2">
-                <span className="text-muted-foreground font-mono min-w-[80px]">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-2">
+                <span className="shrink-0 text-muted-foreground font-mono sm:min-w-[80px]">
                   {t("languageLabel")}
                 </span>
-                <span className="text-foreground font-mono flex-1">
+                <span className="min-w-0 break-words text-foreground font-mono">
                   {activeFile.language.toUpperCase()}
                 </span>
               </div>

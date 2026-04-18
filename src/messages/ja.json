@@ -81,10 +81,40 @@
     "bootingSystem": "システム起動中...",
     "loadingPlaylist": "プレイリストを読み込み中..."
   },
+  "layout": {
+    "openMenu": "メニューを開く",
+    "openInspector": "インスペクターを開く",
+    "hideTerminal": "ターミナルを隠す",
+    "showTerminal": "ターミナルを表示",
+    "fileExplorer": "ファイルエクスプローラー",
+    "inspector": "インスペクター",
+    "mobileNavigation": "モバイルナビゲーション"
+  },
   "mobileNav": {
     "lyrics": "歌詞",
     "songs": "曲",
     "settings": "設定"
+  },
+  "controls": {
+    "previous": "前の曲",
+    "next": "次の曲",
+    "play": "再生",
+    "pause": "一時停止",
+    "playOrder": "再生順",
+    "decreaseVolume": "音量を下げる",
+    "increaseVolume": "音量を上げる",
+    "closeTerminal": "ターミナルを閉じる",
+    "progressPercent": "進捗: {percent}%",
+    "volumePercent": "音量: {percent}%",
+    "switchToTrack": "{title} に切り替える",
+    "closeTrack": "{title} を閉じる",
+    "playTrack": "{title} を再生",
+    "removeTrackFromQueue": "{title} をキューから削除",
+    "addTrackToQueue": "{title} をキューに追加",
+    "openTrack": "{title} を開く",
+    "openTrackWithHint": "{title} を開く。ダブルクリックでキューに追加。",
+    "goToTime": "{time} に移動",
+    "seekWaveform": "波形をクリックして再生位置へ移動"
   },
   "player": {
     "nowPlaying": "再生中",

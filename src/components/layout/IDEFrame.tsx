@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, Terminal } from "lucide-react";
+import { Menu, Settings2, Terminal } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
@@ -77,7 +77,7 @@ function MobileLandscapeLayout({
 }) {
   return (
     <div className="flex-1 overflow-hidden flex flex-row">
-      <div className="w-[200px] max-w-[30vw] shrink-0 border-r border-border overflow-hidden bg-sidebar">
+      <div className="w-[220px] min-w-[180px] max-w-[34vw] shrink-0 overflow-hidden border-r border-border bg-sidebar">
         <FileExplorer />
       </div>
 
@@ -194,10 +194,13 @@ export function IDEFrame({
   const [terminalVisible, setTerminalVisible] = useState(true);
   const [mobileTab, setMobileTab] = useState<MobileTab>("lyrics");
   const [playerSheetOpen, setPlayerSheetOpen] = useState(false);
+  const [mobileInspectorOpen, setMobileInspectorOpen] = useState(false);
   const terminalPanelRef = useRef<PanelImperativeHandle | null>(null);
   const { getActiveFile, fetchSongs, isLoading } = useIDEStore();
   const activeFile = getActiveFile();
   const t = useTranslations("loading");
+  const tCommon = useTranslations("common");
+  const tLayout = useTranslations("layout");
   const screenMode = useScreenMode();
 
   const isDesktop = screenMode === "desktop";
@@ -242,42 +245,69 @@ export function IDEFrame({
         <header className="flex items-center justify-between gap-2 border-b border-border bg-sidebar px-4 py-2 pt-[calc(0.5rem+env(safe-area-inset-top))]">
           {/* Mobile Portrait: hamburger + title */}
           {isPortrait && (
-            <div className="flex items-center gap-3">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                 <SheetTrigger asChild>
                   <button
                     type="button"
                     className="flex h-8 w-8 items-center justify-center rounded border border-border bg-sidebar text-muted-foreground hover:bg-accent transition-colors"
-                    aria-label="Open menu"
+                    aria-label={tLayout("openMenu")}
                   >
                     <Menu className="h-4 w-4" />
                   </button>
                 </SheetTrigger>
                 <SheetContent
                   side="left"
-                  className="w-[250px] max-w-[80vw] bg-sidebar border-border p-0"
+                  className="w-[min(20rem,85vw)] bg-sidebar border-border p-0"
                 >
-                  <SheetTitle className="sr-only">File Explorer</SheetTitle>
+                  <SheetTitle className="sr-only">
+                    {tLayout("fileExplorer")}
+                  </SheetTitle>
                   <FileExplorer onFileClick={() => setMobileMenuOpen(false)} />
                 </SheetContent>
               </Sheet>
-              <span className="text-[11px] text-muted-foreground truncate max-w-[200px]">
-                {activeFile?.title || "Sonic IDE"}
+              <span className="min-w-0 flex-1 truncate text-[11px] text-muted-foreground">
+                {activeFile?.title || tCommon("appTitle")}
               </span>
             </div>
           )}
 
           {/* Mobile Landscape: just title (FileExplorer is in sidebar) */}
           {isLandscape && (
-            <div className="flex items-center gap-3">
-              <span className="text-[11px] text-muted-foreground truncate max-w-[200px]">
-                {activeFile?.title || "Sonic IDE"}
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <span className="min-w-0 flex-1 truncate text-[11px] text-muted-foreground">
+                {activeFile?.title || tCommon("appTitle")}
               </span>
             </div>
           )}
 
           {/* Right side controls */}
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
+            {isLandscape && (
+              <Sheet
+                open={mobileInspectorOpen}
+                onOpenChange={setMobileInspectorOpen}
+              >
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex h-8 w-8 items-center justify-center rounded border border-border bg-sidebar text-muted-foreground transition-colors hover:bg-accent"
+                    aria-label={tLayout("openInspector")}
+                  >
+                    <Settings2 className="h-4 w-4" />
+                  </button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-[min(24rem,88vw)] border-border bg-sidebar p-0"
+                >
+                  <SheetTitle className="sr-only">
+                    {tLayout("inspector")}
+                  </SheetTitle>
+                  {rightInspector}
+                </SheetContent>
+              </Sheet>
+            )}
             {/* Terminal Toggle - Desktop only */}
             {isDesktop && (
               <button
@@ -287,7 +317,11 @@ export function IDEFrame({
                   "flex h-8 w-8 items-center justify-center rounded border border-border bg-sidebar text-muted-foreground hover:bg-accent transition-colors",
                   terminalVisible && "bg-accent text-foreground",
                 )}
-                aria-label={terminalVisible ? "Hide terminal" : "Show terminal"}
+                aria-label={
+                  terminalVisible
+                    ? tLayout("hideTerminal")
+                    : tLayout("showTerminal")
+                }
                 aria-pressed={terminalVisible}
               >
                 <Terminal className="h-4 w-4" />
