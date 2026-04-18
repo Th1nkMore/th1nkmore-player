@@ -9,6 +9,7 @@ import {
   SkipForward,
   Volume2,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useCallback, useMemo } from "react";
 import { playOrderIcons } from "@/lib/constants/player";
 import { usePlaybackControls } from "@/lib/hooks/usePlaybackControls";
@@ -30,6 +31,8 @@ export function MiniPlayerBar({
   variant = "default",
   onTap,
 }: MiniPlayerBarProps) {
+  const tPlayer = useTranslations("player");
+  const tControls = useTranslations("controls");
   const {
     duration,
     currentTime,
@@ -74,7 +77,7 @@ export function MiniPlayerBar({
           type="button"
           onClick={handlePrevious}
           className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
-          aria-label="Previous"
+          aria-label={tControls("previous")}
         >
           <SkipBack className="h-3.5 w-3.5" />
         </button>
@@ -82,7 +85,7 @@ export function MiniPlayerBar({
           type="button"
           onClick={handlePlayPause}
           className="p-2 text-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
-          aria-label={isPlaying ? "Pause" : "Play"}
+          aria-label={isPlaying ? tControls("pause") : tControls("play")}
         >
           {isPlaying ? (
             <Pause className="h-4 w-4" />
@@ -94,7 +97,7 @@ export function MiniPlayerBar({
           type="button"
           onClick={handleNext}
           className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
-          aria-label="Next"
+          aria-label={tControls("next")}
         >
           <SkipForward className="h-3.5 w-3.5" />
         </button>
@@ -104,7 +107,7 @@ export function MiniPlayerBar({
       {isLandscape ? (
         <div className="flex-1 min-w-0 flex flex-col gap-0.5">
           <span className="text-[10px] text-muted-foreground truncate">
-            {currentTrack?.title || "No track selected"}
+            {currentTrack?.title || tPlayer("noTrack")}
           </span>
           <div className="flex items-center gap-2">
             <span className="text-[9px] text-muted-foreground/80 w-8 shrink-0">
@@ -126,10 +129,10 @@ export function MiniPlayerBar({
           type="button"
           onClick={onTap}
           className="flex-1 min-w-0 flex flex-col gap-0.5 text-left"
-          aria-label="Open player"
+          aria-label={tPlayer("openPlayer")}
         >
           <span className="text-[10px] text-muted-foreground truncate">
-            {currentTrack?.title || "No track selected"}
+            {currentTrack?.title || tPlayer("noTrack")}
           </span>
           <div className="flex items-center gap-2">
             <span className="text-[9px] text-muted-foreground/80 w-8 shrink-0">
@@ -150,41 +153,43 @@ export function MiniPlayerBar({
 
       {/* Landscape: inline play order + volume */}
       {isLandscape && (
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex shrink-0 items-center gap-1 max-[639px]:gap-0.5">
           <button
             type="button"
             onClick={cyclePlayOrder}
             className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
-            aria-label="Play order"
+            aria-label={tControls("playOrder")}
           >
             <PlayOrderIcon className="h-3.5 w-3.5" />
           </button>
 
-          <div className="w-px h-4 bg-border mx-0.5" />
+          <div className="hidden min-[640px]:block h-4 w-px bg-border mx-0.5" />
 
-          <button
-            type="button"
-            onClick={handleVolumeDown}
-            className="p-1 text-muted-foreground hover:text-foreground rounded transition-colors"
-            aria-label="Decrease volume"
-          >
-            <Minus className="h-3 w-3" />
-          </button>
-          <Volume2
-            className="h-3 w-3 text-muted-foreground/80 shrink-0"
-            aria-hidden="true"
-          />
-          <span className="text-[9px] text-muted-foreground/80 w-7 text-center tabular-nums">
-            {Math.round(volume * 100)}%
-          </span>
-          <button
-            type="button"
-            onClick={handleVolumeUp}
-            className="p-1 text-muted-foreground hover:text-foreground rounded transition-colors"
-            aria-label="Increase volume"
-          >
-            <Plus className="h-3 w-3" />
-          </button>
+          <div className="hidden min-[640px]:flex items-center gap-1">
+            <button
+              type="button"
+              onClick={handleVolumeDown}
+              className="p-1 text-muted-foreground hover:text-foreground rounded transition-colors"
+              aria-label={tControls("decreaseVolume")}
+            >
+              <Minus className="h-3 w-3" />
+            </button>
+            <Volume2
+              className="h-3 w-3 text-muted-foreground/80 shrink-0"
+              aria-hidden="true"
+            />
+            <span className="text-[9px] text-muted-foreground/80 w-7 text-center tabular-nums">
+              {Math.round(volume * 100)}%
+            </span>
+            <button
+              type="button"
+              onClick={handleVolumeUp}
+              className="p-1 text-muted-foreground hover:text-foreground rounded transition-colors"
+              aria-label={tControls("increaseVolume")}
+            >
+              <Plus className="h-3 w-3" />
+            </button>
+          </div>
         </div>
       )}
     </div>

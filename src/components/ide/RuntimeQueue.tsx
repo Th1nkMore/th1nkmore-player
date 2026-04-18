@@ -34,6 +34,7 @@ type QueueItemProps = {
 function QueueItem({ songId, isActive, isTouchDevice }: QueueItemProps) {
   const { files } = useIDEStore();
   const { removeFromQueue, setTrack, play } = usePlayerStore();
+  const tControls = useTranslations("controls");
   const song = useMemo(
     () => files.find((f) => f.id === songId),
     [files, songId],
@@ -96,7 +97,7 @@ function QueueItem({ songId, isActive, isTouchDevice }: QueueItemProps) {
       {...attributes}
       {...listeners}
       onClick={handleClick}
-      aria-label={`Play ${song.title}`}
+      aria-label={tControls("playTrack", { title: song.title })}
     >
       <div className="flex items-center gap-1.5 flex-1 min-w-0">
         {isActive ? (
@@ -120,7 +121,7 @@ function QueueItem({ songId, isActive, isTouchDevice }: QueueItemProps) {
             ? "opacity-100 text-muted-foreground/60 active:bg-accent"
             : "opacity-0 group-hover:opacity-100",
         )}
-        aria-label={`Remove ${song.title} from queue`}
+        aria-label={tControls("removeTrackFromQueue", { title: song.title })}
       >
         <X className="h-3 w-3 shrink-0" aria-hidden="true" />
       </button>

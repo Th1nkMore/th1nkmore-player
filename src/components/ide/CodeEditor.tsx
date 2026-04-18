@@ -21,6 +21,7 @@ type LineProps = {
   content: string;
   time: number | null;
   isActive: boolean;
+  goToTimeLabel: string;
   lineRef?: React.RefObject<HTMLDivElement | null>;
   onLineClick: (time: number) => void;
 };
@@ -30,6 +31,7 @@ function Line({
   content,
   time,
   isActive,
+  goToTimeLabel,
   lineRef,
   onLineClick,
 }: LineProps) {
@@ -57,7 +59,7 @@ function Line({
         )}
         onClick={handleInteraction}
         onKeyDown={handleKeyDown}
-        aria-label={`Go to time ${time !== null ? formatDuration(time) : ""}`}
+        aria-label={goToTimeLabel}
       >
         {lineNumber}
       </button>
@@ -80,6 +82,7 @@ function Line({
 
 export function CodeEditor({ className }: CodeEditorProps) {
   const t = useTranslations("codeEditor");
+  const tControls = useTranslations("controls");
   const { currentTrackId, currentTime, seek, queue } = usePlayerStore();
 
   // Get current track from queue
@@ -264,6 +267,10 @@ export function CodeEditor({ className }: CodeEditorProps) {
                 content={line.content}
                 time={line.time}
                 isActive={isActive ?? false}
+                goToTimeLabel={tControls("goToTime", {
+                  time:
+                    line.time !== null ? formatDuration(line.time) : "--:--",
+                })}
                 lineRef={isActive ? activeLineRef : undefined}
                 onLineClick={seek}
               />

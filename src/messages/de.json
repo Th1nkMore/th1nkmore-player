@@ -81,10 +81,40 @@
     "bootingSystem": "System startet...",
     "loadingPlaylist": "Wiedergabeliste wird geladen..."
   },
+  "layout": {
+    "openMenu": "Menü öffnen",
+    "openInspector": "Inspektor öffnen",
+    "hideTerminal": "Terminal ausblenden",
+    "showTerminal": "Terminal anzeigen",
+    "fileExplorer": "Datei-Explorer",
+    "inspector": "Inspektor",
+    "mobileNavigation": "Mobile Navigation"
+  },
   "mobileNav": {
     "lyrics": "Texte",
     "songs": "Titel",
     "settings": "Einstellungen"
+  },
+  "controls": {
+    "previous": "Vorheriger Titel",
+    "next": "Nächster Titel",
+    "play": "Wiedergabe",
+    "pause": "Pause",
+    "playOrder": "Wiedergabereihenfolge",
+    "decreaseVolume": "Lautstärke verringern",
+    "increaseVolume": "Lautstärke erhöhen",
+    "closeTerminal": "Terminal schließen",
+    "progressPercent": "Fortschritt: {percent}%",
+    "volumePercent": "Lautstärke: {percent}%",
+    "switchToTrack": "Zu {title} wechseln",
+    "closeTrack": "{title} schließen",
+    "playTrack": "{title} abspielen",
+    "removeTrackFromQueue": "{title} aus der Warteschlange entfernen",
+    "addTrackToQueue": "{title} zur Warteschlange hinzufügen",
+    "openTrack": "{title} öffnen",
+    "openTrackWithHint": "{title} öffnen. Doppelklicken zum Hinzufügen zur Warteschlange.",
+    "goToTime": "Zu Zeit {time} springen",
+    "seekWaveform": "Wellenform, klicken zum Springen"
   },
   "player": {
     "nowPlaying": "Wird abgespielt",
