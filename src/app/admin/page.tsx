@@ -9,10 +9,17 @@ import { UploadForm } from "@/components/admin/UploadForm";
 import {
   createSongFromFormData,
   fetchAdminPlaylist,
+  fetchLyricsFromAdmin,
+  mergeFetchedSongInfo,
   saveAdminPlaylist,
   uploadAudioFileToR2,
 } from "@/lib/admin-utils";
 import { useAdminLogs } from "@/lib/hooks/useAdminLogs";
+import {
+  convertPlainLyricsWorkflow,
+  describeLyrics,
+  normalizeLyricsWorkflow,
+} from "@/lib/lyrics";
 import {
   createEmptySongDraft,
   normalizePlaylistSongs,
@@ -165,7 +172,6 @@ export default function AdminPage() {
     }
   };
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: API fetching and form updating involves multiple steps
   const handleFetchLyrics = async () => {
     if (!neteaseUrl) {
       addLog("> Error: Please enter a NetEase Music URL");
@@ -176,33 +182,20 @@ export default function AdminPage() {
     addLog("> Fetching lyrics from NetEase Music...");
 
     try {
-      const response = await fetch("/api/admin/fetch-lyrics", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: neteaseUrl }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to fetch lyrics");
-      }
-
-      const data = await response.json();
-      const updatedFormData = { ...formData, lyrics: data.lyrics };
-
-      if (data.songInfo) {
-        const { title, artist, album, duration } = data.songInfo;
-        if (title) updatedFormData.title = title;
-        if (artist) updatedFormData.artist = artist;
-        if (album) updatedFormData.album = album;
-        if (duration) updatedFormData.duration = duration;
-      }
+      const data = await fetchLyricsFromAdmin(neteaseUrl);
+      const updatedLyrics = normalizeLyricsWorkflow(data.lyrics);
+      const updatedFormData = mergeFetchedSongInfo(
+        { ...formData, lyrics: updatedLyrics },
+        data.songInfo,
+      );
 
       setFormData(updatedFormData);
       addLog(
         `> Successfully fetched lyrics and metadata for song ID: ${data.songId}`,
       );
-      addLog(`> Lyrics loaded (${data.lyrics.split("\n").length} lines)`);
+      addLog(
+        `> Lyrics loaded (${describeLyrics(updatedLyrics).lineCount} lines)`,
+      );
     } catch (error) {
       addLog(
         `> Error: ${error instanceof Error ? error.message : "Unknown error"}`,
@@ -212,7 +205,6 @@ export default function AdminPage() {
     }
   };
 
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: API fetching and form updating involves multiple steps
   const handleFetchLyricsEdit = async () => {
     if (!(neteaseUrlEdit && editedSong)) {
       addLog(
@@ -225,32 +217,20 @@ export default function AdminPage() {
     addLog("> Fetching lyrics from NetEase Music...");
 
     try {
-      const response = await fetch("/api/admin/fetch-lyrics", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: neteaseUrlEdit }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to fetch lyrics");
-      }
-
-      const data = await response.json();
-      updateEditedSong("lyrics", data.lyrics);
-
-      if (data.songInfo) {
-        const { title, artist, album, duration } = data.songInfo;
-        if (title) updateEditedSong("title", title);
-        if (artist) updateEditedSong("artist", artist);
-        if (album) updateEditedSong("album", album);
-        if (duration) updateEditedSong("duration", duration);
-      }
+      const data = await fetchLyricsFromAdmin(neteaseUrlEdit);
+      const updatedLyrics = normalizeLyricsWorkflow(data.lyrics);
+      const nextEditedSong = mergeFetchedSongInfo(
+        { ...editedSong, lyrics: updatedLyrics },
+        data.songInfo,
+      );
+      setEditedSong(nextEditedSong);
 
       addLog(
         `> Successfully fetched lyrics and metadata for song ID: ${data.songId}`,
       );
-      addLog(`> Lyrics loaded (${data.lyrics.split("\n").length} lines)`);
+      addLog(
+        `> Lyrics loaded (${describeLyrics(updatedLyrics).lineCount} lines)`,
+      );
       setNeteaseUrlEdit(""); // Clear URL after successful fetch
     } catch (error) {
       addLog(
@@ -284,6 +264,51 @@ export default function AdminPage() {
     addLog("> Updating manifest...");
     await saveAdminPlaylist(updatedPlaylist);
     addLog("> Manifest updated successfully");
+  };
+
+  const handleNormalizeLyrics = () => {
+    const normalizedLyrics = normalizeLyricsWorkflow(formData.lyrics || "");
+    setFormData({ ...formData, lyrics: normalizedLyrics });
+    addLog("> Lyrics normalized");
+  };
+
+  const handleConvertLyricsToLrc = () => {
+    const duration = formData.duration || 0;
+    if (duration <= 0) {
+      addLog("> Error: Duration is required to convert plain lyrics to LRC");
+      return;
+    }
+
+    const convertedLyrics = convertPlainLyricsWorkflow(
+      formData.lyrics || "",
+      duration,
+    );
+    setFormData({ ...formData, lyrics: convertedLyrics });
+    addLog("> Plain lyrics converted to estimated LRC");
+  };
+
+  const handleNormalizeEditedLyrics = () => {
+    if (!editedSong) return;
+
+    updateEditedSong(
+      "lyrics",
+      normalizeLyricsWorkflow(editedSong.lyrics || ""),
+    );
+    addLog("> Edited lyrics normalized");
+  };
+
+  const handleConvertEditedLyricsToLrc = () => {
+    if (!editedSong) return;
+    if (editedSong.duration <= 0) {
+      addLog("> Error: Duration is required to convert plain lyrics to LRC");
+      return;
+    }
+
+    updateEditedSong(
+      "lyrics",
+      convertPlainLyricsWorkflow(editedSong.lyrics || "", editedSong.duration),
+    );
+    addLog("> Edited plain lyrics converted to estimated LRC");
   };
 
   const resetUploadForm = () => {
@@ -357,6 +382,9 @@ export default function AdminPage() {
     setActiveTab("upload");
   };
 
+  const uploadLyricsDescriptor = describeLyrics(formData.lyrics || "");
+  const editedLyricsDescriptor = describeLyrics(editedSong?.lyrics || "");
+
   return (
     <div className="flex h-screen w-full flex-col bg-[var(--editor-bg)] font-mono text-[12px] supports-[height:100dvh]:h-[100dvh]">
       {/* Header */}
@@ -423,10 +451,14 @@ export default function AdminPage() {
               setNeteaseUrl={setNeteaseUrl}
               isFetchingLyrics={isFetchingLyrics}
               isDeploying={isDeploying}
+              lyricsFormat={uploadLyricsDescriptor.format}
+              lyricLineCount={uploadLyricsDescriptor.lineCount}
               fileInputRef={fileInputRef}
+              handleConvertLyricsToLrc={handleConvertLyricsToLrc}
               handleFileSelect={handleFileSelect}
               handleFetchLyrics={handleFetchLyrics}
               handleDeploy={handleDeploy}
+              handleNormalizeLyrics={handleNormalizeLyrics}
             />
           ) : activeTab === "record" ? (
             <AdminRecordingWorkspace
@@ -445,11 +477,15 @@ export default function AdminPage() {
               handleSaveEdit={handleSaveEdit}
               handleDeleteSong={handleDeleteSong}
               handleSavePlaylist={handleSavePlaylist}
+              handleConvertEditedLyricsToLrc={handleConvertEditedLyricsToLrc}
+              handleNormalizeEditedLyrics={handleNormalizeEditedLyrics}
               updateEditedSong={updateEditedSong}
               neteaseUrlEdit={neteaseUrlEdit}
               setNeteaseUrlEdit={setNeteaseUrlEdit}
               isFetchingLyricsEdit={isFetchingLyricsEdit}
               handleFetchLyricsEdit={handleFetchLyricsEdit}
+              editedLyricFormat={editedLyricsDescriptor.format}
+              editedLyricLineCount={editedLyricsDescriptor.lineCount}
             />
           )}
         </div>

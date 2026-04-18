@@ -1,6 +1,7 @@
 "use client";
 
 import { Edit2, Loader2, Save, Trash2, X } from "lucide-react";
+import { LyricsTools } from "@/components/admin/LyricsTools";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,8 +19,12 @@ type SongItemProps = {
   onDelete: () => void;
   onSave: () => void;
   onCancel: () => void;
+  onConvertLyricsToLrc: () => void;
+  onNormalizeLyrics: () => void;
   onUpdate: (field: keyof Song, value: Song[keyof Song]) => void;
   onFetchLyrics: () => void;
+  lyricFormat: "lrc" | "plain" | "empty";
+  lyricLineCount: number;
 };
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Admin song editing intentionally groups many controls in one item card
@@ -34,8 +39,12 @@ function SongItem({
   onDelete,
   onSave,
   onCancel,
+  onConvertLyricsToLrc,
+  onNormalizeLyrics,
   onUpdate,
   onFetchLyrics,
+  lyricFormat,
+  lyricLineCount,
 }: SongItemProps) {
   if (isEditing) {
     return (
@@ -184,6 +193,17 @@ function SongItem({
             rows={4}
             className="flex w-full rounded-md border border-[var(--border)] bg-[var(--editor-bg)] px-2 py-1 text-[11px] text-gray-300 font-mono resize-none"
           />
+          <div className="mt-2">
+            <LyricsTools
+              format={lyricFormat}
+              lineCount={lyricLineCount}
+              canConvert={
+                lyricFormat === "plain" && (editedSong?.duration || 0) > 0
+              }
+              onConvert={onConvertLyricsToLrc}
+              onNormalize={onNormalizeLyrics}
+            />
+          </div>
         </div>
         <div className="flex gap-2">
           <Button
@@ -270,11 +290,15 @@ type EditPlaylistProps = {
   handleSaveEdit: () => void;
   handleDeleteSong: (songId: string) => void;
   handleSavePlaylist: () => void;
+  handleConvertEditedLyricsToLrc: () => void;
+  handleNormalizeEditedLyrics: () => void;
   updateEditedSong: (field: keyof Song, value: Song[keyof Song]) => void;
   neteaseUrlEdit: string;
   setNeteaseUrlEdit: (url: string) => void;
   isFetchingLyricsEdit: boolean;
   handleFetchLyricsEdit: () => void;
+  editedLyricFormat: "lrc" | "plain" | "empty";
+  editedLyricLineCount: number;
 };
 
 export function EditPlaylist({
@@ -288,11 +312,15 @@ export function EditPlaylist({
   handleSaveEdit,
   handleDeleteSong,
   handleSavePlaylist,
+  handleConvertEditedLyricsToLrc,
+  handleNormalizeEditedLyrics,
   updateEditedSong,
   neteaseUrlEdit,
   setNeteaseUrlEdit,
   isFetchingLyricsEdit,
   handleFetchLyricsEdit,
+  editedLyricFormat,
+  editedLyricLineCount,
 }: EditPlaylistProps) {
   return (
     <ScrollArea className="flex-1 h-full">
@@ -342,8 +370,12 @@ export function EditPlaylist({
                   onDelete={() => handleDeleteSong(song.id)}
                   onSave={handleSaveEdit}
                   onCancel={handleCancelEdit}
+                  onConvertLyricsToLrc={handleConvertEditedLyricsToLrc}
+                  onNormalizeLyrics={handleNormalizeEditedLyrics}
                   onUpdate={updateEditedSong}
                   onFetchLyrics={handleFetchLyricsEdit}
+                  lyricFormat={editedLyricFormat}
+                  lyricLineCount={editedLyricLineCount}
                 />
               </div>
             ))}
