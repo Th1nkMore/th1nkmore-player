@@ -2,6 +2,7 @@
 
 import * as mm from "music-metadata-browser";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { AdminPageChrome } from "@/components/admin/AdminPageChrome";
 import { AdminRecordingWorkspace } from "@/components/admin/AdminRecordingWorkspace";
 import { EditPlaylist } from "@/components/admin/EditPlaylist";
 import { TerminalOutput } from "@/components/admin/TerminalOutput";
@@ -34,6 +35,7 @@ export default function AdminPage() {
   const [editedSong, setEditedSong] = useState<Song | null>(null);
   const [isLoadingPlaylist, setIsLoadingPlaylist] = useState(false);
   const [isSavingPlaylist, setIsSavingPlaylist] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const [formData, setFormData] = useState<Partial<Song>>(createEmptySongDraft);
   const [audioFile, setAudioFile] = useState<File | null>(null);
@@ -374,58 +376,27 @@ export default function AdminPage() {
   const uploadLyricsDescriptor = describeLyrics(formData.lyrics || "");
   const editedLyricsDescriptor = describeLyrics(editedSong?.lyrics || "");
 
+  const handleLogout = async () => {
+    setIsSigningOut(true);
+
+    try {
+      await fetch("/api/admin/logout", {
+        method: "POST",
+      });
+    } finally {
+      window.location.href = "/admin/login";
+    }
+  };
+
   return (
     <div className="flex h-screen w-full flex-col bg-[var(--editor-bg)] font-mono text-[12px] supports-[height:100dvh]:h-[100dvh]">
-      {/* Header */}
-      <div className="border-b border-[var(--border)] bg-[var(--sidebar-bg)] px-4 py-2">
-        <div className="flex items-center justify-between">
-          <h1 className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-            ADMIN :: DEPLOY CONFIGURATION
-          </h1>
-          <div className="text-[10px] text-gray-500">
-            {currentTime || "--:--:--"}
-          </div>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="border-b border-[var(--border)] bg-[var(--sidebar-bg)] px-4">
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => setActiveTab("upload")}
-            className={`px-4 py-2 text-[11px] font-semibold uppercase tracking-wide transition-colors ${
-              activeTab === "upload"
-                ? "text-gray-300 border-b-2 border-gray-400"
-                : "text-gray-500 hover:text-gray-400"
-            }`}
-          >
-            Upload New
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("record")}
-            className={`px-4 py-2 text-[11px] font-semibold uppercase tracking-wide transition-colors ${
-              activeTab === "record"
-                ? "text-gray-300 border-b-2 border-gray-400"
-                : "text-gray-500 hover:text-gray-400"
-            }`}
-          >
-            Record Audio
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("edit")}
-            className={`px-4 py-2 text-[11px] font-semibold uppercase tracking-wide transition-colors ${
-              activeTab === "edit"
-                ? "text-gray-300 border-b-2 border-gray-400"
-                : "text-gray-500 hover:text-gray-400"
-            }`}
-          >
-            Edit Playlist
-          </button>
-        </div>
-      </div>
+      <AdminPageChrome
+        activeTab={activeTab}
+        currentTime={currentTime}
+        isSigningOut={isSigningOut}
+        onLogout={handleLogout}
+        onTabChange={setActiveTab}
+      />
 
       {/* Main Content - Two Column Grid */}
       <div className="grid flex-1 grid-cols-1 lg:grid-cols-2 gap-0 overflow-hidden">

@@ -1,6 +1,7 @@
 "use client";
 
 import { Menu, Terminal } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
@@ -194,11 +195,14 @@ export function IDEFrame({
   const [terminalVisible, setTerminalVisible] = useState(true);
   const [mobileTab, setMobileTab] = useState<MobileTab>("lyrics");
   const [playerSheetOpen, setPlayerSheetOpen] = useState(false);
+  const [adminTapCount, setAdminTapCount] = useState(0);
   const terminalPanelRef = useRef<PanelImperativeHandle | null>(null);
+  const adminTapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { getActiveFile, fetchSongs, isLoading } = useIDEStore();
   const activeFile = getActiveFile();
   const t = useTranslations("loading");
   const screenMode = useScreenMode();
+  const router = useRouter();
 
   const isDesktop = screenMode === "desktop";
   const isLandscape = screenMode === "mobile-landscape";
@@ -207,6 +211,15 @@ export function IDEFrame({
   useEffect(() => {
     fetchSongs();
   }, [fetchSongs]);
+
+  useEffect(
+    () => () => {
+      if (adminTapTimerRef.current) {
+        clearTimeout(adminTapTimerRef.current);
+      }
+    },
+    [],
+  );
 
   const handleToggleTerminal = () => {
     if (!terminalPanelRef.current) return;
@@ -223,6 +236,24 @@ export function IDEFrame({
     _prevPanelSize: { asPercentage: number; inPixels: number } | undefined,
   ) => {
     setTerminalVisible(panelSize.asPercentage > 0);
+  };
+
+  const handleHiddenAdminEntry = () => {
+    if (adminTapTimerRef.current) {
+      clearTimeout(adminTapTimerRef.current);
+    }
+
+    const nextTapCount = adminTapCount + 1;
+    if (nextTapCount >= 5) {
+      setAdminTapCount(0);
+      router.push("/admin/login");
+      return;
+    }
+
+    setAdminTapCount(nextTapCount);
+    adminTapTimerRef.current = setTimeout(() => {
+      setAdminTapCount(0);
+    }, 2400);
   };
 
   if (isLoading) {
@@ -278,6 +309,16 @@ export function IDEFrame({
 
           {/* Right side controls */}
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleHiddenAdminEntry}
+              className="group relative flex h-8 w-8 items-center justify-center rounded-full border border-transparent bg-transparent text-muted-foreground/40 transition-colors hover:border-border hover:bg-accent/30 hover:text-foreground/70"
+              aria-label="System status node"
+            >
+              <span className="absolute h-4 w-4 rounded-full bg-emerald-500/10 blur-sm transition-opacity group-hover:opacity-100" />
+              <span className="relative h-2 w-2 rounded-full border border-emerald-300/40 bg-emerald-400/75 shadow-[0_0_10px_rgba(74,222,128,0.65)]" />
+              <span className="sr-only">Open admin login</span>
+            </button>
             {/* Terminal Toggle - Desktop only */}
             {isDesktop && (
               <button
