@@ -1,6 +1,7 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { type NextRequest, NextResponse } from "next/server";
+import { createMediaObjectKey, isMediaAssetKind } from "@/lib/media";
 import { R2_BUCKET_NAME, r2Client } from "@/lib/r2";
 import { buildPublicAssetUrl } from "@/lib/storage";
 
@@ -11,11 +12,28 @@ import { buildPublicAssetUrl } from "@/lib/storage";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { filename, contentType } = body;
+    const { filename, contentType, assetKind = "audio" } = body;
 
     if (!(filename && contentType)) {
       return NextResponse.json(
         { error: "filename and contentType are required" },
+        { status: 400 },
+      );
+    }
+
+    if (!String(contentType).startsWith("audio/")) {
+      return NextResponse.json(
+        { error: "contentType must be an audio/* mime type" },
+        { status: 400 },
+      );
+    }
+
+    if (!isMediaAssetKind(assetKind)) {
+      return NextResponse.json(
+        {
+          error:
+            "assetKind must be one of: accompaniment, audio, recording, export",
+        },
         { status: 400 },
       );
     }
@@ -27,10 +45,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate a unique key for the file (store in audio/ directory)
-    const safeFilename = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const uniquePrefix = `${Date.now()}-${crypto.randomUUID()}`;
-    const key = `audio/${uniquePrefix}-${safeFilename}`;
+    const key = createMediaObjectKey(filename, assetKind);
 
     // Create PutObjectCommand
     const command = new PutObjectCommand({
@@ -53,6 +68,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
+      assetKind,
       uploadUrl,
       publicUrl,
       key,

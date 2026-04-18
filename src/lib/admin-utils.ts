@@ -1,3 +1,4 @@
+import type { MediaAssetKind } from "@/lib/media";
 import {
   DEFAULT_ASSET_STATUS,
   DEFAULT_SOURCE_TYPE,
@@ -55,12 +56,14 @@ export const createSongFromFormData = (
 export async function uploadAudioFileToR2(
   file: File,
   addLog: AdminLogger,
+  assetKind: MediaAssetKind = "audio",
 ): Promise<string> {
   addLog("> Requesting upload URL...");
   const signUrlResponse = await fetch("/api/admin/sign-url", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
+      assetKind,
       filename: file.name,
       contentType: file.type || "audio/mpeg",
     }),
@@ -110,6 +113,58 @@ export async function saveAdminPlaylist(playlist: Song[]): Promise<void> {
   if (!response.ok) {
     throw new Error("Failed to update playlist");
   }
+}
+
+type PersistSongAssetInput = {
+  addLog: AdminLogger;
+  accompanimentFile?: File | null;
+  assetKind?: MediaAssetKind;
+  file: File;
+  formData: Partial<Song>;
+};
+
+export async function persistSongAssetToLibrary({
+  addLog,
+  accompanimentFile,
+  assetKind = "audio",
+  file,
+  formData,
+}: PersistSongAssetInput): Promise<Song> {
+  if (!(formData.title && formData.artist && formData.album)) {
+    throw new Error("Please fill in title, artist, and album");
+  }
+
+  let nextFormData = { ...formData };
+  if (accompanimentFile) {
+    const accompanimentUrl = await uploadAudioFileToR2(
+      accompanimentFile,
+      addLog,
+      "accompaniment",
+    );
+    nextFormData = {
+      ...nextFormData,
+      metadata: {
+        ...(nextFormData.metadata || {}),
+        accompanimentFileName: accompanimentFile.name,
+        accompanimentUrl,
+      },
+    };
+  }
+
+  const publicUrl = await uploadAudioFileToR2(file, addLog, assetKind);
+  const currentPlaylist = await fetchAdminPlaylist();
+  const newSong = createSongFromFormData(
+    nextFormData.title || "",
+    nextFormData.artist || "",
+    nextFormData.album || "",
+    publicUrl,
+    currentPlaylist,
+    nextFormData,
+  );
+
+  const updatedPlaylist = [...currentPlaylist, newSong];
+  await saveAdminPlaylist(updatedPlaylist);
+  return newSong;
 }
 
 export async function fetchLyricsFromAdmin(
