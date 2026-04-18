@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import type { RefObject } from "react";
 import { LyricsTools } from "@/components/admin/LyricsTools";
+import { LyricTeleprompter } from "@/components/admin/LyricTeleprompter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +20,7 @@ import type { RecordingState } from "@/lib/hooks/useAudioRecorder";
 import type { Song } from "@/types/music";
 
 type RecordingPanelProps = {
+  accompanimentCurrentTime: number;
   accompanimentFile: File | null;
   accompanimentInputRef: RefObject<HTMLInputElement | null>;
   accompanimentPreviewUrl: string | null;
@@ -34,6 +36,7 @@ type RecordingPanelProps = {
   recordedBlob: Blob | null;
   recordingDraft: Partial<Song>;
   recordingState: RecordingState;
+  onAccompanimentTimeUpdate: (t: number) => void;
   onConvertLyricsToLrc: () => void;
   onDraftChange: (field: keyof Song, value: Song[keyof Song]) => void;
   onExportMp3: () => void;
@@ -60,6 +63,7 @@ type AccompanimentSectionProps = Pick<
   | "accompanimentPreviewUrl"
   | "onSelectAccompaniment"
   | "onTriggerAccompanimentSelect"
+  | "onAccompanimentTimeUpdate"
 >;
 
 function AccompanimentSection({
@@ -68,6 +72,7 @@ function AccompanimentSection({
   accompanimentPreviewUrl,
   onSelectAccompaniment,
   onTriggerAccompanimentSelect,
+  onAccompanimentTimeUpdate,
 }: AccompanimentSectionProps) {
   return (
     <div className="space-y-3 rounded-md border border-[var(--border)] bg-[var(--sidebar-bg)] p-4">
@@ -97,6 +102,9 @@ function AccompanimentSection({
             controls
             src={accompanimentPreviewUrl}
             className="w-full h-8"
+            onTimeUpdate={(e) =>
+              onAccompanimentTimeUpdate(e.currentTarget.currentTime)
+            }
           />
           <div className="text-[10px] text-gray-500 font-mono">
             This accompaniment stays local to the current recording session.
@@ -134,31 +142,33 @@ function RecordingMetadataSection({
   return (
     <div className="space-y-3 rounded-md border border-[var(--border)] bg-[var(--sidebar-bg)] p-4">
       <div className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-        recording metadata
+        metadata
       </div>
-      <div>
-        <Label className="mb-2 block text-[10px] text-gray-500">Title</Label>
-        <Input
-          value={recordingDraft.title || ""}
-          onChange={(event) => onDraftChange("title", event.target.value)}
-          className="font-mono bg-[var(--editor-bg)] border-[var(--border)] text-gray-300 text-[11px] h-8"
-        />
-      </div>
-      <div>
-        <Label className="mb-2 block text-[10px] text-gray-500">Artist</Label>
-        <Input
-          value={recordingDraft.artist || ""}
-          onChange={(event) => onDraftChange("artist", event.target.value)}
-          className="font-mono bg-[var(--editor-bg)] border-[var(--border)] text-gray-300 text-[11px] h-8"
-        />
-      </div>
-      <div>
-        <Label className="mb-2 block text-[10px] text-gray-500">Album</Label>
-        <Input
-          value={recordingDraft.album || ""}
-          onChange={(event) => onDraftChange("album", event.target.value)}
-          className="font-mono bg-[var(--editor-bg)] border-[var(--border)] text-gray-300 text-[11px] h-8"
-        />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div>
+          <Label className="mb-2 block text-[10px] text-gray-500">Title</Label>
+          <Input
+            value={recordingDraft.title || ""}
+            onChange={(event) => onDraftChange("title", event.target.value)}
+            className="font-mono bg-[var(--editor-bg)] border-[var(--border)] text-gray-300 text-[11px] h-8"
+          />
+        </div>
+        <div>
+          <Label className="mb-2 block text-[10px] text-gray-500">Artist</Label>
+          <Input
+            value={recordingDraft.artist || ""}
+            onChange={(event) => onDraftChange("artist", event.target.value)}
+            className="font-mono bg-[var(--editor-bg)] border-[var(--border)] text-gray-300 text-[11px] h-8"
+          />
+        </div>
+        <div>
+          <Label className="mb-2 block text-[10px] text-gray-500">Album</Label>
+          <Input
+            value={recordingDraft.album || ""}
+            onChange={(event) => onDraftChange("album", event.target.value)}
+            className="font-mono bg-[var(--editor-bg)] border-[var(--border)] text-gray-300 text-[11px] h-8"
+          />
+        </div>
       </div>
       <div>
         <Label className="mb-2 block text-[10px] text-gray-500">Lyrics</Label>
@@ -183,7 +193,100 @@ function RecordingMetadataSection({
   );
 }
 
+type RecordingHeroSectionProps = Pick<
+  RecordingPanelProps,
+  | "elapsedSeconds"
+  | "isBusy"
+  | "isSupported"
+  | "mimeType"
+  | "recordingState"
+  | "onReset"
+  | "onStart"
+  | "onStop"
+>;
+
+function RecordingHeroSection({
+  elapsedSeconds,
+  isBusy,
+  isSupported,
+  mimeType,
+  recordingState,
+  onReset,
+  onStart,
+  onStop,
+}: RecordingHeroSectionProps) {
+  const statusDotClass =
+    recordingState === "recording"
+      ? "bg-red-500 animate-pulse"
+      : recordingState === "stopped"
+        ? "bg-amber-400"
+        : "bg-gray-500";
+
+  return (
+    <div className="flex shrink-0 flex-col items-center gap-3 border-b border-[var(--border)] px-6 py-5">
+      {/* Status strip */}
+      <div className="flex items-center gap-2 font-mono text-[10px] text-gray-500">
+        <span
+          className={`inline-block h-2 w-2 rounded-full ${statusDotClass}`}
+        />
+        <span className="uppercase">{recordingState}</span>
+        {mimeType && <span className="text-gray-600">· {mimeType}</span>}
+      </div>
+
+      {/* Large circular record button */}
+      <button
+        type="button"
+        onClick={onStart}
+        disabled={!isSupported || recordingState === "recording" || isBusy}
+        className="flex h-16 w-16 items-center justify-center rounded-full bg-red-600 text-white shadow-lg hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        {isBusy && recordingState !== "recording" ? (
+          <Loader2 className="h-7 w-7 animate-spin" />
+        ) : (
+          <Mic className="h-7 w-7" />
+        )}
+      </button>
+
+      <div className="font-mono text-[10px] uppercase tracking-widest text-gray-400">
+        {recordingState === "recording" ? "recording…" : "start recording"}
+      </div>
+
+      {/* Elapsed time */}
+      <div className="font-mono text-[20px] text-red-400">
+        {formatDuration(elapsedSeconds)}
+      </div>
+
+      {/* Stop / Retry */}
+      <div className="flex gap-3">
+        <Button
+          type="button"
+          onClick={onStop}
+          disabled={recordingState !== "recording"}
+          variant="outline"
+          size="sm"
+          className="font-mono"
+        >
+          <Square className="h-3 w-3" />
+          Stop
+        </Button>
+        <Button
+          type="button"
+          onClick={onReset}
+          disabled={recordingState === "idle"}
+          variant="outline"
+          size="sm"
+          className="font-mono"
+        >
+          <RotateCcw className="h-3 w-3" />
+          Retry
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export function RecordingPanel({
+  accompanimentCurrentTime,
   accompanimentFile,
   accompanimentInputRef,
   accompanimentPreviewUrl,
@@ -199,6 +302,7 @@ export function RecordingPanel({
   recordedBlob,
   recordingDraft,
   recordingState,
+  onAccompanimentTimeUpdate,
   onConvertLyricsToLrc,
   onDraftChange,
   onExportMp3,
@@ -212,149 +316,122 @@ export function RecordingPanel({
   onUseAsUploadSource,
 }: RecordingPanelProps) {
   return (
-    <ScrollArea className="flex-1 h-full">
-      <div className="p-6 space-y-6">
-        <div className="space-y-2">
-          <div className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-            recording session
-          </div>
-          <div className="rounded-md border border-[var(--border)] bg-[var(--sidebar-bg)] p-4">
-            <div className="text-[10px] uppercase tracking-wide text-gray-500">
-              state
-            </div>
-            <div className="mt-1 text-[16px] font-semibold text-gray-200">
-              {recordingState}
-            </div>
-            <div className="mt-3 text-[10px] uppercase tracking-wide text-gray-500">
-              elapsed
-            </div>
-            <div className="mt-1 font-mono text-[20px] text-red-400">
-              {formatDuration(elapsedSeconds)}
-            </div>
-            <div className="mt-3 text-[10px] text-gray-500 font-mono">
-              {mimeType ? `mime: ${mimeType}` : "mime: pending"}
-            </div>
-          </div>
-        </div>
+    <div className="flex h-full flex-col">
+      {/* Hero zone — always visible, not scrollable */}
+      <RecordingHeroSection
+        elapsedSeconds={elapsedSeconds}
+        isBusy={isBusy}
+        isSupported={isSupported}
+        mimeType={mimeType}
+        recordingState={recordingState}
+        onReset={onReset}
+        onStart={onStart}
+        onStop={onStop}
+      />
 
-        <div className="rounded-md border border-[var(--border)] bg-[var(--sidebar-bg)] p-4 text-[11px] text-gray-400">
-          {isSupported
-            ? "This shell records in-browser, supports accompaniment rehearsal, lyric editing, preview, retry, and can hand the captured audio back into the upload flow."
-            : "This browser does not expose the MediaRecorder APIs needed for recording."}
-        </div>
-        <AccompanimentSection
-          accompanimentFile={accompanimentFile}
-          accompanimentInputRef={accompanimentInputRef}
-          accompanimentPreviewUrl={accompanimentPreviewUrl}
-          onSelectAccompaniment={onSelectAccompaniment}
-          onTriggerAccompanimentSelect={onTriggerAccompanimentSelect}
-        />
-        <RecordingMetadataSection
-          elapsedSeconds={elapsedSeconds}
-          lyricFormat={lyricFormat}
-          lyricLineCount={lyricLineCount}
-          onConvertLyricsToLrc={onConvertLyricsToLrc}
-          onDraftChange={onDraftChange}
-          onNormalizeLyrics={onNormalizeLyrics}
-          recordingDraft={recordingDraft}
-        />
+      {/* Bottom scrollable zone */}
+      <ScrollArea className="flex-1">
+        <div className="space-y-4 p-6">
+          {/* Lyric teleprompter */}
+          <LyricTeleprompter
+            lyrics={recordingDraft.lyrics || ""}
+            currentTime={accompanimentCurrentTime}
+          />
 
-        <div className="flex flex-wrap gap-3">
-          <Button
-            type="button"
-            onClick={onStart}
-            disabled={!isSupported || recordingState === "recording" || isBusy}
-            className="font-mono bg-red-600 hover:bg-red-700 text-white"
-          >
-            {isBusy && recordingState !== "recording" ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : (
-              <Mic className="h-3 w-3" />
-            )}
-            Start Recording
-          </Button>
-          <Button
-            type="button"
-            onClick={onStop}
-            disabled={recordingState !== "recording"}
-            variant="outline"
-            className="font-mono"
-          >
-            <Square className="h-3 w-3" />
-            Stop
-          </Button>
-          <Button
-            type="button"
-            onClick={onReset}
-            disabled={recordingState === "idle"}
-            variant="outline"
-            className="font-mono"
-          >
-            <RotateCcw className="h-3 w-3" />
-            Retry
-          </Button>
-          <Button
-            type="button"
-            onClick={onUseAsUploadSource}
-            disabled={!recordedBlob}
-            variant="outline"
-            className="font-mono"
-          >
-            <Upload className="h-3 w-3" />
-            Use In Upload
-          </Button>
-          <Button
-            type="button"
-            onClick={onExportMp3}
-            disabled={!recordedBlob || isExporting}
-            variant="outline"
-            className="font-mono"
-          >
-            {isExporting ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : (
-              <Download className="h-3 w-3" />
-            )}
-            Export MP3
-          </Button>
-          <Button
-            type="button"
-            onClick={onSaveToLibrary}
-            disabled={!recordedBlob || isSaving}
-            className="font-mono bg-green-600 hover:bg-green-700 text-white"
-          >
-            {isSaving ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : (
+          {/* Accompaniment */}
+          <AccompanimentSection
+            accompanimentFile={accompanimentFile}
+            accompanimentInputRef={accompanimentInputRef}
+            accompanimentPreviewUrl={accompanimentPreviewUrl}
+            onSelectAccompaniment={onSelectAccompaniment}
+            onTriggerAccompanimentSelect={onTriggerAccompanimentSelect}
+            onAccompanimentTimeUpdate={onAccompanimentTimeUpdate}
+          />
+
+          {/* Metadata + lyrics */}
+          <RecordingMetadataSection
+            elapsedSeconds={elapsedSeconds}
+            lyricFormat={lyricFormat}
+            lyricLineCount={lyricLineCount}
+            onConvertLyricsToLrc={onConvertLyricsToLrc}
+            onDraftChange={onDraftChange}
+            onNormalizeLyrics={onNormalizeLyrics}
+            recordingDraft={recordingDraft}
+          />
+
+          {/* Export / action buttons */}
+          <div className="flex flex-wrap gap-3">
+            <Button
+              type="button"
+              onClick={onUseAsUploadSource}
+              disabled={!recordedBlob}
+              variant="outline"
+              className="font-mono"
+            >
               <Upload className="h-3 w-3" />
-            )}
-            Save To Library
-          </Button>
-        </div>
-
-        <div className="rounded-md border border-[var(--border)] bg-[var(--sidebar-bg)] p-4">
-          <div className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-            preview
+              Use In Upload
+            </Button>
+            <Button
+              type="button"
+              onClick={onExportMp3}
+              disabled={!recordedBlob || isExporting}
+              variant="outline"
+              className="font-mono"
+            >
+              {isExporting ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Download className="h-3 w-3" />
+              )}
+              Export MP3
+            </Button>
+            <Button
+              type="button"
+              onClick={onSaveToLibrary}
+              disabled={!recordedBlob || isSaving}
+              className="font-mono bg-green-600 hover:bg-green-700 text-white"
+            >
+              {isSaving ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Upload className="h-3 w-3" />
+              )}
+              Save To Library
+            </Button>
           </div>
-          {previewUrl ? (
-            <>
-              {/* biome-ignore lint/a11y/useMediaCaption: Audio preview does not need captions */}
-              <audio controls src={previewUrl} className="w-full h-8" />
-              <div className="mt-3 text-[10px] text-gray-500 font-mono">
-                size:{" "}
-                {(recordedBlob ? recordedBlob.size / 1024 / 1024 : 0).toFixed(
-                  2,
-                )}{" "}
-                MB
+
+          {/* Preview */}
+          <div className="rounded-md border border-[var(--border)] bg-[var(--sidebar-bg)] p-4">
+            <div className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+              preview
+            </div>
+            {previewUrl ? (
+              <>
+                {/* biome-ignore lint/a11y/useMediaCaption: Audio preview does not need captions */}
+                <audio controls src={previewUrl} className="w-full h-8" />
+                <div className="mt-3 text-[10px] text-gray-500 font-mono">
+                  size:{" "}
+                  {(recordedBlob ? recordedBlob.size / 1024 / 1024 : 0).toFixed(
+                    2,
+                  )}{" "}
+                  MB
+                </div>
+              </>
+            ) : (
+              <div className="text-[11px] text-gray-500">
+                No captured audio yet.
               </div>
-            </>
-          ) : (
-            <div className="text-[11px] text-gray-500">
-              No captured audio yet.
+            )}
+          </div>
+
+          {!isSupported && (
+            <div className="rounded-md border border-[var(--border)] bg-[var(--sidebar-bg)] p-4 text-[11px] text-amber-400">
+              This browser does not expose the MediaRecorder APIs needed for
+              recording.
             </div>
           )}
         </div>
-      </div>
-    </ScrollArea>
+      </ScrollArea>
+    </div>
   );
 }

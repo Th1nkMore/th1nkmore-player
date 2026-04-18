@@ -41,6 +41,7 @@ export default function AdminPage() {
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const { logs, addLog, clearLogs } = useAdminLogs();
   const [isDeploying, setIsDeploying] = useState(false);
+  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
   const [isFetchingLyrics, setIsFetchingLyrics] = useState(false);
   const [neteaseUrl, setNeteaseUrl] = useState("");
   const [neteaseUrlEdit, setNeteaseUrlEdit] = useState("");
@@ -57,6 +58,19 @@ export default function AdminPage() {
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Auto-open terminal tray when new logs arrive or deployment starts
+  useEffect(() => {
+    if (logs.length > 0) {
+      setIsTerminalOpen(true);
+    }
+  }, [logs.length]);
+
+  useEffect(() => {
+    if (isDeploying) {
+      setIsTerminalOpen(true);
+    }
+  }, [isDeploying]);
 
   const loadPlaylist = useCallback(async () => {
     setIsLoadingPlaylist(true);
@@ -398,10 +412,9 @@ export default function AdminPage() {
         onTabChange={setActiveTab}
       />
 
-      {/* Main Content - Two Column Grid */}
-      <div className="grid flex-1 grid-cols-1 lg:grid-cols-2 gap-0 overflow-hidden">
-        {/* Left Column */}
-        <div className="flex flex-col border-r border-[var(--border)] bg-[var(--editor-bg)] overflow-hidden">
+      {/* Main Content - Full width + collapsible terminal tray */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <div className="flex-1 overflow-hidden bg-[var(--editor-bg)]">
           {activeTab === "upload" ? (
             <UploadForm
               formData={formData}
@@ -451,8 +464,13 @@ export default function AdminPage() {
           )}
         </div>
 
-        {/* Right Column - Terminal Output */}
-        <TerminalOutput logs={logs} isBusy={isDeploying} />
+        {/* Terminal tray — collapsed by default, auto-opens on new logs */}
+        <TerminalOutput
+          logs={logs}
+          isBusy={isDeploying}
+          isExpanded={isTerminalOpen}
+          onToggle={() => setIsTerminalOpen((open) => !open)}
+        />
       </div>
     </div>
   );
