@@ -47,7 +47,7 @@ export function AdminLoginScreen({
   };
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#061015] px-6 py-10 text-[#d7ffe2]">
+    <main className="relative flex min-h-screen items-center justify-center overflow-y-auto bg-[#061015] px-6 py-10 text-[#d7ffe2]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.14),transparent_26%),radial-gradient(circle_at_80%_20%,rgba(56,189,248,0.08),transparent_20%),linear-gradient(180deg,#071015_0%,#03070a_100%)]" />
       <div className="pointer-events-none absolute inset-0 opacity-25 [background-image:linear-gradient(rgba(100,255,160,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(100,255,160,0.05)_1px,transparent_1px)] [background-size:100%_28px,28px_100%]" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[linear-gradient(180deg,rgba(34,197,94,0.08),transparent)]" />
