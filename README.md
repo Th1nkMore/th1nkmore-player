@@ -1,6 +1,30 @@
 # Sonic IDE
 
-Sonic IDE is a personal music portfolio built as a fake code editor. Songs are presented as files, lyrics render in an editor-like view, and playback controls live in a terminal-style panel.
+Sonic IDE is an IDE-inspired personal music portfolio and personal player. It presents songs as files, lyrics as editable text, and playback controls as a terminal-like runtime panel.
+
+The product has two roles at the same time:
+
+- A portfolio for original work and self-uploaded audio assets
+- A personal player for songs the owner wants to keep and listen to inside the same interface
+
+Part of the library is pulled from Cloudflare R2 and managed by the owner. Another part represents songs the owner chooses to upload for personal listening. The current app already supports playback, lyrics, and admin upload basics, and it will expand toward recording, export, and stronger backend capabilities.
+
+## Product Direction
+
+- Keep the core identity as a music player, not a generic IDE mockup
+- Treat the fake IDE shell as the product language for browsing, playback, metadata, and lyrics
+- Support both portfolio tracks and personally uploaded listening tracks in one library model
+- Grow the admin area into a full audio management workspace, including upload and future recording/export workflows
+
+See the documentation baseline in [`docs/`](docs/README.md).
+
+Current planning highlights:
+
+- Product positioning: [`docs/product/positioning.md`](docs/product/positioning.md)
+- Library model: [`docs/product/library-model.md`](docs/product/library-model.md)
+- Branching and release: [`docs/process/branching-release.md`](docs/process/branching-release.md)
+- Implementation plan: [`docs/roadmap/implementation-plan.md`](docs/roadmap/implementation-plan.md)
+- Recording and export draft: [`docs/specs/recording-export.md`](docs/specs/recording-export.md)
 
 ## Core Features
 
@@ -72,10 +96,28 @@ pnpm gen-token
 1. Run `pnpm gen-token` to generate an admin magic link.
 2. Open `/admin?token=...`.
 3. Upload an audio file to R2 with a signed URL.
-4. Append or edit entries in `playlist.json`.
+4. Append or edit entries in the playlist source.
 5. Optionally import LRC lyrics from a NetEase Music link.
+
+## Branching Workflow
+
+- `main`: stable mainline branch
+- `live`: deployment branch
+- `dev`: integration and acceptance branch
+- `feat/*`: feature branches created from `dev`
+
+Required flow:
+
+1. Create every new feature branch from `dev`
+2. Complete isolated development and acceptance on `feat/*`
+3. Merge accepted feature branches back into `dev`
+4. Periodically validate `dev` and merge it into `main`
+5. Sync `live` from the validated mainline for deployment
+
+Detailed process: [`docs/process/branching-release.md`](docs/process/branching-release.md)
 
 ## Current Gaps
 
 - `pnpm type-check` passes, but `pnpm lint` still reports legacy style and complexity issues, especially in `scripts/` and a few core files.
-- The project still contains compatibility code for older audio URLs that were generated with an incorrect public host.
+- The product documentation baseline was missing and is now being established under `docs/`.
+- Recording, export formats, CI/CD, and deeper backend capabilities still need design and implementation.
