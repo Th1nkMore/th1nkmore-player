@@ -1,3 +1,9 @@
+import {
+  DEFAULT_ASSET_STATUS,
+  DEFAULT_SOURCE_TYPE,
+  DEFAULT_TRACK_TYPE,
+  DEFAULT_VISIBILITY,
+} from "@/lib/song";
 import { normalizeLanguage, slugifySegment } from "@/lib/utils";
 import type { Song } from "@/types/music";
 
@@ -30,5 +36,9 @@ export const createSongFromFormData = (
     audioUrl: publicUrl,
     metadata: formData.metadata || {},
     language: normalizeLanguage(formData.language || "en"),
+    trackType: formData.trackType || DEFAULT_TRACK_TYPE,
+    sourceType: formData.sourceType || DEFAULT_SOURCE_TYPE,
+    visibility: formData.visibility || DEFAULT_VISIBILITY,
+    assetStatus: formData.assetStatus || DEFAULT_ASSET_STATUS,
   };
 };

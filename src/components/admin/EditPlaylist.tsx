@@ -22,6 +22,7 @@ type SongItemProps = {
   onFetchLyrics: () => void;
 };
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Admin song editing intentionally groups many controls in one item card
 function SongItem({
   song,
   isEditing,
@@ -87,6 +88,63 @@ function SongItem({
               <option value="en">en</option>
               <option value="zh">zh</option>
               <option value="ja">ja</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <Label className="text-[10px] text-gray-500">Track Type</Label>
+          <select
+            value={editedSong?.trackType || "portfolio"}
+            onChange={(e) =>
+              onUpdate("trackType", e.target.value as Song["trackType"])
+            }
+            className="flex h-7 w-full rounded-md border border-[var(--border)] bg-[var(--editor-bg)] px-2 text-[11px] text-gray-300 font-mono"
+          >
+            <option value="portfolio">portfolio</option>
+            <option value="personal">personal</option>
+          </select>
+        </div>
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+          <div>
+            <Label className="text-[10px] text-gray-500">Source Type</Label>
+            <select
+              value={editedSong?.sourceType || "upload"}
+              onChange={(e) =>
+                onUpdate("sourceType", e.target.value as Song["sourceType"])
+              }
+              className="flex h-7 w-full rounded-md border border-[var(--border)] bg-[var(--editor-bg)] px-2 text-[11px] text-gray-300 font-mono"
+            >
+              <option value="upload">upload</option>
+              <option value="external-upload">external-upload</option>
+              <option value="recording">recording</option>
+            </select>
+          </div>
+          <div>
+            <Label className="text-[10px] text-gray-500">Visibility</Label>
+            <select
+              value={editedSong?.visibility || "public"}
+              onChange={(e) =>
+                onUpdate("visibility", e.target.value as Song["visibility"])
+              }
+              className="flex h-7 w-full rounded-md border border-[var(--border)] bg-[var(--editor-bg)] px-2 text-[11px] text-gray-300 font-mono"
+            >
+              <option value="public">public</option>
+              <option value="private">private</option>
+              <option value="unlisted">unlisted</option>
+            </select>
+          </div>
+          <div>
+            <Label className="text-[10px] text-gray-500">Asset Status</Label>
+            <select
+              value={editedSong?.assetStatus || "ready"}
+              onChange={(e) =>
+                onUpdate("assetStatus", e.target.value as Song["assetStatus"])
+              }
+              className="flex h-7 w-full rounded-md border border-[var(--border)] bg-[var(--editor-bg)] px-2 text-[11px] text-gray-300 font-mono"
+            >
+              <option value="ready">ready</option>
+              <option value="draft">draft</option>
+              <option value="archived">archived</option>
             </select>
           </div>
         </div>
@@ -164,6 +222,12 @@ function SongItem({
               {String(song.duration % 60).padStart(2, "0")}
             </div>
           )}
+          <div className="mt-1 flex flex-wrap gap-2 text-[10px] text-gray-500 font-mono">
+            <span>type:{song.trackType || "portfolio"}</span>
+            <span>source:{song.sourceType || "upload"}</span>
+            <span>visibility:{song.visibility || "public"}</span>
+            <span>status:{song.assetStatus || "ready"}</span>
+          </div>
         </div>
         <div className="flex gap-1">
           <Button
