@@ -7,6 +7,8 @@ import {
 import { normalizeLanguage, slugifySegment } from "@/lib/utils";
 import type { Song } from "@/types/music";
 
+type AdminLogger = (message: string) => void;
+
 export const createSongFromFormData = (
   title: string,
   artist: string,
@@ -42,3 +44,63 @@ export const createSongFromFormData = (
     assetStatus: formData.assetStatus || DEFAULT_ASSET_STATUS,
   };
 };
+
+export async function uploadAudioFileToR2(
+  file: File,
+  addLog: AdminLogger,
+): Promise<string> {
+  addLog("> Requesting upload URL...");
+  const signUrlResponse = await fetch("/api/admin/sign-url", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      filename: file.name,
+      contentType: file.type || "audio/mpeg",
+    }),
+  });
+
+  if (!signUrlResponse.ok) {
+    const error = await signUrlResponse.json();
+    throw new Error(error.error || "Failed to get upload URL");
+  }
+
+  const { uploadUrl, publicUrl, key } = await signUrlResponse.json();
+  addLog(`> Upload URL generated: ${key}`);
+
+  addLog("> Uploading audio binary...");
+  const uploadResponse = await fetch(uploadUrl, {
+    method: "PUT",
+    body: file,
+    headers: {
+      "Content-Type": file.type || "audio/mpeg",
+    },
+  });
+
+  if (!uploadResponse.ok) {
+    throw new Error("Failed to upload file to R2");
+  }
+
+  addLog("> Upload complete");
+  return publicUrl;
+}
+
+export async function fetchAdminPlaylist(): Promise<Song[]> {
+  const playlistResponse = await fetch("/api/admin/playlist");
+  if (!playlistResponse.ok) {
+    throw new Error("Failed to fetch playlist");
+  }
+
+  return playlistResponse.json();
+}
+
+export async function saveAdminPlaylist(playlist: Song[]): Promise<void> {
+  const response = await fetch("/api/admin/playlist", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(playlist),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to update playlist");
+  }
+}

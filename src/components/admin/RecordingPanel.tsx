@@ -1,0 +1,144 @@
+"use client";
+
+import { Loader2, Mic, RotateCcw, Square, Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import type { RecordingState } from "@/lib/hooks/useAudioRecorder";
+
+type RecordingPanelProps = {
+  elapsedSeconds: number;
+  isBusy: boolean;
+  isSupported: boolean;
+  mimeType: string;
+  previewUrl: string | null;
+  recordedBlob: Blob | null;
+  recordingState: RecordingState;
+  onReset: () => void;
+  onStart: () => void;
+  onStop: () => void;
+  onUseAsUploadSource: () => void;
+};
+
+function formatDuration(totalSeconds: number) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+export function RecordingPanel({
+  elapsedSeconds,
+  isBusy,
+  isSupported,
+  mimeType,
+  previewUrl,
+  recordedBlob,
+  recordingState,
+  onReset,
+  onStart,
+  onStop,
+  onUseAsUploadSource,
+}: RecordingPanelProps) {
+  return (
+    <ScrollArea className="flex-1 h-full">
+      <div className="p-6 space-y-6">
+        <div className="space-y-2">
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+            recording session
+          </div>
+          <div className="rounded-md border border-[var(--border)] bg-[var(--sidebar-bg)] p-4">
+            <div className="text-[10px] uppercase tracking-wide text-gray-500">
+              state
+            </div>
+            <div className="mt-1 text-[16px] font-semibold text-gray-200">
+              {recordingState}
+            </div>
+            <div className="mt-3 text-[10px] uppercase tracking-wide text-gray-500">
+              elapsed
+            </div>
+            <div className="mt-1 font-mono text-[20px] text-red-400">
+              {formatDuration(elapsedSeconds)}
+            </div>
+            <div className="mt-3 text-[10px] text-gray-500 font-mono">
+              {mimeType ? `mime: ${mimeType}` : "mime: pending"}
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-md border border-[var(--border)] bg-[var(--sidebar-bg)] p-4 text-[11px] text-gray-400">
+          {isSupported
+            ? "This shell records in-browser, supports preview and retry, and can hand the captured audio back into the upload flow."
+            : "This browser does not expose the MediaRecorder APIs needed for recording."}
+        </div>
+
+        <div className="flex flex-wrap gap-3">
+          <Button
+            type="button"
+            onClick={onStart}
+            disabled={!isSupported || recordingState === "recording" || isBusy}
+            className="font-mono bg-red-600 hover:bg-red-700 text-white"
+          >
+            {isBusy && recordingState !== "recording" ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Mic className="h-3 w-3" />
+            )}
+            Start Recording
+          </Button>
+          <Button
+            type="button"
+            onClick={onStop}
+            disabled={recordingState !== "recording"}
+            variant="outline"
+            className="font-mono"
+          >
+            <Square className="h-3 w-3" />
+            Stop
+          </Button>
+          <Button
+            type="button"
+            onClick={onReset}
+            disabled={recordingState === "idle"}
+            variant="outline"
+            className="font-mono"
+          >
+            <RotateCcw className="h-3 w-3" />
+            Retry
+          </Button>
+          <Button
+            type="button"
+            onClick={onUseAsUploadSource}
+            disabled={!recordedBlob}
+            variant="outline"
+            className="font-mono"
+          >
+            <Upload className="h-3 w-3" />
+            Use In Upload
+          </Button>
+        </div>
+
+        <div className="rounded-md border border-[var(--border)] bg-[var(--sidebar-bg)] p-4">
+          <div className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+            preview
+          </div>
+          {previewUrl ? (
+            <>
+              {/* biome-ignore lint/a11y/useMediaCaption: Audio preview does not need captions */}
+              <audio controls src={previewUrl} className="w-full h-8" />
+              <div className="mt-3 text-[10px] text-gray-500 font-mono">
+                size:{" "}
+                {(recordedBlob ? recordedBlob.size / 1024 / 1024 : 0).toFixed(
+                  2,
+                )}{" "}
+                MB
+              </div>
+            </>
+          ) : (
+            <div className="text-[11px] text-gray-500">
+              No captured audio yet.
+            </div>
+          )}
+        </div>
+      </div>
+    </ScrollArea>
+  );
+}
