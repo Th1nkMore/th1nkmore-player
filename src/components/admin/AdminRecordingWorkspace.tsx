@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { RecordingPanel } from "@/components/admin/RecordingPanel";
+import { exportBlobAsMp3 } from "@/lib/audio-export";
 import { useAudioRecorder } from "@/lib/hooks/useAudioRecorder";
 
 type AdminRecordingWorkspaceProps = {
@@ -14,6 +15,7 @@ export function AdminRecordingWorkspace({
   onUseRecordedFile,
 }: AdminRecordingWorkspaceProps) {
   const [isBusy, setIsBusy] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const {
     elapsedSeconds,
     isSupported,
@@ -86,15 +88,41 @@ export function AdminRecordingWorkspace({
     addLog(`> Recording attached as upload source: ${recordedFile.name}`);
   };
 
+  const handleExportMp3 = async () => {
+    if (!recordedBlob) {
+      addLog("> Error: No recorded audio available");
+      return;
+    }
+
+    setIsExporting(true);
+    addLog("> Converting recording to MP3...");
+
+    try {
+      const { blob, filename } = await exportBlobAsMp3(recordedBlob, {
+        fileBaseName: `recording-${Date.now()}`,
+      });
+      addLog(`> MP3 export ready: ${filename}`);
+      addLog(`> MP3 size: ${(blob.size / 1024 / 1024).toFixed(2)} MB`);
+    } catch (error) {
+      addLog(
+        `> Error: ${error instanceof Error ? error.message : "Failed to export MP3"}`,
+      );
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <RecordingPanel
       elapsedSeconds={elapsedSeconds}
       isBusy={isBusy}
+      isExporting={isExporting}
       isSupported={isSupported}
       mimeType={mimeType}
       previewUrl={previewUrl}
       recordedBlob={recordedBlob}
       recordingState={recordingState}
+      onExportMp3={handleExportMp3}
       onReset={handleResetRecording}
       onStart={handleStartRecording}
       onStop={handleStopRecording}
