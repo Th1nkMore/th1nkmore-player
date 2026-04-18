@@ -1,13 +1,19 @@
-export type MediaAssetKind = "audio" | "recording" | "export";
+export type MediaAssetKind = "accompaniment" | "audio" | "recording" | "export";
 
 const MEDIA_PREFIX: Record<MediaAssetKind, string> = {
+  accompaniment: "accompaniments",
   audio: "audio",
   recording: "recordings",
   export: "exports",
 };
 
 export function isMediaAssetKind(value: string): value is MediaAssetKind {
-  return value === "audio" || value === "recording" || value === "export";
+  return (
+    value === "accompaniment" ||
+    value === "audio" ||
+    value === "recording" ||
+    value === "export"
+  );
 }
 
 export function sanitizeMediaFilename(filename: string): string {

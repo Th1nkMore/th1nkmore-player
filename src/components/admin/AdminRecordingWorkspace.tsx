@@ -19,6 +19,7 @@ type AdminRecordingWorkspaceProps = {
     file: File,
     durationSeconds: number,
     draft: Partial<Song>,
+    accompanimentFile?: File | null,
   ) => Promise<void>;
 };
 
@@ -177,10 +178,15 @@ export function AdminRecordingWorkspace({
     addLog("> Saving recording to managed library...");
 
     try {
-      await onSaveRecordedFile(recordedFile, elapsedSeconds, {
-        ...recordingDraft,
-        sourceType: "recording",
-      });
+      await onSaveRecordedFile(
+        recordedFile,
+        elapsedSeconds,
+        {
+          ...recordingDraft,
+          sourceType: "recording",
+        },
+        accompanimentFile,
+      );
       addLog("> Recording saved to library");
       resetRecording();
     } catch (error) {

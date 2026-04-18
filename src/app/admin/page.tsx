@@ -350,6 +350,7 @@ export default function AdminPage() {
     recordedFile: File,
     durationSeconds: number,
     draft: Partial<Song>,
+    accompanimentFile?: File | null,
   ) => {
     const recordingFormData: Partial<Song> = {
       ...draft,
@@ -358,6 +359,7 @@ export default function AdminPage() {
     };
     const newSong = await persistSongAssetToLibrary({
       addLog,
+      accompanimentFile,
       assetKind: "recording",
       file: recordedFile,
       formData: recordingFormData,

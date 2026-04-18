@@ -30,7 +30,10 @@ export async function POST(request: NextRequest) {
 
     if (!isMediaAssetKind(assetKind)) {
       return NextResponse.json(
-        { error: "assetKind must be one of: audio, recording, export" },
+        {
+          error:
+            "assetKind must be one of: accompaniment, audio, recording, export",
+        },
         { status: 400 },
       );
     }

@@ -117,6 +117,7 @@ export async function saveAdminPlaylist(playlist: Song[]): Promise<void> {
 
 type PersistSongAssetInput = {
   addLog: AdminLogger;
+  accompanimentFile?: File | null;
   assetKind?: MediaAssetKind;
   file: File;
   formData: Partial<Song>;
@@ -124,6 +125,7 @@ type PersistSongAssetInput = {
 
 export async function persistSongAssetToLibrary({
   addLog,
+  accompanimentFile,
   assetKind = "audio",
   file,
   formData,
@@ -132,15 +134,32 @@ export async function persistSongAssetToLibrary({
     throw new Error("Please fill in title, artist, and album");
   }
 
+  let nextFormData = { ...formData };
+  if (accompanimentFile) {
+    const accompanimentUrl = await uploadAudioFileToR2(
+      accompanimentFile,
+      addLog,
+      "accompaniment",
+    );
+    nextFormData = {
+      ...nextFormData,
+      metadata: {
+        ...(nextFormData.metadata || {}),
+        accompanimentFileName: accompanimentFile.name,
+        accompanimentUrl,
+      },
+    };
+  }
+
   const publicUrl = await uploadAudioFileToR2(file, addLog, assetKind);
   const currentPlaylist = await fetchAdminPlaylist();
   const newSong = createSongFromFormData(
-    formData.title,
-    formData.artist,
-    formData.album,
+    nextFormData.title || "",
+    nextFormData.artist || "",
+    nextFormData.album || "",
     publicUrl,
     currentPlaylist,
-    formData,
+    nextFormData,
   );
 
   const updatedPlaylist = [...currentPlaylist, newSong];
