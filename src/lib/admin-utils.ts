@@ -8,6 +8,13 @@ import { normalizeLanguage, slugifySegment } from "@/lib/utils";
 import type { Song } from "@/types/music";
 
 type AdminLogger = (message: string) => void;
+type SongInfoPayload = Pick<Song, "title" | "artist" | "album" | "duration">;
+
+export type LyricsFetchResult = {
+  songId: string;
+  lyrics: string;
+  songInfo?: SongInfoPayload | null;
+};
 
 export const createSongFromFormData = (
   title: string,
@@ -103,4 +110,37 @@ export async function saveAdminPlaylist(playlist: Song[]): Promise<void> {
   if (!response.ok) {
     throw new Error("Failed to update playlist");
   }
+}
+
+export async function fetchLyricsFromAdmin(
+  url: string,
+): Promise<LyricsFetchResult> {
+  const response = await fetch("/api/admin/fetch-lyrics", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || "Failed to fetch lyrics");
+  }
+
+  return response.json();
+}
+
+export function mergeFetchedSongInfo<T extends Partial<Song>>(
+  draft: T,
+  songInfo?: SongInfoPayload | null,
+): T {
+  if (!songInfo) {
+    return draft;
+  }
+
+  const nextDraft = { ...draft };
+  if (songInfo.title) nextDraft.title = songInfo.title;
+  if (songInfo.artist) nextDraft.artist = songInfo.artist;
+  if (songInfo.album) nextDraft.album = songInfo.album;
+  if (songInfo.duration) nextDraft.duration = songInfo.duration;
+  return nextDraft;
 }

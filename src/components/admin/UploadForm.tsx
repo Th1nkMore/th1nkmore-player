@@ -2,6 +2,7 @@
 
 import { Loader2, Play, Upload } from "lucide-react";
 import type { RefObject } from "react";
+import { LyricsTools } from "@/components/admin/LyricsTools";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,10 +17,14 @@ type UploadFormProps = {
   setNeteaseUrl: (url: string) => void;
   isFetchingLyrics: boolean;
   isDeploying: boolean;
+  lyricsFormat: "lrc" | "plain" | "empty";
+  lyricLineCount: number;
   fileInputRef: RefObject<HTMLInputElement | null>;
+  handleConvertLyricsToLrc: () => void;
   handleFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleFetchLyrics: () => void;
   handleDeploy: () => void;
+  handleNormalizeLyrics: () => void;
 };
 
 export function UploadForm({
@@ -30,10 +35,14 @@ export function UploadForm({
   setNeteaseUrl,
   isFetchingLyrics,
   isDeploying,
+  lyricsFormat,
+  lyricLineCount,
   fileInputRef,
+  handleConvertLyricsToLrc,
   handleFileSelect,
   handleFetchLyrics,
   handleDeploy,
+  handleNormalizeLyrics,
 }: UploadFormProps) {
   return (
     <ScrollArea className="flex-1 h-full">
@@ -290,6 +299,17 @@ export function UploadForm({
             className="flex w-full rounded-md border border-[var(--border)] bg-[var(--sidebar-bg)] px-3 py-2 text-[12px] text-gray-300 font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-600 resize-none"
             placeholder="[00:00.00]Line 1&#10;[00:05.00]Line 2"
           />
+          <div className="mt-2">
+            <LyricsTools
+              format={lyricsFormat}
+              lineCount={lyricLineCount}
+              canConvert={
+                lyricsFormat === "plain" && (formData.duration || 0) > 0
+              }
+              onConvert={handleConvertLyricsToLrc}
+              onNormalize={handleNormalizeLyrics}
+            />
+          </div>
         </div>
 
         <div>
