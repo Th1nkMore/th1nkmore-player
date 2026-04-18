@@ -14,6 +14,12 @@ import {
   type S3Client,
 } from "@aws-sdk/client-s3";
 import { config } from "dotenv";
+import {
+  DEFAULT_ASSET_STATUS,
+  DEFAULT_SOURCE_TYPE,
+  DEFAULT_TRACK_TYPE,
+  DEFAULT_VISIBILITY,
+} from "../src/lib/song";
 import type { Song } from "../src/types/music";
 import {
   createR2Client,
@@ -195,6 +201,10 @@ async function generateAndUploadPlaylist() {
         audioUrl,
         metadata: {},
         language: "en",
+        trackType: DEFAULT_TRACK_TYPE,
+        sourceType: DEFAULT_SOURCE_TYPE,
+        visibility: DEFAULT_VISIBILITY,
+        assetStatus: DEFAULT_ASSET_STATUS,
       };
 
       console.log(

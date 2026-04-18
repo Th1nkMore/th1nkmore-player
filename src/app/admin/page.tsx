@@ -7,6 +7,11 @@ import { TerminalOutput } from "@/components/admin/TerminalOutput";
 import { UploadForm } from "@/components/admin/UploadForm";
 import { createSongFromFormData } from "@/lib/admin-utils";
 import { useAdminLogs } from "@/lib/hooks/useAdminLogs";
+import {
+  createEmptySongDraft,
+  normalizePlaylistSongs,
+  normalizeSong,
+} from "@/lib/song";
 import { normalizeLanguage } from "@/lib/utils";
 import type { Song } from "@/types/music";
 
@@ -20,15 +25,7 @@ export default function AdminPage() {
   const [isLoadingPlaylist, setIsLoadingPlaylist] = useState(false);
   const [isSavingPlaylist, setIsSavingPlaylist] = useState(false);
 
-  const [formData, setFormData] = useState<Partial<Song>>({
-    title: "",
-    artist: "",
-    album: "",
-    duration: 0,
-    lyrics: "",
-    language: "en",
-    metadata: {},
-  });
+  const [formData, setFormData] = useState<Partial<Song>>(createEmptySongDraft);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const { logs, addLog, clearLogs } = useAdminLogs();
   const [isDeploying, setIsDeploying] = useState(false);
@@ -55,7 +52,7 @@ export default function AdminPage() {
       const response = await fetch("/api/admin/playlist");
       if (response.ok) {
         const data = await response.json();
-        setPlaylist(data);
+        setPlaylist(normalizePlaylistSongs(data as Song[]));
       } else {
         addLog("> Error: Failed to load playlist");
       }
@@ -77,7 +74,7 @@ export default function AdminPage() {
 
   const handleEditSong = (song: Song) => {
     setEditingSongId(song.id);
-    setEditedSong({ ...song });
+    setEditedSong(normalizeSong(song));
     setNeteaseUrlEdit(""); // Reset NetEase URL when starting to edit
   };
 
@@ -91,7 +88,7 @@ export default function AdminPage() {
     if (!editedSong) return;
 
     const updatedPlaylist = playlist.map((song) =>
-      song.id === editedSong.id ? editedSong : song,
+      song.id === editedSong.id ? normalizeSong(editedSong) : song,
     );
     setPlaylist(updatedPlaylist);
     setEditingSongId(null);
@@ -318,10 +315,12 @@ export default function AdminPage() {
     }
 
     const songs = playlistToUpdate ?? [];
-    const normalizedPlaylist = songs.map((song) => ({
-      ...song,
-      language: normalizeLanguage(song.language),
-    }));
+    const normalizedPlaylist = normalizePlaylistSongs(
+      songs.map((song) => ({
+        ...song,
+        language: normalizeLanguage(song.language),
+      })),
+    );
     addLog(`> Found ${normalizedPlaylist.length} existing tracks`);
 
     const updatedPlaylist = [...normalizedPlaylist, newSong];
@@ -341,15 +340,7 @@ export default function AdminPage() {
   };
 
   const resetUploadForm = () => {
-    setFormData({
-      title: "",
-      artist: "",
-      album: "",
-      duration: 0,
-      lyrics: "",
-      language: "en",
-      metadata: {},
-    });
+    setFormData(createEmptySongDraft());
     setAudioFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";

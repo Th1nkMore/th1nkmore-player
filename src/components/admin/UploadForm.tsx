@@ -143,6 +143,103 @@ export function UploadForm({
 
         <div>
           <Label
+            htmlFor="track-type"
+            className="mb-2 block text-[11px] font-semibold uppercase tracking-wide text-gray-400"
+          >
+            track type:
+          </Label>
+          <select
+            id="track-type"
+            value={formData.trackType}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                trackType: e.target.value as Song["trackType"],
+              })
+            }
+            className="flex h-9 w-full rounded-md border border-[var(--border)] bg-[var(--sidebar-bg)] px-3 py-1 text-[12px] text-gray-300 font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-600"
+          >
+            <option value="portfolio">portfolio</option>
+            <option value="personal">personal</option>
+          </select>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div>
+            <Label
+              htmlFor="source-type"
+              className="mb-2 block text-[11px] font-semibold uppercase tracking-wide text-gray-400"
+            >
+              source type:
+            </Label>
+            <select
+              id="source-type"
+              value={formData.sourceType}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  sourceType: e.target.value as Song["sourceType"],
+                })
+              }
+              className="flex h-9 w-full rounded-md border border-[var(--border)] bg-[var(--sidebar-bg)] px-3 py-1 text-[12px] text-gray-300 font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-600"
+            >
+              <option value="upload">upload</option>
+              <option value="external-upload">external-upload</option>
+              <option value="recording">recording</option>
+            </select>
+          </div>
+
+          <div>
+            <Label
+              htmlFor="visibility"
+              className="mb-2 block text-[11px] font-semibold uppercase tracking-wide text-gray-400"
+            >
+              visibility:
+            </Label>
+            <select
+              id="visibility"
+              value={formData.visibility}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  visibility: e.target.value as Song["visibility"],
+                })
+              }
+              className="flex h-9 w-full rounded-md border border-[var(--border)] bg-[var(--sidebar-bg)] px-3 py-1 text-[12px] text-gray-300 font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-600"
+            >
+              <option value="public">public</option>
+              <option value="private">private</option>
+              <option value="unlisted">unlisted</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <Label
+            htmlFor="asset-status"
+            className="mb-2 block text-[11px] font-semibold uppercase tracking-wide text-gray-400"
+          >
+            asset status:
+          </Label>
+          <select
+            id="asset-status"
+            value={formData.assetStatus}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                assetStatus: e.target.value as Song["assetStatus"],
+              })
+            }
+            className="flex h-9 w-full rounded-md border border-[var(--border)] bg-[var(--sidebar-bg)] px-3 py-1 text-[12px] text-gray-300 font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-600"
+          >
+            <option value="ready">ready</option>
+            <option value="draft">draft</option>
+            <option value="archived">archived</option>
+          </select>
+        </div>
+
+        <div>
+          <Label
             htmlFor="netease-url"
             className="mb-2 block text-[11px] font-semibold uppercase tracking-wide text-gray-400"
           >
