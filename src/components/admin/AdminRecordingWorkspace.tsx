@@ -4,18 +4,32 @@ import { useState } from "react";
 import { RecordingPanel } from "@/components/admin/RecordingPanel";
 import { exportBlobAsMp3 } from "@/lib/audio-export";
 import { useAudioRecorder } from "@/lib/hooks/useAudioRecorder";
+import { createEmptySongDraft } from "@/lib/song";
+import type { Song } from "@/types/music";
 
 type AdminRecordingWorkspaceProps = {
   addLog: (message: string) => void;
   onUseRecordedFile: (file: File, durationSeconds: number) => void;
+  onSaveRecordedFile: (
+    file: File,
+    durationSeconds: number,
+    draft: Partial<Song>,
+  ) => Promise<void>;
 };
 
 export function AdminRecordingWorkspace({
   addLog,
   onUseRecordedFile,
+  onSaveRecordedFile,
 }: AdminRecordingWorkspaceProps) {
   const [isBusy, setIsBusy] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [recordingDraft, setRecordingDraft] = useState<Partial<Song>>({
+    ...createEmptySongDraft(),
+    sourceType: "recording",
+    title: `Recording ${new Date().toLocaleString()}`,
+  });
   const {
     elapsedSeconds,
     isSupported,
@@ -27,6 +41,26 @@ export function AdminRecordingWorkspace({
     startRecording,
     stopRecording,
   } = useAudioRecorder();
+
+  const buildRecordedFile = () => {
+    if (!recordedBlob) {
+      return null;
+    }
+
+    const fileExtension = recordedBlob.type.includes("mp4")
+      ? "m4a"
+      : recordedBlob.type.includes("ogg")
+        ? "ogg"
+        : "webm";
+
+    return new File(
+      [recordedBlob],
+      `recording-${Date.now()}.${fileExtension}`,
+      {
+        type: recordedBlob.type || mimeType || "audio/webm",
+      },
+    );
+  };
 
   const handleStartRecording = async () => {
     setIsBusy(true);
@@ -66,26 +100,40 @@ export function AdminRecordingWorkspace({
   };
 
   const handleUseAsUploadSource = () => {
-    if (!recordedBlob) {
+    const recordedFile = buildRecordedFile();
+    if (!recordedFile) {
       addLog("> Error: No recorded audio available");
       return;
     }
 
-    const fileExtension = recordedBlob.type.includes("mp4")
-      ? "m4a"
-      : recordedBlob.type.includes("ogg")
-        ? "ogg"
-        : "webm";
-    const recordedFile = new File(
-      [recordedBlob],
-      `recording-${Date.now()}.${fileExtension}`,
-      {
-        type: recordedBlob.type || mimeType || "audio/webm",
-      },
-    );
-
     onUseRecordedFile(recordedFile, elapsedSeconds);
     addLog(`> Recording attached as upload source: ${recordedFile.name}`);
+  };
+
+  const handleSaveToLibrary = async () => {
+    const recordedFile = buildRecordedFile();
+    if (!recordedFile) {
+      addLog("> Error: No recorded audio available");
+      return;
+    }
+
+    setIsSaving(true);
+    addLog("> Saving recording to managed library...");
+
+    try {
+      await onSaveRecordedFile(recordedFile, elapsedSeconds, {
+        ...recordingDraft,
+        sourceType: "recording",
+      });
+      addLog("> Recording saved to library");
+      resetRecording();
+    } catch (error) {
+      addLog(
+        `> Error: ${error instanceof Error ? error.message : "Failed to save recording"}`,
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleExportMp3 = async () => {
@@ -117,13 +165,19 @@ export function AdminRecordingWorkspace({
       elapsedSeconds={elapsedSeconds}
       isBusy={isBusy}
       isExporting={isExporting}
+      isSaving={isSaving}
       isSupported={isSupported}
       mimeType={mimeType}
       previewUrl={previewUrl}
       recordedBlob={recordedBlob}
+      recordingDraft={recordingDraft}
       recordingState={recordingState}
+      onDraftChange={(field, value) =>
+        setRecordingDraft((current) => ({ ...current, [field]: value }))
+      }
       onExportMp3={handleExportMp3}
       onReset={handleResetRecording}
+      onSaveToLibrary={handleSaveToLibrary}
       onStart={handleStartRecording}
       onStop={handleStopRecording}
       onUseAsUploadSource={handleUseAsUploadSource}

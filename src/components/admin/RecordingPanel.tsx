@@ -9,20 +9,27 @@ import {
   Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { RecordingState } from "@/lib/hooks/useAudioRecorder";
+import type { Song } from "@/types/music";
 
 type RecordingPanelProps = {
   elapsedSeconds: number;
   isBusy: boolean;
   isExporting: boolean;
+  isSaving: boolean;
   isSupported: boolean;
   mimeType: string;
   previewUrl: string | null;
   recordedBlob: Blob | null;
+  recordingDraft: Partial<Song>;
   recordingState: RecordingState;
+  onDraftChange: (field: keyof Song, value: Song[keyof Song]) => void;
   onExportMp3: () => void;
   onReset: () => void;
+  onSaveToLibrary: () => void;
   onStart: () => void;
   onStop: () => void;
   onUseAsUploadSource: () => void;
@@ -38,13 +45,17 @@ export function RecordingPanel({
   elapsedSeconds,
   isBusy,
   isExporting,
+  isSaving,
   isSupported,
   mimeType,
   previewUrl,
   recordedBlob,
+  recordingDraft,
   recordingState,
+  onDraftChange,
   onExportMp3,
   onReset,
+  onSaveToLibrary,
   onStart,
   onStop,
   onUseAsUploadSource,
@@ -79,6 +90,42 @@ export function RecordingPanel({
           {isSupported
             ? "This shell records in-browser, supports preview and retry, and can hand the captured audio back into the upload flow."
             : "This browser does not expose the MediaRecorder APIs needed for recording."}
+        </div>
+
+        <div className="space-y-3 rounded-md border border-[var(--border)] bg-[var(--sidebar-bg)] p-4">
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+            recording metadata
+          </div>
+          <div>
+            <Label className="mb-2 block text-[10px] text-gray-500">
+              Title
+            </Label>
+            <Input
+              value={recordingDraft.title || ""}
+              onChange={(event) => onDraftChange("title", event.target.value)}
+              className="font-mono bg-[var(--editor-bg)] border-[var(--border)] text-gray-300 text-[11px] h-8"
+            />
+          </div>
+          <div>
+            <Label className="mb-2 block text-[10px] text-gray-500">
+              Artist
+            </Label>
+            <Input
+              value={recordingDraft.artist || ""}
+              onChange={(event) => onDraftChange("artist", event.target.value)}
+              className="font-mono bg-[var(--editor-bg)] border-[var(--border)] text-gray-300 text-[11px] h-8"
+            />
+          </div>
+          <div>
+            <Label className="mb-2 block text-[10px] text-gray-500">
+              Album
+            </Label>
+            <Input
+              value={recordingDraft.album || ""}
+              onChange={(event) => onDraftChange("album", event.target.value)}
+              className="font-mono bg-[var(--editor-bg)] border-[var(--border)] text-gray-300 text-[11px] h-8"
+            />
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-3">
@@ -138,6 +185,19 @@ export function RecordingPanel({
               <Download className="h-3 w-3" />
             )}
             Export MP3
+          </Button>
+          <Button
+            type="button"
+            onClick={onSaveToLibrary}
+            disabled={!recordedBlob || isSaving}
+            className="font-mono bg-green-600 hover:bg-green-700 text-white"
+          >
+            {isSaving ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Upload className="h-3 w-3" />
+            )}
+            Save To Library
           </Button>
         </div>
 

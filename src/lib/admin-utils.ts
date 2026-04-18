@@ -115,6 +115,39 @@ export async function saveAdminPlaylist(playlist: Song[]): Promise<void> {
   }
 }
 
+type PersistSongAssetInput = {
+  addLog: AdminLogger;
+  assetKind?: MediaAssetKind;
+  file: File;
+  formData: Partial<Song>;
+};
+
+export async function persistSongAssetToLibrary({
+  addLog,
+  assetKind = "audio",
+  file,
+  formData,
+}: PersistSongAssetInput): Promise<Song> {
+  if (!(formData.title && formData.artist && formData.album)) {
+    throw new Error("Please fill in title, artist, and album");
+  }
+
+  const publicUrl = await uploadAudioFileToR2(file, addLog, assetKind);
+  const currentPlaylist = await fetchAdminPlaylist();
+  const newSong = createSongFromFormData(
+    formData.title,
+    formData.artist,
+    formData.album,
+    publicUrl,
+    currentPlaylist,
+    formData,
+  );
+
+  const updatedPlaylist = [...currentPlaylist, newSong];
+  await saveAdminPlaylist(updatedPlaylist);
+  return newSong;
+}
+
 export async function fetchLyricsFromAdmin(
   url: string,
 ): Promise<LyricsFetchResult> {

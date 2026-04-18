@@ -7,12 +7,10 @@ import { EditPlaylist } from "@/components/admin/EditPlaylist";
 import { TerminalOutput } from "@/components/admin/TerminalOutput";
 import { UploadForm } from "@/components/admin/UploadForm";
 import {
-  createSongFromFormData,
-  fetchAdminPlaylist,
   fetchLyricsFromAdmin,
   mergeFetchedSongInfo,
+  persistSongAssetToLibrary,
   saveAdminPlaylist,
-  uploadAudioFileToR2,
 } from "@/lib/admin-utils";
 import { useAdminLogs } from "@/lib/hooks/useAdminLogs";
 import {
@@ -25,7 +23,6 @@ import {
   normalizePlaylistSongs,
   normalizeSong,
 } from "@/lib/song";
-import { normalizeLanguage } from "@/lib/utils";
 import type { Song } from "@/types/music";
 
 type Tab = "upload" | "record" | "edit";
@@ -241,31 +238,6 @@ export default function AdminPage() {
     }
   };
 
-  const updatePlaylistWithNewSong = async (
-    newSong: Song,
-    currentPlaylist?: Song[],
-  ) => {
-    let playlistToUpdate = currentPlaylist;
-    if (!playlistToUpdate) {
-      addLog("> Fetching current manifest...");
-      playlistToUpdate = await fetchAdminPlaylist();
-    }
-
-    const songs = playlistToUpdate ?? [];
-    const normalizedPlaylist = normalizePlaylistSongs(
-      songs.map((song) => ({
-        ...song,
-        language: normalizeLanguage(song.language),
-      })),
-    );
-    addLog(`> Found ${normalizedPlaylist.length} existing tracks`);
-
-    const updatedPlaylist = [...normalizedPlaylist, newSong];
-    addLog("> Updating manifest...");
-    await saveAdminPlaylist(updatedPlaylist);
-    addLog("> Manifest updated successfully");
-  };
-
   const handleNormalizeLyrics = () => {
     const normalizedLyrics = normalizeLyricsWorkflow(formData.lyrics || "");
     setFormData({ ...formData, lyrics: normalizedLyrics });
@@ -330,26 +302,18 @@ export default function AdminPage() {
       return;
     }
 
-    const { title, artist, album } = formData;
-
     setIsDeploying(true);
     clearLogs();
 
     try {
       addLog("> Authenticating...");
       await new Promise((resolve) => setTimeout(resolve, 500));
-
-      const publicUrl = await uploadAudioFileToR2(audioFile, addLog);
-      const currentPlaylist = await fetchAdminPlaylist();
-      const newSong = createSongFromFormData(
-        title,
-        artist,
-        album,
-        publicUrl,
-        currentPlaylist,
+      const newSong = await persistSongAssetToLibrary({
+        addLog,
+        assetKind: formData.sourceType === "recording" ? "recording" : "audio",
+        file: audioFile,
         formData,
-      );
-      await updatePlaylistWithNewSong(newSong, currentPlaylist);
+      });
 
       addLog("> Deployment successful!");
       addLog(`> New track: ${newSong.title} by ${newSong.artist}`);
@@ -380,6 +344,29 @@ export default function AdminPage() {
       sourceType: "recording",
     });
     setActiveTab("upload");
+  };
+
+  const handleSaveRecordingToLibrary = async (
+    recordedFile: File,
+    durationSeconds: number,
+    draft: Partial<Song>,
+  ) => {
+    const recordingFormData: Partial<Song> = {
+      ...draft,
+      duration: durationSeconds,
+      sourceType: "recording",
+    };
+    const newSong = await persistSongAssetToLibrary({
+      addLog,
+      assetKind: "recording",
+      file: recordedFile,
+      formData: recordingFormData,
+    });
+
+    addLog(`> New recording: ${newSong.title} by ${newSong.artist}`);
+    if (activeTab === "edit") {
+      loadPlaylist();
+    }
   };
 
   const uploadLyricsDescriptor = describeLyrics(formData.lyrics || "");
@@ -463,6 +450,7 @@ export default function AdminPage() {
           ) : activeTab === "record" ? (
             <AdminRecordingWorkspace
               addLog={addLog}
+              onSaveRecordedFile={handleSaveRecordingToLibrary}
               onUseRecordedFile={handleUseRecordingAsUploadSource}
             />
           ) : (
