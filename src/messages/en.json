@@ -81,10 +81,40 @@
     "bootingSystem": "Booting System...",
     "loadingPlaylist": "Loading playlist..."
   },
+  "layout": {
+    "openMenu": "Open menu",
+    "openInspector": "Open inspector",
+    "hideTerminal": "Hide terminal",
+    "showTerminal": "Show terminal",
+    "fileExplorer": "File explorer",
+    "inspector": "Inspector",
+    "mobileNavigation": "Mobile navigation"
+  },
   "mobileNav": {
     "lyrics": "Lyrics",
     "songs": "Songs",
     "settings": "Settings"
+  },
+  "controls": {
+    "previous": "Previous",
+    "next": "Next",
+    "play": "Play",
+    "pause": "Pause",
+    "playOrder": "Play order",
+    "decreaseVolume": "Decrease volume",
+    "increaseVolume": "Increase volume",
+    "closeTerminal": "Close terminal",
+    "progressPercent": "Progress: {percent}%",
+    "volumePercent": "Volume: {percent}%",
+    "switchToTrack": "Switch to {title}",
+    "closeTrack": "Close {title}",
+    "playTrack": "Play {title}",
+    "removeTrackFromQueue": "Remove {title} from queue",
+    "addTrackToQueue": "Add {title} to queue",
+    "openTrack": "Open {title}",
+    "openTrackWithHint": "Open {title}. Double click to add to queue.",
+    "goToTime": "Go to time {time}",
+    "seekWaveform": "Waveform - click to seek"
   },
   "player": {
     "nowPlaying": "Now Playing",

@@ -18,6 +18,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { usePlayerStore } from "@/store/usePlayerStore";
@@ -45,6 +46,7 @@ function SortableTab({
   onTabClose,
   tabRef,
 }: SortableTabProps) {
+  const tControls = useTranslations("controls");
   const {
     attributes,
     listeners,
@@ -96,7 +98,7 @@ function SortableTab({
         isActive && "bg-background text-foreground",
         isDragging && "shadow-lg",
       )}
-      aria-label={`Switch to ${song.title}`}
+      aria-label={tControls("switchToTrack", { title: song.title })}
       aria-selected={isActive}
       role="tab"
     >
@@ -108,7 +110,7 @@ function SortableTab({
           "opacity-0 group-hover:opacity-100 transition-opacity rounded hover:bg-accent p-0.5",
           isActive && "opacity-100",
         )}
-        aria-label={`Close ${song.title}`}
+        aria-label={tControls("closeTrack", { title: song.title })}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
       >
