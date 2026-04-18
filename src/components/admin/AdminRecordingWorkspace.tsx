@@ -36,6 +36,7 @@ export function AdminRecordingWorkspace({
   const [accompanimentPreviewUrl, setAccompanimentPreviewUrl] = useState<
     string | null
   >(null);
+  const [accompanimentTime, setAccompanimentTime] = useState(0);
   const [recordingDraft, setRecordingDraft] = useState<Partial<Song>>({
     ...createEmptySongDraft(),
     sourceType: "recording",
@@ -224,6 +225,7 @@ export function AdminRecordingWorkspace({
 
   return (
     <RecordingPanel
+      accompanimentCurrentTime={accompanimentTime}
       accompanimentFile={accompanimentFile}
       accompanimentInputRef={accompanimentInputRef}
       accompanimentPreviewUrl={accompanimentPreviewUrl}
@@ -239,6 +241,7 @@ export function AdminRecordingWorkspace({
       recordedBlob={recordedBlob}
       recordingDraft={recordingDraft}
       recordingState={recordingState}
+      onAccompanimentTimeUpdate={setAccompanimentTime}
       onConvertLyricsToLrc={handleConvertLyricsToLrc}
       onDraftChange={updateRecordingDraft}
       onExportMp3={handleExportMp3}
