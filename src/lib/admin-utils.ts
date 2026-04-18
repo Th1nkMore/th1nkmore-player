@@ -1,3 +1,4 @@
+import type { MediaAssetKind } from "@/lib/media";
 import {
   DEFAULT_ASSET_STATUS,
   DEFAULT_SOURCE_TYPE,
@@ -55,12 +56,14 @@ export const createSongFromFormData = (
 export async function uploadAudioFileToR2(
   file: File,
   addLog: AdminLogger,
+  assetKind: MediaAssetKind = "audio",
 ): Promise<string> {
   addLog("> Requesting upload URL...");
   const signUrlResponse = await fetch("/api/admin/sign-url", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
+      assetKind,
       filename: file.name,
       contentType: file.type || "audio/mpeg",
     }),
