@@ -3,6 +3,41 @@ export type LrcLine = {
   content: string;
 };
 
+const LRC_LINE_PATTERN = /\[(\d{2}):(\d{2})(?:\.(\d{2,3}))?\]/g;
+
+function parseTimestampToSeconds(match: RegExpExecArray): number {
+  const minutes = parseInt(match[1], 10);
+  const seconds = parseInt(match[2], 10);
+  const fraction = match[3] || "0";
+  const milliseconds =
+    fraction.length === 3
+      ? parseInt(fraction, 10)
+      : parseInt(fraction, 10) * 10;
+
+  return (minutes * 60_000 + seconds * 1_000 + milliseconds) / 1_000;
+}
+
+export function hasLrcTimestamps(input: string): boolean {
+  return LRC_LINE_PATTERN.test(input);
+}
+
+export function countLyricLines(input: string): number {
+  return input
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean).length;
+}
+
+export function formatLrcTime(timeInSeconds: number): string {
+  const safeTime = Math.max(0, timeInSeconds);
+  const totalCentiseconds = Math.round((safeTime + Number.EPSILON) * 100);
+  const minutes = Math.floor(totalCentiseconds / 6000);
+  const seconds = Math.floor((totalCentiseconds % 6000) / 100);
+  const centiseconds = totalCentiseconds % 100;
+
+  return `[${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(centiseconds).padStart(2, "0")}]`;
+}
+
 /**
  * Parses LRC (Lyrics) format string into structured lines with timestamps.
  * Handles standard [mm:ss.xx] format.
@@ -19,25 +54,25 @@ export type LrcLine = {
  */
 export function parseLrc(lrcString: string): LrcLine[] {
   const lines: LrcLine[] = [];
-  const regex = /\[(\d{2}):(\d{2})\.(\d{2})\](.*)/g;
-  let match = regex.exec(lrcString);
+  const inputLines = lrcString.split("\n");
 
-  while (match !== null) {
-    const minutes = parseInt(match[1], 10);
-    const seconds = parseInt(match[2], 10);
-    const centiseconds = parseInt(match[3], 10);
-    const content = match[4].trim();
+  for (const rawLine of inputLines) {
+    const timestampMatches = [...rawLine.matchAll(LRC_LINE_PATTERN)];
+    if (timestampMatches.length === 0) {
+      continue;
+    }
 
-    const timeInSeconds = minutes * 60 + seconds + centiseconds / 100;
+    const content = rawLine.replace(LRC_LINE_PATTERN, "").trim();
+    if (!content) {
+      continue;
+    }
 
-    if (content) {
+    for (const match of timestampMatches) {
       lines.push({
-        time: timeInSeconds,
+        time: parseTimestampToSeconds(match),
         content,
       });
     }
-
-    match = regex.exec(lrcString);
   }
 
   // Sort by time in case lines are out of order
@@ -76,4 +111,16 @@ export function lyricsToLrc(lyrics: string, duration: number): LrcLine[] {
   }
 
   return result;
+}
+
+export function normalizeLrcText(lyrics: string): string {
+  return parseLrc(lyrics)
+    .map((line) => `${formatLrcTime(line.time)}${line.content}`)
+    .join("\n");
+}
+
+export function plainLyricsToLrcText(lyrics: string, duration: number): string {
+  return lyricsToLrc(lyrics, duration)
+    .map((line) => `${formatLrcTime(line.time)}${line.content}`)
+    .join("\n");
 }

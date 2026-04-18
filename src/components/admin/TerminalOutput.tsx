@@ -1,7 +1,5 @@
 "use client";
 
-import type { Song } from "@/types/music";
-
 type LogEntry = {
   id: string;
   message: string;
@@ -10,10 +8,10 @@ type LogEntry = {
 
 type TerminalOutputProps = {
   logs: LogEntry[];
-  isDeploying: boolean;
+  isBusy: boolean;
 };
 
-export function TerminalOutput({ logs, isDeploying }: TerminalOutputProps) {
+export function TerminalOutput({ logs, isBusy }: TerminalOutputProps) {
   return (
     <div className="flex flex-col bg-black overflow-hidden">
       <div className="border-b border-gray-800 px-4 py-2">
@@ -23,7 +21,7 @@ export function TerminalOutput({ logs, isDeploying }: TerminalOutputProps) {
       </div>
       <div className="flex-1 overflow-y-auto scrollbar-none p-4 space-y-1 font-mono text-[11px]">
         {logs.length === 0 ? (
-          <div className="text-gray-600">{"> Waiting for deployment..."}</div>
+          <div className="text-gray-600">{"> Waiting for admin action..."}</div>
         ) : (
           logs.map((log) => (
             <div key={log.id} className="text-gray-400">
@@ -34,7 +32,7 @@ export function TerminalOutput({ logs, isDeploying }: TerminalOutputProps) {
             </div>
           ))
         )}
-        {isDeploying && (
+        {isBusy && (
           <div className="text-gray-500 animate-pulse">{"> Processing..."}</div>
         )}
       </div>

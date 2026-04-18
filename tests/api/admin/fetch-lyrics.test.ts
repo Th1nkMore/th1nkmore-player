@@ -4,6 +4,10 @@ async function importRoute() {
   return import("@/app/api/admin/fetch-lyrics/route");
 }
 
+function mockDetailResponse() {
+  return Response.json({ songs: [] });
+}
+
 describe("admin fetch-lyrics route", () => {
   beforeEach(() => {
     vi.stubGlobal("fetch", vi.fn());
@@ -49,6 +53,7 @@ describe("admin fetch-lyrics route", () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response("upstream error", { status: 502 }),
     );
+    vi.mocked(fetch).mockResolvedValueOnce(mockDetailResponse());
     const { POST } = await importRoute();
     const request = new Request("http://localhost/api/admin/fetch-lyrics", {
       method: "POST",
@@ -71,6 +76,7 @@ describe("admin fetch-lyrics route", () => {
     expect(response.status).toBe(502);
     await expect(response.json()).resolves.toEqual({
       error: "Failed to fetch lyrics: 502",
+      songInfo: null,
     });
   });
 
@@ -85,6 +91,7 @@ describe("admin fetch-lyrics route", () => {
         ].join("\n"),
       }),
     );
+    vi.mocked(fetch).mockResolvedValueOnce(mockDetailResponse());
     const { POST } = await importRoute();
     const request = new Request("http://localhost/api/admin/fetch-lyrics", {
       method: "POST",
@@ -101,11 +108,13 @@ describe("admin fetch-lyrics route", () => {
       success: true,
       songId: "123456",
       lyrics: "[00:01.00]Line one\n[00:02.345]Line two",
+      songInfo: null,
     });
   });
 
   it("returns 404 when the upstream response has no lyrics", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(Response.json({ lyric: "" }));
+    vi.mocked(fetch).mockResolvedValueOnce(mockDetailResponse());
     const { POST } = await importRoute();
     const request = new Request("http://localhost/api/admin/fetch-lyrics", {
       method: "POST",

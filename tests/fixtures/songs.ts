@@ -1,3 +1,9 @@
+import {
+  DEFAULT_ASSET_STATUS,
+  DEFAULT_SOURCE_TYPE,
+  DEFAULT_TRACK_TYPE,
+  DEFAULT_VISIBILITY,
+} from "@/lib/song";
 import type { Song } from "@/types/music";
 
 function createSong(overrides: Partial<Song>): Song {
@@ -11,6 +17,10 @@ function createSong(overrides: Partial<Song>): Song {
     audioUrl: "https://cdn.example.com/song-1.mp3",
     metadata: {},
     language: "en",
+    trackType: DEFAULT_TRACK_TYPE,
+    sourceType: DEFAULT_SOURCE_TYPE,
+    visibility: DEFAULT_VISIBILITY,
+    assetStatus: DEFAULT_ASSET_STATUS,
     ...overrides,
   };
 }
