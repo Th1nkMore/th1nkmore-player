@@ -1,9 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { RecordingPanel } from "@/components/admin/RecordingPanel";
 import { exportBlobAsMp3 } from "@/lib/audio-export";
 import { useAudioRecorder } from "@/lib/hooks/useAudioRecorder";
+import {
+  convertPlainLyricsWorkflow,
+  describeLyrics,
+  normalizeLyricsWorkflow,
+} from "@/lib/lyrics";
 import { createEmptySongDraft } from "@/lib/song";
 import type { Song } from "@/types/music";
 
@@ -22,9 +27,14 @@ export function AdminRecordingWorkspace({
   onUseRecordedFile,
   onSaveRecordedFile,
 }: AdminRecordingWorkspaceProps) {
+  const accompanimentInputRef = useRef<HTMLInputElement>(null);
   const [isBusy, setIsBusy] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [accompanimentFile, setAccompanimentFile] = useState<File | null>(null);
+  const [accompanimentPreviewUrl, setAccompanimentPreviewUrl] = useState<
+    string | null
+  >(null);
   const [recordingDraft, setRecordingDraft] = useState<Partial<Song>>({
     ...createEmptySongDraft(),
     sourceType: "recording",
@@ -41,6 +51,7 @@ export function AdminRecordingWorkspace({
     startRecording,
     stopRecording,
   } = useAudioRecorder();
+  const lyricsDescriptor = describeLyrics(recordingDraft.lyrics || "");
 
   const buildRecordedFile = () => {
     if (!recordedBlob) {
@@ -60,6 +71,51 @@ export function AdminRecordingWorkspace({
         type: recordedBlob.type || mimeType || "audio/webm",
       },
     );
+  };
+
+  const updateRecordingDraft = (field: keyof Song, value: Song[keyof Song]) => {
+    setRecordingDraft((current) => ({ ...current, [field]: value }));
+  };
+
+  const handleSelectAccompaniment = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const nextFile = event.target.files?.[0];
+    if (!nextFile) {
+      return;
+    }
+
+    setAccompanimentFile(nextFile);
+    setAccompanimentPreviewUrl((currentUrl) => {
+      if (currentUrl) {
+        URL.revokeObjectURL(currentUrl);
+      }
+      return URL.createObjectURL(nextFile);
+    });
+    addLog(
+      `> Accompaniment loaded: ${nextFile.name} (${(nextFile.size / 1024 / 1024).toFixed(2)} MB)`,
+    );
+  };
+
+  const handleNormalizeLyrics = () => {
+    updateRecordingDraft(
+      "lyrics",
+      normalizeLyricsWorkflow(recordingDraft.lyrics || ""),
+    );
+    addLog("> Recording lyrics normalized");
+  };
+
+  const handleConvertLyricsToLrc = () => {
+    if (elapsedSeconds <= 0) {
+      addLog("> Error: Record or set duration before converting plain lyrics");
+      return;
+    }
+
+    updateRecordingDraft(
+      "lyrics",
+      convertPlainLyricsWorkflow(recordingDraft.lyrics || "", elapsedSeconds),
+    );
+    addLog("> Recording lyrics converted to estimated LRC");
   };
 
   const handleStartRecording = async () => {
@@ -162,24 +218,33 @@ export function AdminRecordingWorkspace({
 
   return (
     <RecordingPanel
+      accompanimentFile={accompanimentFile}
+      accompanimentInputRef={accompanimentInputRef}
+      accompanimentPreviewUrl={accompanimentPreviewUrl}
       elapsedSeconds={elapsedSeconds}
       isBusy={isBusy}
       isExporting={isExporting}
       isSaving={isSaving}
       isSupported={isSupported}
+      lyricFormat={lyricsDescriptor.format}
+      lyricLineCount={lyricsDescriptor.lineCount}
       mimeType={mimeType}
       previewUrl={previewUrl}
       recordedBlob={recordedBlob}
       recordingDraft={recordingDraft}
       recordingState={recordingState}
-      onDraftChange={(field, value) =>
-        setRecordingDraft((current) => ({ ...current, [field]: value }))
-      }
+      onConvertLyricsToLrc={handleConvertLyricsToLrc}
+      onDraftChange={updateRecordingDraft}
       onExportMp3={handleExportMp3}
+      onNormalizeLyrics={handleNormalizeLyrics}
       onReset={handleResetRecording}
       onSaveToLibrary={handleSaveToLibrary}
+      onSelectAccompaniment={handleSelectAccompaniment}
       onStart={handleStartRecording}
       onStop={handleStopRecording}
+      onTriggerAccompanimentSelect={() =>
+        accompanimentInputRef.current?.click()
+      }
       onUseAsUploadSource={handleUseAsUploadSource}
     />
   );
