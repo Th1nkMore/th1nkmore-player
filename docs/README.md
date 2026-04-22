@@ -7,6 +7,7 @@ This directory contains the product, process, architecture, and roadmap baseline
 - `product/positioning.md`: product identity, user roles, and scope
 - `product/library-model.md`: track categories and metadata direction
 - `process/branching-release.md`: branch strategy and release flow
+- `process/quality-guards.md`: commit hooks, staged-file tooling, and file-size guardrails
 - `architecture/current-state.md`: current implementation baseline
 - `architecture/data-model-plan.md`: proposed media model evolution
 - `roadmap/admin-capabilities.md`: admin-side capability planning
