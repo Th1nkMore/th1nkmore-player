@@ -46,7 +46,7 @@ export function normalizeSongTags(tags: unknown): string[] {
 export function getSongsByTag(songs: Song[], tag: string): Song[] {
   const normalizedKey = getNormalizedTagKey(tag);
   return songs.filter((song) =>
-    song.tags.some(
+    normalizeSongTags(song.tags).some(
       (candidate) => getNormalizedTagKey(candidate) === normalizedKey,
     ),
   );
@@ -63,7 +63,7 @@ export function buildTagStats(
   >();
 
   for (const song of songs) {
-    for (const tag of song.tags) {
+    for (const tag of normalizeSongTags(song.tags)) {
       const key = getNormalizedTagKey(tag);
       const current = counts.get(key) || {
         tag,

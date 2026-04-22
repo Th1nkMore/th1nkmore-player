@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { songOne, songThree, songTwo } from "@/../tests/fixtures/songs";
 import {
   buildTagStats,
+  getSongsByTag,
   normalizeSongTags,
   pickRandomSongsByTag,
 } from "@/lib/tags";
@@ -49,5 +50,14 @@ describe("tags", () => {
         random,
       }).map((song) => song.id),
     ).toEqual([songThree.id, songOne.id]);
+  });
+
+  it("handles legacy songs without tags without throwing", () => {
+    const { tags: _tags, ...legacySong } = songOne;
+
+    expect(() =>
+      buildTagStats([legacySong as typeof songOne], []),
+    ).not.toThrow();
+    expect(getSongsByTag([legacySong as typeof songOne], "Rap")).toEqual([]);
   });
 });
