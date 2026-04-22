@@ -1,8 +1,2 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-# Run lint-staged (runs Biome check/format and file length check on staged files)
-pnpm exec lint-staged
-
-# Run type check on all files (after lint-staged passes)
+pnpm lint-staged
 pnpm type-check
