@@ -86,9 +86,24 @@
     "openInspector": "インスペクターを開く",
     "hideTerminal": "ターミナルを隠す",
     "showTerminal": "ターミナルを表示",
+    "collapseLyrics": "歌詞を折りたたむ",
+    "expandLyrics": "歌詞を展開する",
     "fileExplorer": "ファイルエクスプローラー",
     "inspector": "インスペクター",
     "mobileNavigation": "モバイルナビゲーション"
+  },
+  "explorerNav": {
+    "files": "ファイル",
+    "grid": "グリッド"
+  },
+  "tagGrid": {
+    "title": "タググリッド",
+    "allTags": "すべてのタグ",
+    "clear": "クリア",
+    "empty": "現在、すべてのタグ曲がキューに入っています",
+    "all": "すべて",
+    "availableCount": "追加可能 {count} 曲",
+    "totalCount": "合計 {count} 曲"
   },
   "mobileNav": {
     "lyrics": "歌詞",

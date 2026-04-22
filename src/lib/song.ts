@@ -1,3 +1,4 @@
+import { normalizeSongTags } from "@/lib/tags";
 import { normalizeLanguage } from "@/lib/utils";
 import type {
   AssetStatus,
@@ -17,6 +18,7 @@ export function createEmptySongDraft(): Partial<Song> {
     title: "",
     artist: "",
     album: "",
+    tags: [],
     duration: 0,
     lyrics: "",
     language: "en",
@@ -33,6 +35,7 @@ export function normalizeSong(song: Song): Song {
     ...song,
     language: normalizeLanguage(song.language),
     metadata: song.metadata || {},
+    tags: normalizeSongTags(song.tags),
     trackType: song.trackType || DEFAULT_TRACK_TYPE,
     sourceType: song.sourceType || DEFAULT_SOURCE_TYPE,
     visibility: song.visibility || DEFAULT_VISIBILITY,

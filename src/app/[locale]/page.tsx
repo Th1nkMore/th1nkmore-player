@@ -1,6 +1,6 @@
 import { CodeEditor } from "@/components/ide/CodeEditor";
 import { EditorTabs } from "@/components/ide/EditorTabs";
-import { FileExplorer } from "@/components/ide/FileExplorer";
+import { ExplorerWorkspace } from "@/components/ide/ExplorerWorkspace";
 import { InspectorPanel } from "@/components/ide/InspectorPanel";
 import { TerminalPanel } from "@/components/ide/TerminalPanel";
 import { IDEFrame } from "@/components/layout/IDEFrame";
@@ -10,7 +10,8 @@ export const dynamic = "force-dynamic";
 export default function HomePage() {
   return (
     <IDEFrame
-      leftSidebar={<FileExplorer />}
+      leftSidebar={<ExplorerWorkspace />}
+      mobileLeftSidebar={<ExplorerWorkspace />}
       centerEditor={
         <div className="flex h-full flex-col overflow-hidden">
           <EditorTabs />

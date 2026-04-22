@@ -16,6 +16,7 @@ This directory contains the product, process, architecture, and roadmap baseline
 - `roadmap/implementation-plan.md`: branch-by-branch implementation sequence
 - `specs/recording-export.md`: recording and export design draft
 - `specs/lyrics-sync-hardening.md`: timed lyrics parsing and teleprompter stability notes
+- `specs/tag-grid-explorer.md`: tag-backed grid explorer, mobile adaptation, and progress checklist
 
 ## Usage
 

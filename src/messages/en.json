@@ -86,9 +86,24 @@
     "openInspector": "Open inspector",
     "hideTerminal": "Hide terminal",
     "showTerminal": "Show terminal",
+    "collapseLyrics": "Collapse lyrics",
+    "expandLyrics": "Expand lyrics",
     "fileExplorer": "File explorer",
     "inspector": "Inspector",
     "mobileNavigation": "Mobile navigation"
+  },
+  "explorerNav": {
+    "files": "Files",
+    "grid": "Grid"
+  },
+  "tagGrid": {
+    "title": "Tag Grid",
+    "allTags": "All tags",
+    "clear": "Clear",
+    "empty": "All tag songs are already in the queue",
+    "all": "All",
+    "availableCount": "{count} available",
+    "totalCount": "{count} total"
   },
   "mobileNav": {
     "lyrics": "Lyrics",

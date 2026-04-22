@@ -86,9 +86,24 @@
     "openInspector": "打开检查器",
     "hideTerminal": "隐藏终端",
     "showTerminal": "显示终端",
+    "collapseLyrics": "收起歌词",
+    "expandLyrics": "展开歌词",
     "fileExplorer": "文件浏览器",
     "inspector": "检查器",
     "mobileNavigation": "移动端导航"
+  },
+  "explorerNav": {
+    "files": "文件",
+    "grid": "网格"
+  },
+  "tagGrid": {
+    "title": "标签网格",
+    "allTags": "全部标签",
+    "clear": "清空",
+    "empty": "当前所有标签歌曲都已在队列中",
+    "all": "全部",
+    "availableCount": "可添加 {count} 首",
+    "totalCount": "总计 {count} 首"
   },
   "mobileNav": {
     "lyrics": "歌词",
