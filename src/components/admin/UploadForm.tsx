@@ -3,6 +3,7 @@
 import { FileAudio, Loader2, Music2, Play, Upload } from "lucide-react";
 import { type DragEvent, type RefObject, useState } from "react";
 import { LyricsTools } from "@/components/admin/LyricsTools";
+import { TagInput } from "@/components/admin/TagInput";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -272,6 +273,13 @@ export function UploadForm({
                 <option value="archived">archived</option>
               </select>
             </div>
+          </div>
+          <div className="mt-3">
+            <FieldLabel>Tags</FieldLabel>
+            <TagInput
+              value={formData.tags || []}
+              onChange={(tags) => setFormData({ ...formData, tags })}
+            />
           </div>
         </section>
 

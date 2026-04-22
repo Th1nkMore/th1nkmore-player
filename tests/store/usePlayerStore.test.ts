@@ -170,4 +170,18 @@ describe("usePlayerStore", () => {
     usePlayerStore.getState().playNext();
     expect(usePlayerStore.getState().currentTrackId).toBe(songThree.id);
   });
+
+  it("adds many songs to the queue without duplicates", () => {
+    usePlayerStore.setState({
+      queue: [songOne],
+    });
+
+    usePlayerStore.getState().addManyToQueue([songOne, songTwo, songThree]);
+
+    expect(usePlayerStore.getState().queue).toEqual([
+      songOne,
+      songTwo,
+      songThree,
+    ]);
+  });
 });

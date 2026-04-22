@@ -9,6 +9,7 @@ The codebase combines a public listening experience and an authenticated admin e
 ## Current Frontend Capabilities
 
 - IDE-like browsing layout for songs, albums, metadata, queue, and playback
+- Files/Grid explorer switching for per-track browsing and tag-based bulk queueing
 - Global audio playback behavior
 - Lyrics display with LRC parsing and active-line syncing
 - Responsive UI for desktop and mobile
@@ -23,6 +24,7 @@ The codebase combines a public listening experience and an authenticated admin e
 - Shared LRC normalization for imported and fetched lyrics
 - Metadata extraction from selected audio files
 - Track classification fields for track type, source type, visibility, and asset status
+- Song-level tags managed in admin and consumed in the public listener explorer
 - In-browser recording with preview and retry
 - Save recorded audio into the managed library
 - Browser-side MP3 export for recorded audio

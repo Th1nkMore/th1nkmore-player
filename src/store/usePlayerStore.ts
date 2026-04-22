@@ -92,6 +92,7 @@ type PlayerState = {
   setDuration: (duration: number) => void;
   setCurrentTime: (time: number) => void;
   addToQueue: (song: Song) => void;
+  addManyToQueue: (songs: Song[]) => void;
   removeFromQueue: (songId: string) => void;
   reorderQueue: (oldIndex: number, newIndex: number) => void;
   playNext: () => void;
@@ -155,6 +156,17 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     if (!state.queue.find((s) => s.id === song.id)) {
       set({ queue: [...state.queue, song] });
     }
+  },
+  addManyToQueue: (songs) => {
+    const state = get();
+    const queuedIds = new Set(state.queue.map((song) => song.id));
+    const nextSongs = songs.filter((song) => !queuedIds.has(song.id));
+
+    if (nextSongs.length === 0) {
+      return;
+    }
+
+    set({ queue: [...state.queue, ...nextSongs] });
   },
   removeFromQueue: (songId) => {
     const state = get();
