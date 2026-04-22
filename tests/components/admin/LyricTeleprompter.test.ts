@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { getActiveLyricIndex } from "@/components/admin/LyricTeleprompter";
+import {
+  getActiveLyricIndex,
+  getLyricScrollTop,
+} from "@/components/admin/LyricTeleprompter";
 import type { LrcLine } from "@/lib/lrcParser";
 
 describe("getActiveLyricIndex", () => {
@@ -22,5 +25,25 @@ describe("getActiveLyricIndex", () => {
 
   it("handles empty lyric arrays safely", () => {
     expect(getActiveLyricIndex([], 10)).toBe(-1);
+  });
+
+  it("centers the active lyric without introducing tiny scroll oscillations", () => {
+    expect(
+      getLyricScrollTop({
+        containerHeight: 400,
+        currentScrollTop: 118,
+        nodeHeight: 36,
+        nodeOffsetTop: 300,
+      }),
+    ).toBe(118);
+
+    expect(
+      getLyricScrollTop({
+        containerHeight: 400,
+        currentScrollTop: 0,
+        nodeHeight: 36,
+        nodeOffsetTop: 300,
+      }),
+    ).toBe(118);
   });
 });

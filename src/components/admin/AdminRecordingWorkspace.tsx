@@ -14,6 +14,7 @@ import {
   describeLyrics,
   normalizeLyricsWorkflow,
 } from "@/lib/lyrics";
+import { resolveRecordingSessionTime } from "@/lib/recordingSession";
 import { createEmptySongDraft } from "@/lib/song";
 import type { Song } from "@/types/music";
 
@@ -128,9 +129,12 @@ export function AdminRecordingWorkspace({
     src: accompanimentPreviewUrl,
   });
   const lyricsDescriptor = describeLyrics(recordingDraft.lyrics || "");
-  const sessionTime = accompanimentPreviewUrl
-    ? accompaniment.currentTime
-    : elapsedSeconds;
+  const sessionTime = resolveRecordingSessionTime({
+    accompanimentCurrentTime: accompaniment.currentTime,
+    elapsedSeconds,
+    hasAccompaniment: Boolean(accompanimentPreviewUrl),
+    isAccompanimentReady: accompaniment.isReady,
+  });
   const uiState: RecordingSessionUiState = deriveUiState({
     countdownValue,
     hasPreview: Boolean(previewUrl),
