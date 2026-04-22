@@ -48,9 +48,12 @@ type RecordingPanelProps = {
     volume: number;
   };
   draft: Partial<Song>;
+  lyricsFileInputRef: RefObject<HTMLInputElement | null>;
   lyrics: {
     format: "lrc" | "plain" | "empty";
     lineCount: number;
+    isFetching: boolean;
+    neteaseUrl: string;
   };
   recording: {
     elapsedSeconds: number;
@@ -71,6 +74,9 @@ type RecordingPanelProps = {
   onConvertLyricsToLrc: () => void;
   onDraftChange: (field: keyof Song, value: Song[keyof Song]) => void;
   onExportMp3: () => void;
+  onFetchLyrics: () => void;
+  onLyricsFileSelect: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onLyricsUrlChange: (value: string) => void;
   onNormalizeLyrics: () => void;
   onPauseResumeRecording: () => void;
   onPrepareRecording: () => void;
@@ -406,16 +412,24 @@ function RecordingControlBar({
 function RecordingMetadataEditor({
   draft,
   elapsedSeconds,
+  lyricsFileInputRef,
   lyrics,
   onConvertLyricsToLrc,
   onDraftChange,
+  onFetchLyrics,
+  onLyricsFileSelect,
+  onLyricsUrlChange,
   onNormalizeLyrics,
 }: {
   draft: Partial<Song>;
   elapsedSeconds: number;
+  lyricsFileInputRef: RefObject<HTMLInputElement | null>;
   lyrics: RecordingPanelProps["lyrics"];
   onConvertLyricsToLrc: RecordingPanelProps["onConvertLyricsToLrc"];
   onDraftChange: RecordingPanelProps["onDraftChange"];
+  onFetchLyrics: RecordingPanelProps["onFetchLyrics"];
+  onLyricsFileSelect: RecordingPanelProps["onLyricsFileSelect"];
+  onLyricsUrlChange: RecordingPanelProps["onLyricsUrlChange"];
   onNormalizeLyrics: RecordingPanelProps["onNormalizeLyrics"];
 }) {
   return (
@@ -455,12 +469,59 @@ function RecordingMetadataEditor({
         </div>
 
         <div>
+          <input
+            ref={lyricsFileInputRef}
+            type="file"
+            accept=".lrc,.txt,text/plain"
+            onChange={onLyricsFileSelect}
+            className="hidden"
+          />
+          <div className="mb-3">
+            <Label className="mb-2 block text-[10px] uppercase tracking-[0.25em] text-slate-400/70">
+              NetEase Music URL
+            </Label>
+            <div className="flex gap-2">
+              <Input
+                value={lyrics.neteaseUrl}
+                onChange={(event) => onLyricsUrlChange(event.target.value)}
+                className="border-white/10 bg-white/[0.04] font-mono text-white placeholder:text-slate-500"
+                placeholder="https://music.163.com/#/song?id=..."
+              />
+              <Button
+                type="button"
+                onClick={onFetchLyrics}
+                disabled={lyrics.isFetching}
+                variant="outline"
+                className="border-white/12 bg-white/5 font-mono text-white/88 hover:bg-white/10"
+              >
+                {lyrics.isFetching ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Fetching
+                  </>
+                ) : (
+                  "Fetch"
+                )}
+              </Button>
+            </div>
+          </div>
           <div className="mb-2 flex items-center justify-between gap-3">
             <Label className="text-[10px] uppercase tracking-[0.25em] text-slate-400/70">
               Lyrics Source
             </Label>
-            <div className="text-[11px] text-slate-400/75">
-              {lyrics.lineCount} lines · {lyrics.format}
+            <div className="flex items-center gap-2">
+              <div className="text-[11px] text-slate-400/75">
+                {lyrics.lineCount} lines · {lyrics.format}
+              </div>
+              <Button
+                type="button"
+                onClick={() => lyricsFileInputRef.current?.click()}
+                variant="outline"
+                size="sm"
+                className="border-white/12 bg-white/5 font-mono text-white/88 hover:bg-white/10"
+              >
+                Upload LRC
+              </Button>
             </div>
           </div>
           <textarea
@@ -609,12 +670,16 @@ function RecordingSessionActions({
 function RecordingSidebar(props: {
   accompaniment: RecordingPanelProps["accompaniment"];
   draft: RecordingPanelProps["draft"];
+  lyricsFileInputRef: RefObject<HTMLInputElement | null>;
   lyrics: RecordingPanelProps["lyrics"];
   recording: RecordingPanelProps["recording"];
   session: RecordingPanelProps["session"];
   onConvertLyricsToLrc: RecordingPanelProps["onConvertLyricsToLrc"];
   onDraftChange: RecordingPanelProps["onDraftChange"];
   onExportMp3: RecordingPanelProps["onExportMp3"];
+  onFetchLyrics: RecordingPanelProps["onFetchLyrics"];
+  onLyricsFileSelect: RecordingPanelProps["onLyricsFileSelect"];
+  onLyricsUrlChange: RecordingPanelProps["onLyricsUrlChange"];
   onNormalizeLyrics: RecordingPanelProps["onNormalizeLyrics"];
   onSaveToLibrary: RecordingPanelProps["onSaveToLibrary"];
   onSelectAccompaniment: RecordingPanelProps["onSelectAccompaniment"];
@@ -623,12 +688,16 @@ function RecordingSidebar(props: {
   const {
     accompaniment,
     draft,
+    lyricsFileInputRef,
     lyrics,
     recording,
     session,
     onConvertLyricsToLrc,
     onDraftChange,
     onExportMp3,
+    onFetchLyrics,
+    onLyricsFileSelect,
+    onLyricsUrlChange,
     onNormalizeLyrics,
     onSaveToLibrary,
     onUseAsUploadSource,
@@ -665,9 +734,13 @@ function RecordingSidebar(props: {
           <RecordingMetadataEditor
             draft={draft}
             elapsedSeconds={recording.elapsedSeconds}
+            lyricsFileInputRef={lyricsFileInputRef}
             lyrics={lyrics}
             onConvertLyricsToLrc={onConvertLyricsToLrc}
             onDraftChange={onDraftChange}
+            onFetchLyrics={onFetchLyrics}
+            onLyricsFileSelect={onLyricsFileSelect}
+            onLyricsUrlChange={onLyricsUrlChange}
             onNormalizeLyrics={onNormalizeLyrics}
           />
 
@@ -697,6 +770,7 @@ function RecordingSidebar(props: {
 export function RecordingPanel({
   accompaniment,
   draft,
+  lyricsFileInputRef,
   lyrics,
   recording,
   session,
@@ -706,6 +780,9 @@ export function RecordingPanel({
   onConvertLyricsToLrc,
   onDraftChange,
   onExportMp3,
+  onFetchLyrics,
+  onLyricsFileSelect,
+  onLyricsUrlChange,
   onNormalizeLyrics,
   onPauseResumeRecording,
   onPrepareRecording,
@@ -730,12 +807,16 @@ export function RecordingPanel({
           <RecordingSidebar
             accompaniment={accompaniment}
             draft={draft}
+            lyricsFileInputRef={lyricsFileInputRef}
             lyrics={lyrics}
             recording={recording}
             session={session}
             onConvertLyricsToLrc={onConvertLyricsToLrc}
             onDraftChange={onDraftChange}
             onExportMp3={onExportMp3}
+            onFetchLyrics={onFetchLyrics}
+            onLyricsFileSelect={onLyricsFileSelect}
+            onLyricsUrlChange={onLyricsUrlChange}
             onNormalizeLyrics={onNormalizeLyrics}
             onSaveToLibrary={onSaveToLibrary}
             onSelectAccompaniment={onSelectAccompaniment}
