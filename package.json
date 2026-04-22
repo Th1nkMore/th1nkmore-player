@@ -11,6 +11,7 @@
     "restart:pm2": "pm2 restart ecosystem.config.cjs",
     "delete:pm2": "pm2 delete ecosystem.config.cjs",
     "logs:pm2": "pm2 logs th1nkmore_web",
+    "lint-staged": "lint-staged --relative --config lint-staged.config.mjs",
     "pm2:save": "pm2 save",
     "pm2:startup": "pm2 startup",
     "lint": "biome check .",
@@ -19,15 +20,6 @@
     "type-check": "tsc --noEmit",
     "check-file-length": "node scripts/check-file-length.js",
     "prepare": "husky"
-  },
-  "lint-staged": {
-    "*.{ts,tsx}": [
-      "biome check --write",
-      "node scripts/check-file-length.js"
-    ],
-    "*.{js,jsx,json,md}": [
-      "biome check --write"
-    ]
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.969.0",
