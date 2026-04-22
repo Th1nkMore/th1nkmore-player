@@ -5,6 +5,7 @@ import {
   RecordingPanel,
   type RecordingSessionUiState,
 } from "@/components/admin/RecordingPanel";
+import { fetchLyricsFromAdmin, mergeFetchedSongInfo } from "@/lib/admin-utils";
 import { exportBlobAsMp3 } from "@/lib/audio-export";
 import { useAccompanimentPlayer } from "@/lib/hooks/useAccompanimentPlayer";
 import { useAudioRecorder } from "@/lib/hooks/useAudioRecorder";
@@ -93,15 +94,18 @@ export function AdminRecordingWorkspace({
   onSaveRecordedFile,
 }: AdminRecordingWorkspaceProps) {
   const accompanimentInputRef = useRef<HTMLInputElement>(null);
+  const lyricsFileInputRef = useRef<HTMLInputElement>(null);
   const countdownTimerRef = useRef<number | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isFetchingLyrics, setIsFetchingLyrics] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [countdownValue, setCountdownValue] = useState<number | null>(null);
   const [accompanimentFile, setAccompanimentFile] = useState<File | null>(null);
   const [accompanimentPreviewUrl, setAccompanimentPreviewUrl] = useState<
     string | null
   >(null);
+  const [neteaseUrl, setNeteaseUrl] = useState("");
   const [recordingDraft, setRecordingDraft] = useState<Partial<Song>>({
     ...createEmptySongDraft(),
     sourceType: "recording",
@@ -221,6 +225,63 @@ export function AdminRecordingWorkspace({
       normalizeLyricsWorkflow(recordingDraft.lyrics || ""),
     );
     addLog("> Recording lyrics normalized");
+  };
+
+  const handleLyricsFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    try {
+      const content = await file.text();
+      updateRecordingDraft("lyrics", content);
+      addLog(`> Lyrics file loaded: ${file.name}`);
+      addLog(`> Lyrics loaded (${describeLyrics(content).lineCount} lines)`);
+    } catch (error) {
+      addLog(
+        `> Error: ${error instanceof Error ? error.message : "Failed to load lyrics file"}`,
+      );
+    } finally {
+      if (lyricsFileInputRef.current) {
+        lyricsFileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleFetchLyrics = async () => {
+    if (!neteaseUrl) {
+      addLog("> Error: Please enter a NetEase Music URL");
+      return;
+    }
+
+    setIsFetchingLyrics(true);
+    addLog("> Fetching lyrics from NetEase Music...");
+
+    try {
+      const data = await fetchLyricsFromAdmin(neteaseUrl);
+      const updatedLyrics = normalizeLyricsWorkflow(data.lyrics);
+      const nextDraft = mergeFetchedSongInfo(
+        { ...recordingDraft, lyrics: updatedLyrics },
+        data.songInfo,
+      );
+      setRecordingDraft(nextDraft);
+      addLog(
+        `> Successfully fetched lyrics and metadata for song ID: ${data.songId}`,
+      );
+      addLog(
+        `> Lyrics loaded (${describeLyrics(updatedLyrics).lineCount} lines)`,
+      );
+      setNeteaseUrl("");
+    } catch (error) {
+      addLog(
+        `> Error: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+    } finally {
+      setIsFetchingLyrics(false);
+    }
   };
 
   const handleConvertLyricsToLrc = () => {
@@ -482,9 +543,12 @@ export function AdminRecordingWorkspace({
         volume: accompaniment.volume,
       }}
       draft={recordingDraft}
+      lyricsFileInputRef={lyricsFileInputRef}
       lyrics={{
         format: lyricsDescriptor.format,
+        isFetching: isFetchingLyrics,
         lineCount: lyricsDescriptor.lineCount,
+        neteaseUrl,
       }}
       recording={{
         elapsedSeconds,
@@ -507,6 +571,9 @@ export function AdminRecordingWorkspace({
       onConvertLyricsToLrc={handleConvertLyricsToLrc}
       onDraftChange={updateRecordingDraft}
       onExportMp3={handleExportMp3}
+      onFetchLyrics={handleFetchLyrics}
+      onLyricsFileSelect={handleLyricsFileSelect}
+      onLyricsUrlChange={setNeteaseUrl}
       onNormalizeLyrics={handleNormalizeLyrics}
       onPauseResumeRecording={handlePauseResumeRecording}
       onPrepareRecording={handlePrepareRecording}
