@@ -196,6 +196,7 @@ async function generateAndUploadPlaylist() {
         title: metadata.title,
         artist: metadata.artist,
         album: metadata.album,
+        tags: [],
         duration: 0, // Will need to be set manually or extracted from audio
         lyrics: "",
         audioUrl,

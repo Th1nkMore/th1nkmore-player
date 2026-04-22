@@ -32,7 +32,7 @@ describe("admin playlist route", () => {
   it("normalizes legacy language codes from stored playlist data", async () => {
     sendMock.mockResolvedValueOnce({
       Body: JSON.stringify([
-        { ...songOne, language: "jp" },
+        { ...songOne, language: "jp", tags: [" Rap ", "rap", "Soul"] },
         { ...songTwo, language: "zh" },
       ]),
     });
@@ -41,7 +41,7 @@ describe("admin playlist route", () => {
     const response = await GET();
 
     await expect(response.json()).resolves.toEqual([
-      { ...songOne, language: "ja" },
+      { ...songOne, language: "ja", tags: ["Rap", "Soul"] },
       { ...songTwo, language: "zh" },
     ]);
   });
@@ -104,7 +104,7 @@ describe("admin playlist route", () => {
     const { PUT } = await importRoute();
     const request = new Request("http://localhost/api/admin/playlist", {
       method: "PUT",
-      body: JSON.stringify([{ ...songOne, language: "jp" }]),
+      body: JSON.stringify([{ ...songOne, language: "jp", tags: [" Rock "] }]),
       headers: {
         "content-type": "application/json",
       },
@@ -121,7 +121,7 @@ describe("admin playlist route", () => {
       ContentType: "application/json",
     });
     expect(JSON.parse(command.input.Body as string)).toEqual([
-      { ...songOne, language: "ja" },
+      { ...songOne, language: "ja", tags: ["Rock"] },
     ]);
   });
 });

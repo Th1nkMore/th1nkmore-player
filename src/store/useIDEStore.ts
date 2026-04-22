@@ -1,5 +1,5 @@
 import { create } from "zustand";
-
+import { buildTagStats, getSongsByTag } from "@/lib/tags";
 import type { Song } from "@/types/music";
 
 const PLAYLIST_CACHE_KEY = "sonic-ide-playlist";
@@ -50,12 +50,20 @@ type IDEState = {
   isLoading: boolean;
   openFiles: string[];
   activeFileId: string | null;
+  explorerView: "files" | "grid";
+  activeTag: string | null;
   fetchSongs: () => Promise<void>;
   openFile: (fileId: string) => void;
   closeFile: (fileId: string) => void;
   setActiveFile: (fileId: string) => void;
+  setExplorerView: (view: "files" | "grid") => void;
+  setActiveTag: (tag: string | null) => void;
   getActiveFile: () => Song | null;
   getFileById: (fileId: string) => Song | null;
+  getSongsByTag: (tag: string) => Song[];
+  getTagStats: (
+    queuedSongIds: Iterable<string>,
+  ) => ReturnType<typeof buildTagStats>;
 };
 
 const initialCached =
@@ -66,6 +74,8 @@ export const useIDEStore = create<IDEState>((set, get) => ({
   isLoading: initialCached === null,
   openFiles: [],
   activeFileId: null,
+  explorerView: "files",
+  activeTag: null,
 
   fetchSongs: async () => {
     const cached = getCachedPlaylist();
@@ -133,6 +143,8 @@ export const useIDEStore = create<IDEState>((set, get) => ({
   setActiveFile: (fileId: string) => {
     set({ activeFileId: fileId });
   },
+  setExplorerView: (explorerView) => set({ explorerView }),
+  setActiveTag: (activeTag) => set({ activeTag }),
 
   getActiveFile: () => {
     const state = get();
@@ -143,5 +155,13 @@ export const useIDEStore = create<IDEState>((set, get) => ({
   getFileById: (fileId: string) => {
     const state = get();
     return state.files.find((file) => file.id === fileId) ?? null;
+  },
+  getSongsByTag: (tag: string) => {
+    const state = get();
+    return getSongsByTag(state.files, tag);
+  },
+  getTagStats: (queuedSongIds) => {
+    const state = get();
+    return buildTagStats(state.files, queuedSongIds);
   },
 }));

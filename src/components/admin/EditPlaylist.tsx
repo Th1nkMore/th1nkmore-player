@@ -2,6 +2,7 @@
 
 import { Edit2, Loader2, Save, Trash2, X } from "lucide-react";
 import { LyricsTools } from "@/components/admin/LyricsTools";
+import { TagInput } from "@/components/admin/TagInput";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -158,6 +159,17 @@ function SongItem({
           </div>
         </div>
         <div>
+          <Label className="text-[10px] text-gray-500">Tags</Label>
+          <div className="mt-1">
+            <TagInput
+              value={editedSong?.tags || []}
+              onChange={(tags) => onUpdate("tags", tags)}
+              inputClassName="h-7 text-[10px]"
+              placeholder="Rap, Soul, Rock..."
+            />
+          </div>
+        </div>
+        <div>
           <Label className="text-[10px] text-gray-500">Lyrics (LRC)</Label>
           <div className="mb-2">
             <Label className="text-[9px] text-gray-600 mb-1 block">
@@ -248,6 +260,18 @@ function SongItem({
             <span>visibility:{song.visibility || "public"}</span>
             <span>status:{song.assetStatus || "ready"}</span>
           </div>
+          {song.tags.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1">
+              {song.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 text-[10px] font-mono text-sky-100"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
         <div className="flex gap-1">
           <Button
