@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { normalizeLrcText } from "@/lib/lrcParser";
 
 /**
  * POST /api/admin/fetch-lyrics
@@ -80,18 +81,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Clean up the lyrics - extract only valid LRC timestamp lines
-    const lyricsLines = lyrics.trim().split("\n");
-    const cleanedLyrics: string[] = [];
+    const finalLyrics = normalizeLrcText(lyrics);
 
-    for (const line of lyricsLines) {
-      // Check if it's a valid LRC timestamp line (format: [MM:SS.xx] or [MM:SS.xxx])
-      if (/\[\d{2}:\d{2}\.\d{2,3}\]/.test(line)) {
-        cleanedLyrics.push(line);
-      }
+    if (!finalLyrics) {
+      return NextResponse.json(
+        { error: "No lyrics found for this song" },
+        { status: 404 },
+      );
     }
-
-    const finalLyrics = cleanedLyrics.join("\n");
 
     return NextResponse.json({
       success: true,

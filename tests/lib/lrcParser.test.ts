@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   formatLrcTime,
+  hasLrcTimestamps,
   normalizeLrcText,
   parseLrc,
   plainLyricsToLrcText,
@@ -28,6 +29,30 @@ describe("lrcParser", () => {
     expect(normalizeLrcText("[00:02.345]Line two\n[00:01.00]Line one")).toBe(
       "[00:01.00]Line one\n[00:02.35]Line two",
     );
+  });
+
+  it("drops leading timed metadata lines before the first lyric cue", () => {
+    expect(
+      parseLrc(
+        [
+          "[00:00.00]作词：Example",
+          "[00:00.50]Composer: Example",
+          "[00:01.00]First lyric line",
+          "[00:02.00]Second lyric line",
+        ].join("\n"),
+      ),
+    ).toEqual([
+      { time: 1, content: "First lyric line" },
+      { time: 2, content: "Second lyric line" },
+    ]);
+  });
+
+  it("keeps timestamp detection stable across repeated checks", () => {
+    const lyrics = "[00:01.00]Line one";
+
+    expect(hasLrcTimestamps(lyrics)).toBe(true);
+    expect(hasLrcTimestamps(lyrics)).toBe(true);
+    expect(hasLrcTimestamps(lyrics)).toBe(true);
   });
 
   it("converts plain lyrics into estimated lrc text", () => {
