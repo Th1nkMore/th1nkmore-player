@@ -86,9 +86,24 @@
     "openInspector": "Inspektor öffnen",
     "hideTerminal": "Terminal ausblenden",
     "showTerminal": "Terminal anzeigen",
+    "collapseLyrics": "Songtext einklappen",
+    "expandLyrics": "Songtext ausklappen",
     "fileExplorer": "Datei-Explorer",
     "inspector": "Inspektor",
     "mobileNavigation": "Mobile Navigation"
+  },
+  "explorerNav": {
+    "files": "Dateien",
+    "grid": "Raster"
+  },
+  "tagGrid": {
+    "title": "Tag-Raster",
+    "allTags": "Alle Tags",
+    "clear": "Zurücksetzen",
+    "empty": "Alle Tag-Songs befinden sich bereits in der Warteschlange",
+    "all": "Alle",
+    "availableCount": "{count} verfügbar",
+    "totalCount": "{count} gesamt"
   },
   "mobileNav": {
     "lyrics": "Texte",

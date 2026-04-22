@@ -5,6 +5,7 @@ import {
   DEFAULT_TRACK_TYPE,
   DEFAULT_VISIBILITY,
 } from "@/lib/song";
+import { normalizeSongTags } from "@/lib/tags";
 import { normalizeLanguage, slugifySegment } from "@/lib/utils";
 import type { Song } from "@/types/music";
 
@@ -41,6 +42,7 @@ export const createSongFromFormData = (
     title: title || "",
     artist: artist || "",
     album: album || "",
+    tags: normalizeSongTags(formData.tags),
     duration: formData.duration || 0,
     lyrics: formData.lyrics || "",
     audioUrl: publicUrl,

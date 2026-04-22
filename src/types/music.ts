@@ -14,6 +14,7 @@ export interface Song {
   title: string;
   artist: string;
   album: string;
+  tags: string[];
   duration: number;
   lyrics: string;
   audioUrl: string;

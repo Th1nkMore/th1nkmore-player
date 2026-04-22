@@ -12,6 +12,7 @@ function createSong(overrides: Partial<Song>): Song {
     title: "Song One",
     artist: "Artist",
     album: "Album",
+    tags: [],
     duration: 180,
     lyrics: "[00:01.00]Line one",
     audioUrl: "https://cdn.example.com/song-1.mp3",
