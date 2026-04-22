@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { normalizePlaylistSongs } from "@/lib/song";
 import { buildTagStats, getSongsByTag } from "@/lib/tags";
 import type { Song } from "@/types/music";
 
@@ -15,7 +16,7 @@ function getCachedPlaylist(): Song[] | null {
     const { songs, cachedAt }: CachedPlaylist = JSON.parse(raw);
     if (!Array.isArray(songs)) return null;
     if (Date.now() - cachedAt > PLAYLIST_CACHE_TTL_MS) return null;
-    return songs;
+    return normalizePlaylistSongs(songs);
   } catch {
     return null;
   }
@@ -24,9 +25,13 @@ function getCachedPlaylist(): Song[] | null {
 function setCachedPlaylist(songs: Song[]) {
   if (typeof window === "undefined") return;
   try {
+    const normalizedSongs = normalizePlaylistSongs(songs);
     localStorage.setItem(
       PLAYLIST_CACHE_KEY,
-      JSON.stringify({ songs, cachedAt: Date.now() } satisfies CachedPlaylist),
+      JSON.stringify({
+        songs: normalizedSongs,
+        cachedAt: Date.now(),
+      } satisfies CachedPlaylist),
     );
   } catch {
     // ignore quota or parse errors
@@ -39,7 +44,7 @@ function getStalePlaylist(): Song[] | null {
     const raw = localStorage.getItem(PLAYLIST_CACHE_KEY);
     if (!raw) return null;
     const { songs }: CachedPlaylist = JSON.parse(raw);
-    return Array.isArray(songs) ? songs : null;
+    return Array.isArray(songs) ? normalizePlaylistSongs(songs) : null;
   } catch {
     return null;
   }
@@ -89,7 +94,7 @@ export const useIDEStore = create<IDEState>((set, get) => ({
       if (!response.ok) {
         throw new Error(`Failed to fetch playlist: ${response.statusText}`);
       }
-      const songs: Song[] = await response.json();
+      const songs = normalizePlaylistSongs((await response.json()) as Song[]);
       setCachedPlaylist(songs);
       set({ files: songs, isLoading: false });
     } catch (error) {
