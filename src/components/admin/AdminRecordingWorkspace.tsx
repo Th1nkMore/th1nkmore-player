@@ -1,8 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { RecordingPanel } from "@/components/admin/RecordingPanel";
+import { useEffect, useRef, useState } from "react";
+import {
+  RecordingPanel,
+  type RecordingSessionUiState,
+} from "@/components/admin/RecordingPanel";
 import { exportBlobAsMp3 } from "@/lib/audio-export";
+import { useAccompanimentPlayer } from "@/lib/hooks/useAccompanimentPlayer";
 import { useAudioRecorder } from "@/lib/hooks/useAudioRecorder";
 import {
   convertPlainLyricsWorkflow,
@@ -23,20 +27,81 @@ type AdminRecordingWorkspaceProps = {
   ) => Promise<void>;
 };
 
+function deriveUiState(input: {
+  countdownValue: number | null;
+  hasPreview: boolean;
+  isExporting: boolean;
+  isSaving: boolean;
+  recorderState: ReturnType<typeof useAudioRecorder>["recordingState"];
+}) {
+  const { countdownValue, hasPreview, isExporting, isSaving, recorderState } =
+    input;
+
+  if (isSaving) {
+    return "saving";
+  }
+
+  if (isExporting) {
+    return "exporting";
+  }
+
+  if (countdownValue !== null) {
+    return "countdown";
+  }
+
+  if (recorderState === "failed") {
+    return "failed";
+  }
+
+  if (recorderState === "recording") {
+    return "recording";
+  }
+
+  if (recorderState === "paused") {
+    return "paused";
+  }
+
+  if (recorderState === "stopped") {
+    return hasPreview ? "preview" : "stopped";
+  }
+
+  return hasPreview ? "ready" : "idle";
+}
+
+async function tryPlayAccompaniment(
+  hasAccompaniment: boolean,
+  play: () => Promise<boolean>,
+  addLog: (message: string) => void,
+  warningMessage: string,
+) {
+  if (!hasAccompaniment) {
+    return;
+  }
+
+  try {
+    await play();
+  } catch (error) {
+    addLog(
+      `> Warning: ${error instanceof Error ? error.message : warningMessage}`,
+    );
+  }
+}
+
 export function AdminRecordingWorkspace({
   addLog,
   onUseRecordedFile,
   onSaveRecordedFile,
 }: AdminRecordingWorkspaceProps) {
   const accompanimentInputRef = useRef<HTMLInputElement>(null);
+  const countdownTimerRef = useRef<number | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [countdownValue, setCountdownValue] = useState<number | null>(null);
   const [accompanimentFile, setAccompanimentFile] = useState<File | null>(null);
   const [accompanimentPreviewUrl, setAccompanimentPreviewUrl] = useState<
     string | null
   >(null);
-  const [accompanimentTime, setAccompanimentTime] = useState(0);
   const [recordingDraft, setRecordingDraft] = useState<Partial<Song>>({
     ...createEmptySongDraft(),
     sourceType: "recording",
@@ -46,14 +111,48 @@ export function AdminRecordingWorkspace({
     elapsedSeconds,
     isSupported,
     mimeType,
+    pauseRecording,
     previewUrl,
     recordedBlob,
     recordingState,
     resetRecording,
+    resumeRecording,
     startRecording,
     stopRecording,
   } = useAudioRecorder();
+  const accompaniment = useAccompanimentPlayer({
+    src: accompanimentPreviewUrl,
+  });
   const lyricsDescriptor = describeLyrics(recordingDraft.lyrics || "");
+  const sessionTime = accompanimentPreviewUrl
+    ? accompaniment.currentTime
+    : elapsedSeconds;
+  const uiState: RecordingSessionUiState = deriveUiState({
+    countdownValue,
+    hasPreview: Boolean(previewUrl),
+    isExporting,
+    isSaving,
+    recorderState: recordingState,
+  });
+
+  useEffect(() => {
+    return () => {
+      if (countdownTimerRef.current !== null) {
+        window.clearTimeout(countdownTimerRef.current);
+      }
+      if (accompanimentPreviewUrl) {
+        URL.revokeObjectURL(accompanimentPreviewUrl);
+      }
+    };
+  }, [accompanimentPreviewUrl]);
+
+  const cancelCountdown = () => {
+    if (countdownTimerRef.current !== null) {
+      window.clearTimeout(countdownTimerRef.current);
+      countdownTimerRef.current = null;
+    }
+    setCountdownValue(null);
+  };
 
   const buildRecordedFile = () => {
     if (!recordedBlob) {
@@ -79,6 +178,22 @@ export function AdminRecordingWorkspace({
     setRecordingDraft((current) => ({ ...current, [field]: value }));
   };
 
+  const resetRecordingSession = (preserveSetup = true) => {
+    cancelCountdown();
+    resetRecording();
+    accompaniment.reset();
+
+    if (!preserveSetup) {
+      setAccompanimentFile(null);
+      setAccompanimentPreviewUrl((currentUrl) => {
+        if (currentUrl) {
+          URL.revokeObjectURL(currentUrl);
+        }
+        return null;
+      });
+    }
+  };
+
   const handleSelectAccompaniment = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -87,6 +202,7 @@ export function AdminRecordingWorkspace({
       return;
     }
 
+    resetRecordingSession(true);
     setAccompanimentFile(nextFile);
     setAccompanimentPreviewUrl((currentUrl) => {
       if (currentUrl) {
@@ -108,24 +224,41 @@ export function AdminRecordingWorkspace({
   };
 
   const handleConvertLyricsToLrc = () => {
-    if (elapsedSeconds <= 0) {
-      addLog("> Error: Record or set duration before converting plain lyrics");
+    const conversionDuration = accompaniment.duration || elapsedSeconds;
+    if (conversionDuration <= 0) {
+      addLog(
+        "> Error: Load accompaniment or record duration before converting plain lyrics",
+      );
       return;
     }
 
     updateRecordingDraft(
       "lyrics",
-      convertPlainLyricsWorkflow(recordingDraft.lyrics || "", elapsedSeconds),
+      convertPlainLyricsWorkflow(
+        recordingDraft.lyrics || "",
+        conversionDuration,
+      ),
     );
     addLog("> Recording lyrics converted to estimated LRC");
   };
 
-  const handleStartRecording = async () => {
+  const beginActualRecording = async () => {
     setIsBusy(true);
     addLog("> Requesting microphone access...");
 
     try {
+      if (accompanimentPreviewUrl) {
+        accompaniment.seek(0);
+      }
+
       await startRecording();
+      await tryPlayAccompaniment(
+        Boolean(accompanimentPreviewUrl),
+        accompaniment.play,
+        addLog,
+        "Accompaniment could not start automatically",
+      );
+
       addLog("> Recording started");
     } catch (error) {
       addLog(
@@ -136,10 +269,96 @@ export function AdminRecordingWorkspace({
     }
   };
 
-  const handleStopRecording = async () => {
-    addLog("> Stopping recording...");
-    const result = await stopRecording();
+  const handlePrepareRecording = () => {
+    accompaniment.reset();
+    addLog("> Session prepared: timeline reset and ready for countdown");
+  };
 
+  const startCountdown = () => {
+    accompaniment.reset();
+    setCountdownValue(3);
+    addLog("> Recording countdown started (3s)");
+
+    const tick = () => {
+      setCountdownValue((current) => {
+        if (current === null) {
+          return null;
+        }
+
+        if (current <= 1) {
+          countdownTimerRef.current = null;
+          void beginActualRecording();
+          return null;
+        }
+
+        countdownTimerRef.current = window.setTimeout(tick, 1000);
+        return current - 1;
+      });
+    };
+
+    countdownTimerRef.current = window.setTimeout(tick, 1000);
+  };
+
+  const resumeSession = async () => {
+    const resumed = resumeRecording();
+    if (!resumed) {
+      return;
+    }
+
+    await tryPlayAccompaniment(
+      Boolean(accompanimentPreviewUrl),
+      accompaniment.play,
+      addLog,
+      "Could not resume accompaniment playback",
+    );
+    addLog("> Recording resumed");
+  };
+
+  const handleStartRecording = async () => {
+    if (countdownValue !== null || isBusy) {
+      return;
+    }
+
+    if (!isSupported) {
+      addLog("> Error: This browser does not support audio recording");
+      return;
+    }
+
+    if (recordingState === "paused") {
+      await resumeSession();
+      return;
+    }
+
+    startCountdown();
+  };
+
+  const pauseSession = () => {
+    const paused = pauseRecording();
+    if (!paused) {
+      return;
+    }
+
+    accompaniment.pause();
+    addLog("> Recording paused");
+  };
+
+  const handlePauseResumeRecording = async () => {
+    if (recordingState === "recording") {
+      pauseSession();
+      return;
+    }
+
+    if (recordingState === "paused") {
+      await resumeSession();
+    }
+  };
+
+  const handleStopRecording = async () => {
+    cancelCountdown();
+    accompaniment.pause();
+    addLog("> Stopping recording...");
+
+    const result = await stopRecording();
     if (!result) {
       addLog("> Warning: No active recording session");
       return;
@@ -153,8 +372,10 @@ export function AdminRecordingWorkspace({
   };
 
   const handleResetRecording = () => {
-    resetRecording();
-    addLog("> Recording buffer cleared");
+    resetRecordingSession(true);
+    addLog(
+      "> Recording reset. Lyrics and accompaniment were kept for another take",
+    );
   };
 
   const handleUseAsUploadSource = () => {
@@ -189,7 +410,11 @@ export function AdminRecordingWorkspace({
         accompanimentFile,
       );
       addLog("> Recording saved to library");
-      resetRecording();
+      resetRecordingSession(false);
+      setRecordingDraft((current) => ({
+        ...current,
+        sourceType: "recording",
+      }));
     } catch (error) {
       addLog(
         `> Error: ${error instanceof Error ? error.message : "Failed to save recording"}`,
@@ -223,33 +448,72 @@ export function AdminRecordingWorkspace({
     }
   };
 
+  const handleAccompanimentPlayPause = async () => {
+    if (!(accompanimentPreviewUrl && accompaniment.isReady)) {
+      return;
+    }
+
+    try {
+      if (accompaniment.isPlaying) {
+        accompaniment.pause();
+        addLog("> Accompaniment paused");
+      } else {
+        await accompaniment.play();
+        addLog("> Accompaniment playing");
+      }
+    } catch (error) {
+      addLog(
+        `> Error: ${error instanceof Error ? error.message : "Failed to control accompaniment"}`,
+      );
+    }
+  };
+
   return (
     <RecordingPanel
-      accompanimentCurrentTime={accompanimentTime}
-      accompanimentFile={accompanimentFile}
-      accompanimentInputRef={accompanimentInputRef}
-      accompanimentPreviewUrl={accompanimentPreviewUrl}
-      elapsedSeconds={elapsedSeconds}
-      isBusy={isBusy}
-      isExporting={isExporting}
-      isSaving={isSaving}
-      isSupported={isSupported}
-      lyricFormat={lyricsDescriptor.format}
-      lyricLineCount={lyricsDescriptor.lineCount}
-      mimeType={mimeType}
-      previewUrl={previewUrl}
-      recordedBlob={recordedBlob}
-      recordingDraft={recordingDraft}
-      recordingState={recordingState}
-      onAccompanimentTimeUpdate={setAccompanimentTime}
+      accompaniment={{
+        audioRef: accompaniment.audioRef,
+        currentTime: accompaniment.currentTime,
+        duration: accompaniment.duration,
+        file: accompanimentFile,
+        inputRef: accompanimentInputRef,
+        isPlaying: accompaniment.isPlaying,
+        isReady: accompaniment.isReady,
+        previewUrl: accompanimentPreviewUrl,
+        volume: accompaniment.volume,
+      }}
+      draft={recordingDraft}
+      lyrics={{
+        format: lyricsDescriptor.format,
+        lineCount: lyricsDescriptor.lineCount,
+      }}
+      recording={{
+        elapsedSeconds,
+        isBusy,
+        isSupported,
+        mimeType,
+        previewUrl,
+        recordedBlob,
+      }}
+      session={{
+        countdownValue,
+        primaryTime: sessionTime,
+        uiState,
+      }}
+      onAccompanimentPlayPause={handleAccompanimentPlayPause}
+      onAccompanimentSeek={(value) =>
+        accompaniment.seek(value * accompaniment.duration)
+      }
+      onAccompanimentVolumeChange={accompaniment.setVolume}
       onConvertLyricsToLrc={handleConvertLyricsToLrc}
       onDraftChange={updateRecordingDraft}
       onExportMp3={handleExportMp3}
       onNormalizeLyrics={handleNormalizeLyrics}
+      onPauseResumeRecording={handlePauseResumeRecording}
+      onPrepareRecording={handlePrepareRecording}
       onReset={handleResetRecording}
       onSaveToLibrary={handleSaveToLibrary}
       onSelectAccompaniment={handleSelectAccompaniment}
-      onStart={handleStartRecording}
+      onStartRecording={handleStartRecording}
       onStop={handleStopRecording}
       onTriggerAccompanimentSelect={() =>
         accompanimentInputRef.current?.click()
