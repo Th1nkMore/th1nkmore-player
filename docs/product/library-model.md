@@ -41,15 +41,17 @@ The current codebase models a track with a simple `Song` type. That is acceptabl
 - Is this track intended for public portfolio presentation
 - Was this track uploaded directly, recorded in-app, or generated from export
 
-## Suggested Future Fields
+## Implemented Fields
 
-These fields do not need to be implemented immediately, but they should guide future branch work:
+The current codebase already includes the first-pass classification fields below:
 
 - `trackType`: `portfolio` or `personal`
 - `sourceType`: `upload`, `recording`, or `external-upload`
 - `visibility`: `public`, `private`, or `unlisted`
 - `assetStatus`: `draft`, `ready`, `archived`
 
+These fields are now part of the practical baseline rather than a purely future direction.
+
 ## Current Constraint
 
-Right now, the app mainly stores flat song records with fields such as title, artist, album, duration, lyrics, audio URL, metadata, and language. The next steps should extend that shape carefully without breaking existing playback and admin flows.
+The app still stores flat song records rather than a richer media catalog. The implemented classification fields improve semantics and admin control, but the underlying library shape is still playlist-oriented. Future work should continue extending the model carefully without breaking existing playback and admin flows.

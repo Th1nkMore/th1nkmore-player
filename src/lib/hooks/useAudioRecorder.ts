@@ -2,7 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export type RecordingState = "idle" | "recording" | "stopped" | "failed";
+export type RecordingState =
+  | "idle"
+  | "recording"
+  | "paused"
+  | "stopped"
+  | "failed";
 
 type StopResult = {
   blob: Blob;
@@ -39,6 +44,8 @@ export function useAudioRecorder() {
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
   const timerRef = useRef<number | null>(null);
+  const elapsedBeforeCurrentSegmentRef = useRef(0);
+  const segmentStartTimeRef = useRef<number | null>(null);
   const stopResolverRef = useRef<((result: StopResult | null) => void) | null>(
     null,
   );
@@ -59,16 +66,54 @@ export function useAudioRecorder() {
 
   const cleanupTimer = useCallback(() => {
     if (timerRef.current) {
-      window.clearInterval(timerRef.current);
+      window.clearTimeout(timerRef.current);
       timerRef.current = null;
     }
   }, []);
+
+  const syncElapsedSeconds = useCallback(() => {
+    const segmentElapsed =
+      segmentStartTimeRef.current === null
+        ? 0
+        : performance.now() - segmentStartTimeRef.current;
+    setElapsedSeconds(
+      Math.max(
+        0,
+        Math.floor(
+          (elapsedBeforeCurrentSegmentRef.current + segmentElapsed) / 1000,
+        ),
+      ),
+    );
+  }, []);
+
+  const startElapsedClock = useCallback(() => {
+    cleanupTimer();
+
+    const tick = () => {
+      syncElapsedSeconds();
+      timerRef.current = window.setTimeout(tick, 200);
+    };
+
+    tick();
+  }, [cleanupTimer, syncElapsedSeconds]);
+
+  const freezeElapsedClock = useCallback(() => {
+    if (segmentStartTimeRef.current !== null) {
+      elapsedBeforeCurrentSegmentRef.current +=
+        performance.now() - segmentStartTimeRef.current;
+      segmentStartTimeRef.current = null;
+    }
+    cleanupTimer();
+    syncElapsedSeconds();
+  }, [cleanupTimer, syncElapsedSeconds]);
 
   const resetRecording = () => {
     cleanupTimer();
     cleanupStream();
     mediaRecorderRef.current = null;
     chunksRef.current = [];
+    elapsedBeforeCurrentSegmentRef.current = 0;
+    segmentStartTimeRef.current = null;
     setRecordedBlob(null);
     setElapsedSeconds(0);
     setError(null);
@@ -100,6 +145,8 @@ export function useAudioRecorder() {
       streamRef.current = stream;
       mediaRecorderRef.current = recorder;
       chunksRef.current = [];
+      elapsedBeforeCurrentSegmentRef.current = 0;
+      segmentStartTimeRef.current = performance.now();
       setMimeType(recorder.mimeType || nextMimeType);
       setRecordingState("recording");
 
@@ -110,14 +157,14 @@ export function useAudioRecorder() {
       };
 
       recorder.onerror = () => {
-        cleanupTimer();
+        freezeElapsedClock();
         cleanupStream();
         setRecordingState("failed");
         setError("Recording failed while capturing audio");
       };
 
       recorder.onstop = () => {
-        cleanupTimer();
+        freezeElapsedClock();
         cleanupStream();
 
         const nextBlob = new Blob(chunksRef.current, {
@@ -140,11 +187,9 @@ export function useAudioRecorder() {
       };
 
       recorder.start();
-      timerRef.current = window.setInterval(() => {
-        setElapsedSeconds((current) => current + 1);
-      }, 1000);
+      startElapsedClock();
     } catch (cause) {
-      cleanupTimer();
+      freezeElapsedClock();
       cleanupStream();
       setRecordingState("failed");
       setError(
@@ -156,7 +201,10 @@ export function useAudioRecorder() {
 
   const stopRecording = async (): Promise<StopResult | null> => {
     const recorder = mediaRecorderRef.current;
-    if (!recorder || recorder.state !== "recording") {
+    if (
+      !recorder ||
+      (recorder.state !== "recording" && recorder.state !== "paused")
+    ) {
       return null;
     }
 
@@ -164,6 +212,31 @@ export function useAudioRecorder() {
       stopResolverRef.current = resolve;
       recorder.stop();
     });
+  };
+
+  const pauseRecording = () => {
+    const recorder = mediaRecorderRef.current;
+    if (!recorder || recorder.state !== "recording") {
+      return false;
+    }
+
+    freezeElapsedClock();
+    recorder.pause();
+    setRecordingState("paused");
+    return true;
+  };
+
+  const resumeRecording = () => {
+    const recorder = mediaRecorderRef.current;
+    if (!recorder || recorder.state !== "paused") {
+      return false;
+    }
+
+    segmentStartTimeRef.current = performance.now();
+    recorder.resume();
+    setRecordingState("recording");
+    startElapsedClock();
+    return true;
   };
 
   useEffect(() => {
@@ -187,5 +260,7 @@ export function useAudioRecorder() {
     resetRecording,
     startRecording,
     stopRecording,
+    pauseRecording,
+    resumeRecording,
   };
 }

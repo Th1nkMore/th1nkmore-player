@@ -2,7 +2,7 @@
 
 ## Summary
 
-Sonic IDE is currently a Next.js App Router application that already behaves as a music player with an admin upload workflow.
+Sonic IDE is currently a Next.js App Router application that behaves as a music player with an authenticated admin media workspace.
 
 The codebase combines a public listening experience and an authenticated admin experience in one project.
 
@@ -16,11 +16,15 @@ The codebase combines a public listening experience and an authenticated admin e
 
 ## Current Admin Capabilities
 
-- Magic-link style admin access
+- Password-based admin access with cookie-backed session state
 - Audio upload flow using signed URLs
 - Playlist loading and editing
 - NetEase lyric fetching
 - Metadata extraction from selected audio files
+- Track classification fields for track type, source type, visibility, and asset status
+- In-browser recording with preview and retry
+- Save recorded audio into the managed library
+- Browser-side MP3 export for recorded audio
 
 ## Current Technical Shape
 
@@ -41,8 +45,8 @@ The codebase combines a public listening experience and an authenticated admin e
 
 ## Known Gaps
 
-- The library model is still documented and implemented primarily as a playlist, not yet as a richer media catalog
-- Recording is not yet present
-- Export to formats beyond the current upload/play flow is not yet present
+- The library model is still implemented primarily as a playlist, not yet as a richer media catalog
+- Recording exists, but the state model is still lightweight and does not yet formalize draft vs publish behavior
+- MP3 export exists for newly recorded audio, but export is not yet generalized across all managed tracks or formats
 - Backend responsibilities are still relatively lightweight and will need expansion for future media workflows
 - CI/CD and performance optimization are not yet formalized as project infrastructure
