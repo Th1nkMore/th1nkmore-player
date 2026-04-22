@@ -80,14 +80,15 @@ describe("admin fetch-lyrics route", () => {
     });
   });
 
-  it("keeps only valid lrc timestamp lines", async () => {
+  it("keeps only lyric timestamp lines and strips leading metadata cues", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       Response.json({
         lyric: [
+          "[00:00.00]作词：Example",
           "[00:01.00]Line one",
           "Composer: Example",
           "[00:02.345]Line two",
-          "[00:03]Invalid timestamp",
+          "[00:03]Line three",
         ].join("\n"),
       }),
     );
@@ -107,7 +108,7 @@ describe("admin fetch-lyrics route", () => {
     await expect(response.json()).resolves.toEqual({
       success: true,
       songId: "123456",
-      lyrics: "[00:01.00]Line one\n[00:02.345]Line two",
+      lyrics: "[00:01.00]Line one\n[00:02.35]Line two\n[00:03.00]Line three",
       songInfo: null,
     });
   });

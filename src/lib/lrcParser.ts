@@ -3,7 +3,23 @@ export type LrcLine = {
   content: string;
 };
 
-const LRC_LINE_PATTERN = /\[(\d{2}):(\d{2})(?:\.(\d{2,3}))?\]/g;
+const LRC_TIMESTAMP_SOURCE = String.raw`\[(\d{2}):(\d{2})(?:\.(\d{2,3}))?\]`;
+const LRC_TIMESTAMP_PATTERN = new RegExp(LRC_TIMESTAMP_SOURCE, "g");
+const LRC_TIMESTAMP_DETECTION_PATTERN = new RegExp(LRC_TIMESTAMP_SOURCE);
+const LEADING_METADATA_CONTENT_PATTERN =
+  /^(?:(?:ti|ar|al|by|offset|re|ve|kana|composer|arranger|producer|vocal|artist|title|album|lyricist)\s*[:：]|(?:作词|作曲|编曲|监制|制作人|录音|混音|母带|演唱|歌手|专辑|词|曲)\s*[:：])/i;
+
+function getTimestampMatches(input: string): RegExpExecArray[] {
+  return [...input.matchAll(LRC_TIMESTAMP_PATTERN)];
+}
+
+function stripTimestamps(input: string): string {
+  return input.replace(LRC_TIMESTAMP_PATTERN, "").trim();
+}
+
+function isLeadingMetadataContent(input: string): boolean {
+  return LEADING_METADATA_CONTENT_PATTERN.test(input.trim());
+}
 
 function parseTimestampToSeconds(match: RegExpExecArray): number {
   const minutes = parseInt(match[1], 10);
@@ -18,7 +34,7 @@ function parseTimestampToSeconds(match: RegExpExecArray): number {
 }
 
 export function hasLrcTimestamps(input: string): boolean {
-  return LRC_LINE_PATTERN.test(input);
+  return LRC_TIMESTAMP_DETECTION_PATTERN.test(input);
 }
 
 export function countLyricLines(input: string): number {
@@ -55,17 +71,24 @@ export function formatLrcTime(timeInSeconds: number): string {
 export function parseLrc(lrcString: string): LrcLine[] {
   const lines: LrcLine[] = [];
   const inputLines = lrcString.split("\n");
+  let hasSeenLyricContent = false;
 
   for (const rawLine of inputLines) {
-    const timestampMatches = [...rawLine.matchAll(LRC_LINE_PATTERN)];
+    const timestampMatches = getTimestampMatches(rawLine);
     if (timestampMatches.length === 0) {
       continue;
     }
 
-    const content = rawLine.replace(LRC_LINE_PATTERN, "").trim();
+    const content = stripTimestamps(rawLine);
     if (!content) {
       continue;
     }
+
+    if (!hasSeenLyricContent && isLeadingMetadataContent(content)) {
+      continue;
+    }
+
+    hasSeenLyricContent = true;
 
     for (const match of timestampMatches) {
       lines.push({
