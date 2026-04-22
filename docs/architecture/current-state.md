@@ -20,11 +20,13 @@ The codebase combines a public listening experience and an authenticated admin e
 - Audio upload flow using signed URLs
 - Playlist loading and editing
 - NetEase lyric fetching
+- Shared LRC normalization for imported and fetched lyrics
 - Metadata extraction from selected audio files
 - Track classification fields for track type, source type, visibility, and asset status
 - In-browser recording with preview and retry
 - Save recorded audio into the managed library
 - Browser-side MP3 export for recorded audio
+- Recording teleprompter with stabilized lyric auto-follow
 
 ## Current Technical Shape
 

@@ -14,6 +14,7 @@ This directory contains the product, process, architecture, and roadmap baseline
 - `roadmap/engineering-roadmap.md`: engineering and performance roadmap
 - `roadmap/implementation-plan.md`: branch-by-branch implementation sequence
 - `specs/recording-export.md`: recording and export design draft
+- `specs/lyrics-sync-hardening.md`: timed lyrics parsing and teleprompter stability notes
 
 ## Usage
 

@@ -23,6 +23,24 @@ export function getActiveLyricIndex(lines: LrcLine[], currentTime: number) {
   return activeIndex;
 }
 
+export function getLyricScrollTop(input: {
+  containerHeight: number;
+  currentScrollTop: number;
+  nodeHeight: number;
+  nodeOffsetTop: number;
+}) {
+  const { containerHeight, currentScrollTop, nodeHeight, nodeOffsetTop } =
+    input;
+  const targetScrollTop = Math.max(
+    0,
+    nodeOffsetTop - containerHeight / 2 + nodeHeight / 2,
+  );
+
+  return Math.abs(targetScrollTop - currentScrollTop) < 4
+    ? currentScrollTop
+    : targetScrollTop;
+}
+
 export function LyricTeleprompter({
   currentTime,
   lyricFormat,
@@ -46,9 +64,25 @@ export function LyricTeleprompter({
       `[data-lyric-index="${activeIndex}"]`,
     );
 
-    activeNode?.scrollIntoView({
-      behavior: "smooth",
-      block: "center",
+    if (!activeNode) {
+      return;
+    }
+
+    const container = containerRef.current;
+    const nextScrollTop = getLyricScrollTop({
+      containerHeight: container.clientHeight,
+      currentScrollTop: container.scrollTop,
+      nodeHeight: activeNode.offsetHeight,
+      nodeOffsetTop: activeNode.offsetTop,
+    });
+
+    if (nextScrollTop === container.scrollTop) {
+      return;
+    }
+
+    container.scrollTo({
+      top: nextScrollTop,
+      behavior: "auto",
     });
   }, [activeIndex]);
 
