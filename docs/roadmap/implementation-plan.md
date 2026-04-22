@@ -4,6 +4,10 @@
 
 Turn the current product and roadmap documents into a concrete sequence of `feat/*` branches that can be developed from `dev`, accepted independently, and merged back without mixing concerns.
 
+## Status Note
+
+The codebase has already moved ahead of the original sequencing in a few areas. In particular, the library classification fields, the admin recording shell, and a first browser-side MP3 export flow already exist in the current implementation. This document therefore distinguishes between work that is already effectively present, work that still needs acceptance and documentation cleanup, and work that remains genuinely future-facing.
+
 ## Working Rule
 
 Every branch below is intended to start from `dev` and merge back into `dev` only after its own local acceptance is complete.
@@ -28,6 +32,10 @@ Acceptance:
 - `docs/` provides a navigable planning baseline
 - Product direction, branch policy, and next implementation steps are documented clearly enough to guide later feature branches
 
+Current status:
+
+- Mostly complete once documentation is synchronized with the current codebase
+
 ## Phase 2: Library Classification
 
 Branch:
@@ -51,6 +59,11 @@ Acceptance:
 - Existing tracks still load without breaking playback
 - New fields are documented and handled in a backward-compatible way
 - Type-check passes for the updated model
+
+Current status:
+
+- Largely implemented in code
+- Remaining work is mainly documentation alignment and any later player-side filtering or curation behavior
 
 ## Phase 3: Admin Recording Shell
 
@@ -77,6 +90,12 @@ Acceptance:
 - Failed or denied recording states are handled without breaking the page
 - No public route exposes recording controls
 
+Current status:
+
+- Implemented as an admin-only recording workspace
+- Ready for acceptance if the project adopts the narrower current-phase recording spec
+- Draft vs publish behavior remains a deferred product decision rather than a blocker for this phase
+
 ## Phase 4: MP3 Export Foundation
 
 Branch:
@@ -100,6 +119,13 @@ Acceptance:
 - An admin can complete one full MP3 export flow
 - Export failure states surface useful feedback
 - Export logic is narrow and documented rather than trying to solve all formats at once
+
+Current status:
+
+- Partially implemented
+- The current flow supports browser-side MP3 export for newly recorded audio
+- This is enough to accept a narrow first export phase
+- Generalized export for existing managed tracks is still future work
 
 ## Phase 5: Lyrics Workflow Expansion
 
@@ -170,9 +196,8 @@ Acceptance:
 
 ## Recommended Immediate Order
 
-1. Finish and accept `feat/docs-foundation`
-2. Build `feat/library-classification`
-3. Build `feat/admin-recording-shell`
-4. Build `feat/export-mp3-foundation`
-5. Decide whether `feat/lyrics-workflow` or `feat/backend-media-foundation` comes next based on actual blockers
-6. Add `feat/cicd-foundation` once the feature path is clearer
+1. Finish and accept `feat/docs-foundation` by aligning the documentation with the current implementation state
+2. Accept `feat/admin-recording-shell` and the narrow first version of `feat/export-mp3-foundation` against the current-phase recording/export spec
+3. Decide whether `feat/lyrics-workflow` or `feat/backend-media-foundation` comes next based on actual blockers
+4. Add `feat/cicd-foundation` once the feature path is clearer
+5. Revisit player-side filtering and curation only after the media workflow stabilizes
