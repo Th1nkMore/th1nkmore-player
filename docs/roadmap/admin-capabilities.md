@@ -20,6 +20,11 @@ Evolve the admin area from a basic upload panel into a single-owner audio manage
 - Export recordings as MP3
 - Reuse the normal metadata editing flow after recording
 
+Current phase status:
+
+- The baseline recording workspace and first MP3 export flow already exist
+- Remaining open work is mainly around draft versus publish semantics and broader export scope
+
 ## Phase 3: Export Expansion
 
 - Support export to additional formats

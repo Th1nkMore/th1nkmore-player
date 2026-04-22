@@ -7,7 +7,7 @@ The product has two roles at the same time:
 - A portfolio for original work and self-uploaded audio assets
 - A personal player for songs the owner wants to keep and listen to inside the same interface
 
-Part of the library is pulled from Cloudflare R2 and managed by the owner. Another part represents songs the owner chooses to upload for personal listening. The current app already supports playback, lyrics, and admin upload basics, and it will expand toward recording, export, and stronger backend capabilities.
+Part of the library is pulled from Cloudflare R2 and managed by the owner. Another part represents songs the owner chooses to upload for personal listening. The current app already supports playback, lyrics, admin upload basics, playlist editing, in-browser recording, and a first browser-side MP3 export flow. It will continue expanding toward stronger backend media handling and CI/CD.
 
 ## Product Direction
 
@@ -33,6 +33,9 @@ Current planning highlights:
 - Responsive layouts for desktop, mobile portrait, and mobile landscape
 - Localized routes with `en`, `zh`, `ja`, and `de`
 - Admin upload flow with signed R2 uploads, playlist editing, and NetEase lyric import
+- Track classification metadata for portfolio vs personal, source type, visibility, and asset status
+- Admin-only recording workspace with microphone capture, preview, retry, save-to-library, and upload handoff
+- Browser-side MP3 export for newly recorded audio
 
 ## Stack
 
@@ -88,6 +91,7 @@ pnpm build
 pnpm start
 pnpm lint
 pnpm type-check
+pnpm test
 ```
 
 ## Admin Workflow
@@ -95,9 +99,10 @@ pnpm type-check
 1. Set `ADMIN_SECRET` and `ADMIN_PASSWORD` in `.env.local`.
 2. Open `/admin/login`.
 3. Sign in with the configured admin password.
-4. Upload an audio file to R2 with a signed URL.
-5. Append or edit entries in the playlist source.
-6. Optionally import LRC lyrics from a NetEase Music link.
+4. Upload an audio file to R2 with a signed URL, or switch to the recording workspace and capture audio in-browser.
+5. Set track metadata such as track type, source type, visibility, and asset status.
+6. Append or edit entries in the playlist source.
+7. Optionally import or normalize lyrics, and export a recording to MP3 from the recording workspace.
 
 ## Branching Workflow
 
@@ -118,6 +123,8 @@ Detailed process: [`docs/process/branching-release.md`](docs/process/branching-r
 
 ## Current Gaps
 
-- `pnpm type-check` passes, but `pnpm lint` still reports legacy style and complexity issues, especially in `scripts/` and a few core files.
-- The product documentation baseline was missing and is now being established under `docs/`.
-- Recording, export formats, CI/CD, and deeper backend capabilities still need design and implementation.
+- The app still uses a playlist-shaped library model rather than a richer media catalog.
+- Recording and MP3 export exist, but the workflow is still narrow: export currently targets newly recorded client-side audio rather than all managed tracks.
+- The recording spec still needs a final decision on draft vs publish behavior and whether recording/export states should be unified more explicitly in the UI model.
+- CI/CD automation and merge gates are still documented goals rather than implemented project infrastructure.
+- Backend media responsibilities are still lightweight and should be separated more clearly as recording and export flows grow.
