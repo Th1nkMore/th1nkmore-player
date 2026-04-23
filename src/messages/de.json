@@ -28,6 +28,7 @@
     "artistComment": "// artist: sonic-ide",
     "welcome": "Willkommen bei Sonic IDE",
     "emptyStateDescription": "Wählen Sie eine Datei im Explorer aus, um deren Inhalt anzuzeigen.",
+    "transitioning": "Songtext wird synchronisiert",
     "shortcutsTitle": "Tastenkombinationen:",
     "shortcutOpen": "Klicken Sie auf Dateien im Explorer, um sie zu öffnen",
     "shortcutSwitch": "Klicken Sie auf Tabs, um zwischen geöffneten Dateien zu wechseln",
@@ -47,7 +48,8 @@
     "artistLabel": "Künstler:",
     "albumLabel": "Album:",
     "languageLabel": "Sprache:",
-    "noFileSelected": "Keine Datei ausgewählt"
+    "noFileSelected": "Keine Datei ausgewählt",
+    "transitioning": "Inspektor wird synchronisiert"
   },
   "terminal": {
     "play": "Wiedergabe",
@@ -94,7 +96,8 @@
   },
   "explorerNav": {
     "files": "Dateien",
-    "grid": "Raster"
+    "grid": "Raster",
+    "switchingPanels": "Ansicht wird gewechselt"
   },
   "tagGrid": {
     "title": "Tag-Raster",

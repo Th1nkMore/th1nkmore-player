@@ -1,8 +1,10 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import { FileCode } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { PanelTransitionOverlay } from "@/components/ide/PanelTransitionOverlay";
 import { lyricsToLrc, parseLrc } from "@/lib/lrcParser";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/utils/audio";
@@ -93,6 +95,7 @@ export function CodeEditor({ className }: CodeEditorProps) {
 
   // State for controlling auto-scroll behavior
   const [isUserScrolling, setIsUserScrolling] = useState(false);
+  const [isPanelTransitioning, setIsPanelTransitioning] = useState(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const activeLineRef = useRef<HTMLDivElement>(null);
@@ -122,6 +125,19 @@ export function CodeEditor({ className }: CodeEditorProps) {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (!currentTrackId) {
+      setIsPanelTransitioning(false);
+      return;
+    }
+    setIsPanelTransitioning(true);
+    const timeoutId = window.setTimeout(
+      () => setIsPanelTransitioning(false),
+      180,
+    );
+    return () => window.clearTimeout(timeoutId);
+  }, [currentTrackId]);
 
   // Parse lyrics into LRC format with timestamps
   const lrcLines = useMemo(() => {
@@ -233,10 +249,14 @@ export function CodeEditor({ className }: CodeEditorProps) {
   return (
     <div
       className={cn(
-        "flex h-full flex-col bg-background font-mono text-[12px] md:text-[13px]",
+        "relative flex h-full flex-col bg-background font-mono text-[12px] md:text-[13px]",
         className,
       )}
     >
+      <PanelTransitionOverlay
+        visible={isPanelTransitioning}
+        label={t("transitioning")}
+      />
       {/* File path bar - fixed at top */}
       <div className="border-b border-border px-3 md:px-4 py-2 flex items-center gap-2 shrink-0 bg-background">
         <span className="text-[10px] md:text-[11px] text-muted-foreground truncate">
@@ -247,35 +267,47 @@ export function CodeEditor({ className }: CodeEditorProps) {
         </span>
       </div>
       {/* Scrollable lyrics area - hidden scrollbar */}
-      <div
-        ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto scrollbar-none"
-        onScroll={handleScroll}
-      >
-        <div className="py-4">
-          {visibleLines.map((line) => {
-            // Check if this line corresponds to the active LRC line
-            const isActive =
-              line.time !== null &&
-              activeLineIndex >= 0 &&
-              lrcLines[activeLineIndex]?.time === line.time;
+      <div className="relative flex-1 overflow-hidden">
+        <div
+          ref={scrollContainerRef}
+          className="h-full overflow-y-auto scrollbar-none"
+          onScroll={handleScroll}
+        >
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={currentTrack.id}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="py-4"
+            >
+              {visibleLines.map((line) => {
+                const isActive =
+                  line.time !== null &&
+                  activeLineIndex >= 0 &&
+                  lrcLines[activeLineIndex]?.time === line.time;
 
-            return (
-              <Line
-                key={`${line.time}-${line.originalIndex}`}
-                lineNumber={line.originalIndex + 1}
-                content={line.content}
-                time={line.time}
-                isActive={isActive ?? false}
-                goToTimeLabel={tControls("goToTime", {
-                  time:
-                    line.time !== null ? formatDuration(line.time) : "--:--",
-                })}
-                lineRef={isActive ? activeLineRef : undefined}
-                onLineClick={seek}
-              />
-            );
-          })}
+                return (
+                  <Line
+                    key={`${line.time}-${line.originalIndex}`}
+                    lineNumber={line.originalIndex + 1}
+                    content={line.content}
+                    time={line.time}
+                    isActive={isActive ?? false}
+                    goToTimeLabel={tControls("goToTime", {
+                      time:
+                        line.time !== null
+                          ? formatDuration(line.time)
+                          : "--:--",
+                    })}
+                    lineRef={isActive ? activeLineRef : undefined}
+                    onLineClick={seek}
+                  />
+                );
+              })}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </div>

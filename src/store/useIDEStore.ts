@@ -4,7 +4,7 @@ import { buildTagStats, getSongsByTag } from "@/lib/tags";
 import type { Song } from "@/types/music";
 
 const PLAYLIST_CACHE_KEY = "sonic-ide-playlist";
-const PLAYLIST_CACHE_TTL_MS = 60 * 1000; // 60s, align with API s-maxage
+const PLAYLIST_CACHE_TTL_MS = 5 * 60 * 1000; // 5m, align with API s-maxage
 
 type CachedPlaylist = { songs: Song[]; cachedAt: number };
 
@@ -90,7 +90,9 @@ export const useIDEStore = create<IDEState>((set, get) => ({
     }
     set({ isLoading: true });
     try {
-      const response = await fetch("/api/playlist");
+      const response = await fetch("/api/playlist", {
+        cache: "force-cache",
+      });
       if (!response.ok) {
         throw new Error(`Failed to fetch playlist: ${response.statusText}`);
       }
