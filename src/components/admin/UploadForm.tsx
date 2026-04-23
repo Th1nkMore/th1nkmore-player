@@ -18,7 +18,6 @@ import {
   AdminStatusBanner,
 } from "@/components/admin/workspace/AdminWorkspacePrimitives";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   type AdminNotice,
   formatSongDuration,
@@ -163,8 +162,8 @@ export function UploadForm({
   ];
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-[var(--editor-bg)]">
-      <ScrollArea className="flex-1">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[var(--editor-bg)]">
+      <div className="flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch]">
         <div className="mx-auto flex w-full max-w-[1680px] flex-col gap-4 p-4 md:p-6 xl:grid xl:grid-cols-[minmax(0,1fr)_21rem] xl:items-start">
           <div className="space-y-4">
             {uploadNotice ? (
@@ -376,7 +375,7 @@ export function UploadForm({
             </div>
           </div>
         </div>
-      </ScrollArea>
+      </div>
 
       <div className="border-t border-[var(--border)] bg-[rgba(10,14,20,0.94)] p-3 xl:hidden">
         <AdminActionBar className="justify-between">
