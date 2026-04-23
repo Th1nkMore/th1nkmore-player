@@ -1,13 +1,29 @@
 "use client";
 
-import { FileAudio, Loader2, Music2, Play, Upload } from "lucide-react";
-import { type DragEvent, type RefObject, useState } from "react";
-import { LyricsTools } from "@/components/admin/LyricsTools";
-import { TagInput } from "@/components/admin/TagInput";
+import { FileAudio, Loader2, Music2, Play, Upload, Wand2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import {
+  type ChangeEvent,
+  type DragEvent,
+  type RefObject,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { AdminSongForm } from "@/components/admin/workspace/AdminSongForm";
+import {
+  AdminActionBar,
+  AdminEmptyState,
+  AdminSectionCard,
+  AdminStatusBanner,
+} from "@/components/admin/workspace/AdminWorkspacePrimitives";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  type AdminNotice,
+  formatSongDuration,
+  getUploadReadiness,
+} from "@/lib/admin-workspace";
 import type { Song } from "@/types/music";
 
 type UploadFormProps = {
@@ -21,47 +37,21 @@ type UploadFormProps = {
   lyricsFormat: "lrc" | "plain" | "empty";
   lyricLineCount: number;
   fileInputRef: RefObject<HTMLInputElement | null>;
+  uploadNotice: AdminNotice | null;
+  fileStatus: AdminNotice | null;
   handleConvertLyricsToLrc: () => void;
-  handleFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleFileSelect: (e: ChangeEvent<HTMLInputElement>) => void;
   handleFetchLyrics: () => void;
   handleDeploy: () => void;
   handleNormalizeLyrics: () => void;
 };
 
-function SectionHeader({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex items-center gap-3 mb-4">
-      <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 whitespace-nowrap">
-        {children}
-      </span>
-      <div className="flex-1 h-px bg-[var(--border)]" />
-    </div>
-  );
+function formatBytes(bytes: number) {
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 }
 
-function FieldLabel({
-  htmlFor,
-  children,
-}: {
-  htmlFor?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Label
-      htmlFor={htmlFor}
-      className="mb-1.5 block text-[10px] font-semibold uppercase tracking-wide text-gray-500"
-    >
-      {children}
-    </Label>
-  );
-}
-
-const selectClass =
-  "flex h-8 w-full rounded-md border border-[var(--border)] bg-[var(--editor-bg)] px-3 py-1 text-[11px] text-gray-300 font-mono focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-600 cursor-pointer";
-
-const inputClass =
-  "font-mono text-[11px] h-8 bg-[var(--editor-bg)] border-[var(--border)] text-gray-300 placeholder:text-gray-600";
-
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Upload workspace intentionally coordinates multiple responsive sections and status surfaces
 export function UploadForm({
   formData,
   setFormData,
@@ -73,375 +63,347 @@ export function UploadForm({
   lyricsFormat,
   lyricLineCount,
   fileInputRef,
+  uploadNotice,
+  fileStatus,
   handleConvertLyricsToLrc,
   handleFileSelect,
   handleFetchLyrics,
   handleDeploy,
   handleNormalizeLyrics,
 }: UploadFormProps) {
+  const t = useTranslations("admin");
   const [isDragging, setIsDragging] = useState(false);
 
-  const handleDragOver = (e: DragEvent<HTMLLabelElement>) => {
-    e.preventDefault();
+  const previewUrl = useMemo(
+    () => (audioFile ? URL.createObjectURL(audioFile) : null),
+    [audioFile],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  const handleDragOver = (event: DragEvent<HTMLLabelElement>) => {
+    event.preventDefault();
     setIsDragging(true);
   };
 
-  const handleDragLeave = (e: DragEvent<HTMLLabelElement>) => {
-    e.preventDefault();
+  const handleDragLeave = (event: DragEvent<HTMLLabelElement>) => {
+    event.preventDefault();
     setIsDragging(false);
   };
 
-  const handleDrop = (e: DragEvent<HTMLLabelElement>) => {
-    e.preventDefault();
+  const handleDrop = (event: DragEvent<HTMLLabelElement>) => {
+    event.preventDefault();
     setIsDragging(false);
-    const file = e.dataTransfer.files?.[0];
+
+    const file = event.dataTransfer.files?.[0];
     if (!file) return;
+
     const syntheticEvent = {
-      target: { files: e.dataTransfer.files },
-    } as unknown as React.ChangeEvent<HTMLInputElement>;
+      target: { files: event.dataTransfer.files },
+    } as unknown as ChangeEvent<HTMLInputElement>;
     handleFileSelect(syntheticEvent);
   };
 
-  const formatBytes = (bytes: number) => {
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
-  };
+  const readiness = getUploadReadiness(formData, audioFile);
+  const summaryNotices: AdminNotice[] = [
+    isDeploying
+      ? {
+          tone: "neutral",
+          title: t("notices.deploying.title"),
+          message: t("notices.deploying.message"),
+        }
+      : readiness.canDeploy
+        ? {
+            tone: "success",
+            title: t("upload.readiness.title"),
+            message: t("upload.readiness.deployReady"),
+          }
+        : {
+            tone: "warning",
+            title: t("upload.readiness.title"),
+            message: t("upload.readiness.deployBlocked"),
+          },
+    ...(!audioFile
+      ? [
+          {
+            tone: "warning" as const,
+            title: t("upload.asset.emptyTitle"),
+            message: t("upload.asset.emptyDescription"),
+          },
+        ]
+      : []),
+    ...(isFetchingLyrics
+      ? [
+          {
+            tone: "neutral" as const,
+            title: t("actions.fetching"),
+            message: t("fields.neteaseUrl.description"),
+          },
+        ]
+      : formData.lyrics?.trim()
+        ? [
+            {
+              tone: "success" as const,
+              title: t(
+                `lyricsStatus.${lyricsFormat === "empty" ? "plain" : lyricsFormat}.title`,
+              ),
+              message: t(
+                `lyricsStatus.${lyricsFormat === "empty" ? "plain" : lyricsFormat}.message`,
+                { count: lyricLineCount },
+              ),
+            },
+          ]
+        : []),
+  ];
 
   return (
-    <ScrollArea className="flex-1 h-full">
-      <div className="p-5 space-y-7">
-        {/* ── Track Info ───────────────────────────────────────── */}
-        <section>
-          <SectionHeader>Track Info</SectionHeader>
-          <div className="space-y-3">
-            <div>
-              <FieldLabel htmlFor="title">Title</FieldLabel>
-              <Input
-                id="title"
-                type="text"
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-                className={inputClass}
-                placeholder="Song title"
+    <div className="flex h-full flex-col overflow-hidden bg-[var(--editor-bg)]">
+      <ScrollArea className="flex-1">
+        <div className="mx-auto flex w-full max-w-[1680px] flex-col gap-4 p-4 md:p-6 xl:grid xl:grid-cols-[minmax(0,1fr)_21rem] xl:items-start">
+          <div className="space-y-4">
+            {uploadNotice ? (
+              <AdminStatusBanner
+                tone={uploadNotice.tone}
+                title={uploadNotice.title}
+                message={uploadNotice.message}
               />
-            </div>
+            ) : null}
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <FieldLabel htmlFor="artist">Artist</FieldLabel>
-                <Input
-                  id="artist"
-                  type="text"
-                  value={formData.artist}
-                  onChange={(e) =>
-                    setFormData({ ...formData, artist: e.target.value })
-                  }
-                  className={inputClass}
-                  placeholder="Artist name"
-                />
-              </div>
-              <div>
-                <FieldLabel htmlFor="album">Album</FieldLabel>
-                <Input
-                  id="album"
-                  type="text"
-                  value={formData.album}
-                  onChange={(e) =>
-                    setFormData({ ...formData, album: e.target.value })
-                  }
-                  className={inputClass}
-                  placeholder="Album name"
-                />
-              </div>
-            </div>
-
-            <div className="w-1/3">
-              <FieldLabel htmlFor="duration">Duration (sec)</FieldLabel>
-              <Input
-                id="duration"
-                type="number"
-                value={formData.duration || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    duration: parseInt(e.target.value, 10) || 0,
-                  })
-                }
-                className={inputClass}
-                placeholder="180"
+            <AdminSectionCard
+              title={t("upload.fileCard.title")}
+              description={t("upload.fileCard.description")}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="audio/*"
+                onChange={handleFileSelect}
+                className="hidden"
+                id="admin-audio-file"
               />
-            </div>
-          </div>
-        </section>
 
-        {/* ── Metadata ─────────────────────────────────────────── */}
-        <section>
-          <SectionHeader>Metadata</SectionHeader>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <FieldLabel htmlFor="language">Language</FieldLabel>
-              <select
-                id="language"
-                value={formData.language}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    language: e.target.value as Song["language"],
-                  })
-                }
-                className={selectClass}
+              <label
+                htmlFor="admin-audio-file"
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={[
+                  "flex min-h-[12rem] cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-5 py-6 text-center transition",
+                  isDragging
+                    ? "border-sky-400/70 bg-sky-400/8"
+                    : audioFile
+                      ? "border-emerald-500/40 bg-emerald-500/6"
+                      : "border-[var(--border)] bg-[rgba(7,10,15,0.76)] hover:border-sky-400/40 hover:bg-[rgba(14,18,26,0.94)]",
+                ].join(" ")}
               >
-                <option value="en">en</option>
-                <option value="zh">zh</option>
-                <option value="ja">ja</option>
-              </select>
-            </div>
+                {audioFile ? (
+                  <>
+                    <FileAudio className="h-8 w-8 text-emerald-300" />
+                    <div>
+                      <p className="text-sm font-semibold text-gray-200">
+                        {audioFile.name}
+                      </p>
+                      <p className="mt-1 text-xs text-gray-500">
+                        {formatBytes(audioFile.size)} •{" "}
+                        {t("upload.fileCard.changeFile")}
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-8 w-8 text-gray-500" />
+                    <div>
+                      <p className="text-sm font-semibold text-gray-200">
+                        {isDragging
+                          ? t("upload.fileCard.dropActive")
+                          : t("upload.fileCard.dropIdle")}
+                      </p>
+                      <p className="mt-1 text-xs text-gray-500">
+                        {t("upload.fileCard.supportedFormats")}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </label>
 
-            <div>
-              <FieldLabel htmlFor="track-type">Track Type</FieldLabel>
-              <select
-                id="track-type"
-                value={formData.trackType}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    trackType: e.target.value as Song["trackType"],
-                  })
-                }
-                className={selectClass}
-              >
-                <option value="portfolio">portfolio</option>
-                <option value="personal">personal</option>
-              </select>
-            </div>
+              {fileStatus ? (
+                <div className="mt-4">
+                  <AdminStatusBanner
+                    tone={fileStatus.tone}
+                    title={fileStatus.title}
+                    message={fileStatus.message}
+                  />
+                </div>
+              ) : null}
 
-            <div>
-              <FieldLabel htmlFor="source-type">Source Type</FieldLabel>
-              <select
-                id="source-type"
-                value={formData.sourceType}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    sourceType: e.target.value as Song["sourceType"],
-                  })
-                }
-                className={selectClass}
-              >
-                <option value="upload">upload</option>
-                <option value="external-upload">external-upload</option>
-                <option value="recording">recording</option>
-              </select>
-            </div>
+              {audioFile && previewUrl ? (
+                <div className="mt-4 rounded-2xl border border-[var(--border)] bg-[rgba(7,10,15,0.82)] p-4">
+                  <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-500">
+                    <Music2 className="h-3.5 w-3.5" />
+                    {t("upload.fileCard.preview")}
+                  </div>
+                  {/* biome-ignore lint/a11y/useMediaCaption: audio preview does not need captions */}
+                  <audio controls src={previewUrl} className="h-10 w-full" />
+                </div>
+              ) : null}
+            </AdminSectionCard>
 
-            <div>
-              <FieldLabel htmlFor="visibility">Visibility</FieldLabel>
-              <select
-                id="visibility"
-                value={formData.visibility}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    visibility: e.target.value as Song["visibility"],
-                  })
-                }
-                className={selectClass}
-              >
-                <option value="public">public</option>
-                <option value="private">private</option>
-                <option value="unlisted">unlisted</option>
-              </select>
-            </div>
-
-            <div>
-              <FieldLabel htmlFor="asset-status">Asset Status</FieldLabel>
-              <select
-                id="asset-status"
-                value={formData.assetStatus}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    assetStatus: e.target.value as Song["assetStatus"],
-                  })
-                }
-                className={selectClass}
-              >
-                <option value="ready">ready</option>
-                <option value="draft">draft</option>
-                <option value="archived">archived</option>
-              </select>
-            </div>
-          </div>
-          <div className="mt-3">
-            <FieldLabel>Tags</FieldLabel>
-            <TagInput
-              value={formData.tags || []}
-              onChange={(tags) => setFormData({ ...formData, tags })}
+            <AdminSongForm
+              draft={formData}
+              onChange={(patch) => setFormData({ ...formData, ...patch })}
+              neteaseUrl={neteaseUrl}
+              onNeteaseUrlChange={setNeteaseUrl}
+              isFetchingLyrics={isFetchingLyrics}
+              onFetchLyrics={handleFetchLyrics}
+              lyricFormat={lyricsFormat}
+              lyricLineCount={lyricLineCount}
+              onConvertLyricsToLrc={handleConvertLyricsToLrc}
+              onNormalizeLyrics={handleNormalizeLyrics}
+              mode="upload"
             />
           </div>
-        </section>
 
-        {/* ── Lyrics ───────────────────────────────────────────── */}
-        <section>
-          <SectionHeader>Lyrics</SectionHeader>
-          <div className="space-y-3">
-            <div>
-              <FieldLabel htmlFor="netease-url">NetEase Music URL</FieldLabel>
-              <div className="flex gap-2">
-                <Input
-                  id="netease-url"
-                  type="text"
-                  value={neteaseUrl}
-                  onChange={(e) => setNeteaseUrl(e.target.value)}
-                  className={`${inputClass} flex-1`}
-                  placeholder="https://music.163.com/#/song?id=..."
-                />
+          <div className="space-y-4 xl:sticky xl:top-4">
+            <AdminSectionCard
+              title={t("upload.summary.title")}
+              description={t("upload.summary.description")}
+            >
+              <div className="space-y-3">
+                {summaryNotices.map((notice) => (
+                  <AdminStatusBanner
+                    key={`${notice.title}-${notice.message}`}
+                    tone={notice.tone}
+                    title={notice.title}
+                    message={notice.message}
+                  />
+                ))}
+              </div>
+            </AdminSectionCard>
+
+            <AdminSectionCard
+              title={t("upload.readiness.title")}
+              description={t("upload.readiness.description")}
+            >
+              <div className="space-y-2">
+                {readiness.checks.map((check) => (
+                  <div
+                    key={check.id}
+                    className="flex items-center justify-between rounded-xl border border-[var(--border)] bg-[rgba(7,10,15,0.82)] px-3 py-2"
+                  >
+                    <span className="text-sm text-gray-300">
+                      {t(`upload.readiness.items.${check.id}`)}
+                    </span>
+                    <span
+                      className={
+                        check.state === "ready"
+                          ? "text-xs text-emerald-300"
+                          : "text-xs text-amber-300"
+                      }
+                    >
+                      {check.state === "ready"
+                        ? t("status.ready")
+                        : t("status.missing")}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </AdminSectionCard>
+
+            {audioFile ? (
+              <AdminSectionCard
+                title={t("upload.asset.title")}
+                description={t("upload.asset.description")}
+              >
+                <div className="space-y-2 text-sm text-gray-400">
+                  <div className="flex items-center justify-between gap-3">
+                    <span>{t("upload.asset.fileName")}</span>
+                    <span className="truncate text-right text-gray-300">
+                      {audioFile.name}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span>{t("upload.asset.fileSize")}</span>
+                    <span className="text-gray-300">
+                      {formatBytes(audioFile.size)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span>{t("upload.asset.duration")}</span>
+                    <span className="text-gray-300">
+                      {formatSongDuration(formData.duration || 0)}
+                    </span>
+                  </div>
+                </div>
+              </AdminSectionCard>
+            ) : (
+              <AdminEmptyState
+                title={t("upload.asset.emptyTitle")}
+                description={t("upload.asset.emptyDescription")}
+              />
+            )}
+
+            <div className="hidden xl:block">
+              <AdminActionBar className="justify-between">
+                <div className="text-xs text-gray-500">
+                  {readiness.canDeploy
+                    ? t("upload.readiness.deployReady")
+                    : t("upload.readiness.deployBlocked")}
+                </div>
                 <Button
                   type="button"
-                  onClick={handleFetchLyrics}
-                  disabled={isFetchingLyrics}
-                  variant="outline"
-                  size="sm"
-                  className="font-mono text-[10px] h-8 px-3 bg-[var(--editor-bg)] border-[var(--border)] text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 shrink-0"
+                  onClick={handleDeploy}
+                  disabled={!readiness.canDeploy || isDeploying}
                 >
-                  {isFetchingLyrics ? (
+                  {isDeploying ? (
                     <>
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                      Fetching
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      {t("actions.deploying")}
                     </>
                   ) : (
-                    "Fetch"
+                    <>
+                      <Play className="h-3.5 w-3.5" />
+                      {t("actions.deploy")}
+                    </>
                   )}
                 </Button>
-              </div>
-            </div>
-
-            <div>
-              <FieldLabel htmlFor="lyrics">LRC Content</FieldLabel>
-              <textarea
-                id="lyrics"
-                value={formData.lyrics}
-                onChange={(e) =>
-                  setFormData({ ...formData, lyrics: e.target.value })
-                }
-                rows={7}
-                className="flex w-full rounded-md border border-[var(--border)] bg-[var(--editor-bg)] px-3 py-2 text-[11px] text-gray-300 font-mono focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-600 resize-none"
-                placeholder="[00:00.00]Line 1&#10;[00:05.00]Line 2"
-              />
-              <div className="mt-2">
-                <LyricsTools
-                  format={lyricsFormat}
-                  lineCount={lyricLineCount}
-                  canConvert={
-                    lyricsFormat === "plain" && (formData.duration || 0) > 0
-                  }
-                  onConvert={handleConvertLyricsToLrc}
-                  onNormalize={handleNormalizeLyrics}
-                />
-              </div>
+              </AdminActionBar>
             </div>
           </div>
-        </section>
+        </div>
+      </ScrollArea>
 
-        {/* ── Audio Source ─────────────────────────────────────── */}
-        <section>
-          <SectionHeader>Audio Source</SectionHeader>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="audio/*"
-            onChange={handleFileSelect}
-            className="hidden"
-            id="audio-file"
-          />
-
-          {/* Drop zone — label is the idiomatic semantic wrapper for file inputs */}
-          <label
-            htmlFor="audio-file"
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            className={[
-              "flex flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed px-4 py-6 cursor-pointer transition-colors",
-              isDragging
-                ? "border-gray-400 bg-gray-800/40"
-                : audioFile
-                  ? "border-green-700/60 bg-green-900/10 hover:bg-green-900/20"
-                  : "border-[var(--border)] bg-[var(--editor-bg)] hover:border-gray-600 hover:bg-gray-800/30",
-            ].join(" ")}
+      <div className="border-t border-[var(--border)] bg-[rgba(10,14,20,0.94)] p-3 xl:hidden">
+        <AdminActionBar className="justify-between">
+          <div className="text-xs text-gray-500">
+            {readiness.canDeploy
+              ? t("upload.readiness.deployReady")
+              : t("upload.readiness.deployBlocked")}
+          </div>
+          <Button
+            type="button"
+            onClick={handleDeploy}
+            disabled={!readiness.canDeploy || isDeploying}
           >
-            {audioFile ? (
+            {isDeploying ? (
               <>
-                <FileAudio className="h-5 w-5 text-green-500" />
-                <div className="text-center">
-                  <p className="text-[11px] text-gray-300 font-mono truncate max-w-[260px]">
-                    {audioFile.name}
-                  </p>
-                  <p className="text-[10px] text-gray-500 mt-0.5">
-                    {formatBytes(audioFile.size)} &middot; click to change
-                  </p>
-                </div>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                {t("actions.deploying")}
               </>
             ) : (
               <>
-                <Upload
-                  className={`h-5 w-5 ${isDragging ? "text-gray-300" : "text-gray-600"}`}
-                />
-                <div className="text-center">
-                  <p className="text-[11px] text-gray-400 font-mono">
-                    {isDragging
-                      ? "Drop to load"
-                      : "Drop file or click to browse"}
-                  </p>
-                  <p className="text-[10px] text-gray-600 mt-0.5">
-                    mp3, m4a, flac, wav, ogg&hellip;
-                  </p>
-                </div>
+                <Wand2 className="h-3.5 w-3.5" />
+                {t("actions.deploy")}
               </>
             )}
-          </label>
-
-          {/* Audio preview */}
-          {audioFile && (
-            <div className="mt-3 rounded-md border border-[var(--border)] bg-[var(--editor-bg)] p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <Music2 className="h-3 w-3 text-gray-500 shrink-0" />
-                <span className="text-[10px] text-gray-500 font-mono uppercase tracking-wide">
-                  Preview
-                </span>
-              </div>
-              {/* biome-ignore lint/a11y/useMediaCaption: Music preview doesn't need captions */}
-              <audio
-                controls
-                src={URL.createObjectURL(audioFile)}
-                className="w-full h-8"
-              />
-            </div>
-          )}
-        </section>
-
-        {/* ── Deploy ───────────────────────────────────────────── */}
-        <Button
-          onClick={handleDeploy}
-          disabled={isDeploying}
-          className="font-mono text-[11px] bg-green-700 hover:bg-green-600 text-white w-full h-9 tracking-wide"
-        >
-          {isDeploying ? (
-            <>
-              <Loader2 className="h-3 w-3 animate-spin" />
-              Deploying...
-            </>
-          ) : (
-            <>
-              <Play className="h-3 w-3" />
-              Deploy Song
-            </>
-          )}
-        </Button>
+          </Button>
+        </AdminActionBar>
       </div>
-    </ScrollArea>
+    </div>
   );
 }

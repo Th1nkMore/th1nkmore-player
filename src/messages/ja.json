@@ -139,5 +139,257 @@
     "closePlayer": "プレーヤーを閉じる",
     "volumeControl": "音量",
     "progressControl": "再生進捗"
+  },
+  "admin": {
+    "tabs": {
+      "upload": "新規アップロード",
+      "record": "音声録音",
+      "edit": "プレイリスト編集"
+    },
+    "shell": {
+      "title": "管理ワークスペース",
+      "subtitle": "モダン化されたアップロード、タグ、プレイリスト管理画面。",
+      "logCount": "実行ログ {count} 件"
+    },
+    "actions": {
+      "logout": "ログアウト",
+      "signingOut": "ログアウト中...",
+      "retry": "再試行",
+      "fetchLyrics": "歌詞を取得",
+      "fetching": "取得中...",
+      "deploy": "トラックをデプロイ",
+      "deploying": "デプロイ中...",
+      "reset": "下書きをリセット",
+      "stageChanges": "変更をステージ",
+      "delete": "トラックを削除",
+      "saving": "保存中...",
+      "savePlaylist": "プレイリストを保存"
+    },
+    "sections": {
+      "track": {
+        "title": "トラック情報",
+        "description": "基本情報とタイムライン関連のメタデータ。"
+      },
+      "classification": {
+        "title": "分類設定",
+        "description": "ライブラリ上の意味付け、公開範囲、タグ分類。"
+      },
+      "lyrics": {
+        "title": "歌詞",
+        "description": "歌詞の取得、正規化、同期編集を行います。"
+      }
+    },
+    "fields": {
+      "title": {
+        "label": "タイトル",
+        "placeholder": "曲名"
+      },
+      "artist": {
+        "label": "アーティスト",
+        "placeholder": "アーティスト名"
+      },
+      "album": {
+        "label": "アルバム",
+        "placeholder": "アルバム名"
+      },
+      "duration": {
+        "label": "長さ",
+        "description": "秒単位。歌詞推定や概要表示に使用します。"
+      },
+      "language": {
+        "label": "言語"
+      },
+      "trackType": {
+        "label": "トラック種別"
+      },
+      "sourceType": {
+        "label": "ソース種別"
+      },
+      "visibility": {
+        "label": "公開範囲"
+      },
+      "assetStatus": {
+        "label": "アセット状態"
+      },
+      "tags": {
+        "label": "タグ",
+        "description": "フィルタや一括追加用の再利用タグを設定します。",
+        "suggestions": "候補タグ",
+        "placeholder": "タグを入力し、Enter またはカンマで確定",
+        "emptyHint": "タグを入力するか候補から選択してください。",
+        "duplicateHint": "そのタグはすでに追加されています。",
+        "removeLabel": "削除"
+      },
+      "neteaseUrl": {
+        "label": "NetEase Music URL",
+        "description": "対応する NetEase 楽曲リンクから歌詞とメタデータを取得します。"
+      },
+      "lyrics": {
+        "label": "歌詞",
+        "placeholder": "[00:00.00]1行目\n[00:05.00]2行目"
+      }
+    },
+    "lyricsStatus": {
+      "lrc": {
+        "title": "タイムコード付き歌詞を検出",
+        "message": "{count} 行の同期歌詞が再生可能です。"
+      },
+      "plain": {
+        "title": "プレーン歌詞を検出",
+        "message": "{count} 行の歌詞が読み込まれています。LRC に変換できます。"
+      }
+    },
+    "upload": {
+      "fileCard": {
+        "title": "音声ソース",
+        "description": "ライブラリへデプロイする音声ファイルを添付します。",
+        "changeFile": "クリックで変更",
+        "dropActive": "ここにドロップして音声を添付",
+        "dropIdle": "ファイルをドロップするかクリックして参照",
+        "supportedFormats": "mp3、m4a、flac、wav、ogg...",
+        "preview": "プレビュー"
+      },
+      "summary": {
+        "title": "状態フィード",
+        "description": "現在の準備状況、歌詞状態、デプロイ通知。"
+      },
+      "readiness": {
+        "title": "デプロイチェック",
+        "description": "デプロイ前に満たす必要がある必須項目です。",
+        "deployReady": "下書きは必要なデプロイ条件を満たしています。",
+        "deployBlocked": "不足項目を埋めてからデプロイしてください。",
+        "items": {
+          "audio": "音声ソース",
+          "title": "タイトル",
+          "artist": "アーティスト",
+          "album": "アルバム"
+        }
+      },
+      "asset": {
+        "title": "添付アセット",
+        "description": "現在選択されているアップロードソースの概要。",
+        "fileName": "ファイル",
+        "fileSize": "サイズ",
+        "duration": "長さ",
+        "emptyTitle": "音声が未選択です",
+        "emptyDescription": "ファイルを添付するとサイズ、長さ、準備状況を確認できます。"
+      }
+    },
+    "playlist": {
+      "title": "プレイリスト（{count} 曲）",
+      "subtitle": "編集内容を確認・検索・ステージしてからライブラリに反映します。",
+      "searchPlaceholder": "タイトル、アーティスト、アルバム、タグで検索",
+      "badges": {
+        "dirty": "変更あり"
+      },
+      "detail": {
+        "assetTitle": "アセット概要",
+        "assetDescription": "選択中トラックのソースを確認・試聴します。",
+        "audioUrl": "音声 URL",
+        "unsaved": "選択中トラックには未保存の下書き変更があります。",
+        "synced": "現在の下書きはステージ済みプレイリストと一致しています。"
+      },
+      "emptyDetail": {
+        "title": "トラック未選択",
+        "description": "左側のリストから曲を選んでメタデータを編集してください。"
+      },
+      "emptyList": {
+        "title": "一致する曲がありません",
+        "description": "別の検索語を試すか、アップロード画面から曲を追加してください。"
+      },
+      "mobilePrompt": {
+        "title": "詳細エディタを開く",
+        "description": "小さい画面では選択中の曲を専用ドロワーで編集します。",
+        "open": "エディタを開く"
+      },
+      "drawerTitle": "トラックエディタ",
+      "drawerDescription": "編集する曲を選択してください。"
+    },
+    "confirm": {
+      "discardTitle": "未保存の変更を破棄しますか？",
+      "discardDescription": "別の曲へ切り替えると、現在の下書き変更は失われます。",
+      "discardConfirm": "破棄して続行",
+      "deleteTitle": "この曲を削除しますか？",
+      "deleteDescription": "保存または再読み込みするまで、この曲はステージ済みプレイリストから削除されます。",
+      "deleteConfirm": "トラックを削除",
+      "cancel": "キャンセル"
+    },
+    "status": {
+      "ready": "準備完了",
+      "missing": "不足"
+    },
+    "errors": {
+      "workspaceCrashTitle": "ワークスペースがクラッシュしました",
+      "workspaceCrashDescription": "管理ワークスペースで予期しないクライアントエラーが発生しました。リセットして復旧してください。",
+      "playlistLoadTitle": "プレイリストの読み込みに失敗しました"
+    },
+    "notices": {
+      "draftUpdated": {
+        "title": "下書きを更新しました",
+        "message": "トラックの変更はプレイリストを保存するまでローカルで保持されます。"
+      },
+      "trackRemoved": {
+        "title": "トラックを削除しました",
+        "message": "この曲は保存されるまでステージ済みプレイリストから外れます。"
+      },
+      "playlistSaving": {
+        "title": "プレイリストを保存中",
+        "message": "現在のステージ済みライブラリを管理 API に反映しています。"
+      },
+      "playlistSaved": {
+        "title": "プレイリストを保存しました",
+        "message": "{count} 件の曲情報をライブラリに保存しました。"
+      },
+      "saveFailed": {
+        "title": "保存に失敗しました"
+      },
+      "metadataExtracting": {
+        "title": "メタデータを抽出中",
+        "message": "選択した音声ファイルの埋め込みメタデータを読み取っています。"
+      },
+      "metadataReady": {
+        "title": "メタデータ準備完了",
+        "message": "埋め込みタイトル情報は見つかりませんでしたが、ファイルは利用可能です。"
+      },
+      "metadataUnavailable": {
+        "title": "メタデータを取得できません"
+      },
+      "lyricsFetchFailed": {
+        "title": "歌詞の取得に失敗しました"
+      },
+      "lyricsSynced": {
+        "title": "歌詞を同期しました",
+        "message": "NetEase から {count} 行の歌詞を取得しました。",
+        "selectedMessage": "選択中トラックに {count} 行の歌詞を取得しました。"
+      },
+      "lyricsNormalized": {
+        "title": "歌詞を正規化しました",
+        "message": "余分な空白を除去して歌詞内容を整えました。",
+        "selectedMessage": "選択中の下書き歌詞を正規化しました。"
+      },
+      "conversionFailed": {
+        "title": "変換に失敗しました"
+      },
+      "convertedToLrc": {
+        "title": "LRC に変換しました",
+        "uploadMessage": "下書きの長さから推定タイムスタンプを生成しました。",
+        "selectedMessage": "選択中の下書きに推定タイムスタンプを生成しました。"
+      },
+      "deploying": {
+        "title": "トラックをデプロイ中",
+        "message": "バイナリアセットをアップロードし、プレイリスト項目を書き込んでいます。"
+      },
+      "deployComplete": {
+        "title": "デプロイ完了",
+        "message": "{title} がプレイリストで利用可能になりました。"
+      },
+      "deployFailed": {
+        "title": "デプロイに失敗しました"
+      },
+      "recordingAttached": {
+        "title": "録音を添付しました",
+        "message": "{filename} をアップロード元として利用できます。"
+      }
+    }
   }
 }
