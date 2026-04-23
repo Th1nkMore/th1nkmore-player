@@ -139,5 +139,257 @@
     "closePlayer": "Close player",
     "volumeControl": "Volume",
     "progressControl": "Playback progress"
+  },
+  "admin": {
+    "tabs": {
+      "upload": "Upload New",
+      "record": "Record Audio",
+      "edit": "Edit Playlist"
+    },
+    "shell": {
+      "title": "Admin Workspace",
+      "subtitle": "Modernized upload, tagging, and playlist control surface.",
+      "logCount": "{count} runtime log entries"
+    },
+    "actions": {
+      "logout": "Logout",
+      "signingOut": "Signing out...",
+      "retry": "Retry",
+      "fetchLyrics": "Fetch Lyrics",
+      "fetching": "Fetching...",
+      "deploy": "Deploy Track",
+      "deploying": "Deploying...",
+      "reset": "Reset Draft",
+      "stageChanges": "Stage Changes",
+      "delete": "Delete Track",
+      "saving": "Saving...",
+      "savePlaylist": "Save Playlist"
+    },
+    "sections": {
+      "track": {
+        "title": "Track Info",
+        "description": "Core track identity and timeline metadata."
+      },
+      "classification": {
+        "title": "Classification",
+        "description": "Library semantics, availability, and tag grouping."
+      },
+      "lyrics": {
+        "title": "Lyrics",
+        "description": "Fetch, normalize, and edit synchronized lyric content."
+      }
+    },
+    "fields": {
+      "title": {
+        "label": "Title",
+        "placeholder": "Song title"
+      },
+      "artist": {
+        "label": "Artist",
+        "placeholder": "Artist name"
+      },
+      "album": {
+        "label": "Album",
+        "placeholder": "Album name"
+      },
+      "duration": {
+        "label": "Duration",
+        "description": "Seconds, used for lyric estimation and summaries."
+      },
+      "language": {
+        "label": "Language"
+      },
+      "trackType": {
+        "label": "Track Type"
+      },
+      "sourceType": {
+        "label": "Source Type"
+      },
+      "visibility": {
+        "label": "Visibility"
+      },
+      "assetStatus": {
+        "label": "Asset Status"
+      },
+      "tags": {
+        "label": "Tags",
+        "description": "Assign reusable tags for queueing and filtering.",
+        "suggestions": "Suggested Tags",
+        "placeholder": "Type tags, press Enter or comma",
+        "emptyHint": "Type a tag or choose one of the suggestions.",
+        "duplicateHint": "That tag is already selected.",
+        "removeLabel": "Remove"
+      },
+      "neteaseUrl": {
+        "label": "NetEase Music URL",
+        "description": "Pull lyrics and metadata from a supported NetEase song link."
+      },
+      "lyrics": {
+        "label": "Lyrics",
+        "placeholder": "[00:00.00]Line 1\n[00:05.00]Line 2"
+      }
+    },
+    "lyricsStatus": {
+      "lrc": {
+        "title": "Timed lyrics detected",
+        "message": "{count} lyric lines are ready for synchronized playback."
+      },
+      "plain": {
+        "title": "Plain lyrics detected",
+        "message": "{count} lyric lines are loaded. Convert to LRC for sync."
+      }
+    },
+    "upload": {
+      "fileCard": {
+        "title": "Audio Source",
+        "description": "Attach the binary that will be deployed to the library.",
+        "changeFile": "click to change",
+        "dropActive": "Drop to attach the audio source",
+        "dropIdle": "Drop file or click to browse",
+        "supportedFormats": "mp3, m4a, flac, wav, ogg...",
+        "preview": "Preview"
+      },
+      "summary": {
+        "title": "Status Feed",
+        "description": "Current readiness, lyric state, and deploy notices."
+      },
+      "readiness": {
+        "title": "Deploy Checklist",
+        "description": "Required fields that must be ready before deploying.",
+        "deployReady": "The draft passes the required deployment checks.",
+        "deployBlocked": "Complete the missing items before deploying.",
+        "items": {
+          "audio": "Audio source",
+          "title": "Title",
+          "artist": "Artist",
+          "album": "Album"
+        }
+      },
+      "asset": {
+        "title": "Attached Asset",
+        "description": "Quick summary of the currently selected upload source.",
+        "fileName": "File",
+        "fileSize": "Size",
+        "duration": "Duration",
+        "emptyTitle": "No audio selected",
+        "emptyDescription": "Attach a file to preview size, duration, and readiness."
+      }
+    },
+    "playlist": {
+      "title": "Playlist ({count} songs)",
+      "subtitle": "Review, search, and stage edits before committing the library.",
+      "searchPlaceholder": "Search title, artist, album, or tag",
+      "badges": {
+        "dirty": "Dirty"
+      },
+      "detail": {
+        "assetTitle": "Asset Summary",
+        "assetDescription": "Preview and inspect the currently selected track source.",
+        "audioUrl": "Audio URL",
+        "unsaved": "You have unsaved draft changes for the selected track.",
+        "synced": "The selected draft matches the staged playlist."
+      },
+      "emptyDetail": {
+        "title": "No track selected",
+        "description": "Choose a song from the playlist to inspect or edit its metadata."
+      },
+      "emptyList": {
+        "title": "No matching songs",
+        "description": "Try another search term or add tracks from the upload workspace."
+      },
+      "mobilePrompt": {
+        "title": "Open the detail editor",
+        "description": "On smaller screens, the selected song opens in a focused drawer.",
+        "open": "Open Editor"
+      },
+      "drawerTitle": "Track Editor",
+      "drawerDescription": "Select a track to start editing."
+    },
+    "confirm": {
+      "discardTitle": "Discard unsaved changes?",
+      "discardDescription": "Switching tracks will drop any unsaved draft changes for the current selection.",
+      "discardConfirm": "Discard and continue",
+      "deleteTitle": "Delete this track?",
+      "deleteDescription": "The track will be removed from the staged playlist until you save or reload.",
+      "deleteConfirm": "Delete track",
+      "cancel": "Cancel"
+    },
+    "status": {
+      "ready": "Ready",
+      "missing": "Missing"
+    },
+    "errors": {
+      "workspaceCrashTitle": "Workspace crashed",
+      "workspaceCrashDescription": "The admin workspace hit an unexpected client error. Reset the panel to recover.",
+      "playlistLoadTitle": "Playlist load failed"
+    },
+    "notices": {
+      "draftUpdated": {
+        "title": "Draft updated",
+        "message": "Track changes are staged locally until you save the playlist."
+      },
+      "trackRemoved": {
+        "title": "Track removed",
+        "message": "The song is removed from the staged playlist. Save to persist."
+      },
+      "playlistSaving": {
+        "title": "Saving playlist",
+        "message": "Pushing the current staged library to the admin API."
+      },
+      "playlistSaved": {
+        "title": "Playlist saved",
+        "message": "Saved {count} song entries to the library."
+      },
+      "saveFailed": {
+        "title": "Save failed"
+      },
+      "metadataExtracting": {
+        "title": "Extracting metadata",
+        "message": "Reading embedded metadata from the selected audio file."
+      },
+      "metadataReady": {
+        "title": "Metadata ready",
+        "message": "No embedded title metadata was found, but the file is ready."
+      },
+      "metadataUnavailable": {
+        "title": "Metadata unavailable"
+      },
+      "lyricsFetchFailed": {
+        "title": "Lyrics fetch failed"
+      },
+      "lyricsSynced": {
+        "title": "Lyrics synced",
+        "message": "Fetched {count} lines from NetEase.",
+        "selectedMessage": "Fetched {count} lines for the selected track."
+      },
+      "lyricsNormalized": {
+        "title": "Lyrics normalized",
+        "message": "Removed extra spacing and normalized line content.",
+        "selectedMessage": "Updated the selected draft with normalized lyric content."
+      },
+      "conversionFailed": {
+        "title": "Conversion failed"
+      },
+      "convertedToLrc": {
+        "title": "Converted to LRC",
+        "uploadMessage": "Generated estimated timestamps from the draft duration.",
+        "selectedMessage": "Generated estimated timestamps for the selected draft."
+      },
+      "deploying": {
+        "title": "Deploying track",
+        "message": "Uploading binary assets and writing the playlist entry."
+      },
+      "deployComplete": {
+        "title": "Deploy complete",
+        "message": "{title} is now available in the playlist."
+      },
+      "deployFailed": {
+        "title": "Deploy failed"
+      },
+      "recordingAttached": {
+        "title": "Recording attached",
+        "message": "{filename} is ready as the upload source."
+      }
+    }
   }
 }

@@ -139,5 +139,257 @@
     "closePlayer": "关闭播放器",
     "volumeControl": "音量",
     "progressControl": "播放进度"
+  },
+  "admin": {
+    "tabs": {
+      "upload": "上传新歌",
+      "record": "录制音频",
+      "edit": "编辑歌单"
+    },
+    "shell": {
+      "title": "管理工作区",
+      "subtitle": "现代化的上传、标签与歌单控制界面。",
+      "logCount": "{count} 条运行日志"
+    },
+    "actions": {
+      "logout": "退出登录",
+      "signingOut": "正在退出...",
+      "retry": "重试",
+      "fetchLyrics": "抓取歌词",
+      "fetching": "抓取中...",
+      "deploy": "部署歌曲",
+      "deploying": "部署中...",
+      "reset": "重置草稿",
+      "stageChanges": "暂存修改",
+      "delete": "删除歌曲",
+      "saving": "保存中...",
+      "savePlaylist": "保存歌单"
+    },
+    "sections": {
+      "track": {
+        "title": "歌曲信息",
+        "description": "歌曲基础身份信息与时间元数据。"
+      },
+      "classification": {
+        "title": "分类设置",
+        "description": "曲库语义、可见性以及标签归类。"
+      },
+      "lyrics": {
+        "title": "歌词",
+        "description": "抓取、规范化并编辑同步歌词内容。"
+      }
+    },
+    "fields": {
+      "title": {
+        "label": "标题",
+        "placeholder": "歌曲标题"
+      },
+      "artist": {
+        "label": "歌手",
+        "placeholder": "歌手名称"
+      },
+      "album": {
+        "label": "专辑",
+        "placeholder": "专辑名称"
+      },
+      "duration": {
+        "label": "时长",
+        "description": "以秒为单位，用于歌词估算与摘要。"
+      },
+      "language": {
+        "label": "语言"
+      },
+      "trackType": {
+        "label": "曲目类型"
+      },
+      "sourceType": {
+        "label": "来源类型"
+      },
+      "visibility": {
+        "label": "可见性"
+      },
+      "assetStatus": {
+        "label": "资源状态"
+      },
+      "tags": {
+        "label": "标签",
+        "description": "为筛选和批量加歌分配可复用标签。",
+        "suggestions": "推荐标签",
+        "placeholder": "输入标签，按 Enter 或逗号提交",
+        "emptyHint": "输入一个标签或选择下方建议项。",
+        "duplicateHint": "该标签已经添加。",
+        "removeLabel": "移除"
+      },
+      "neteaseUrl": {
+        "label": "网易云链接",
+        "description": "从支持的网易云歌曲链接抓取歌词和元数据。"
+      },
+      "lyrics": {
+        "label": "歌词",
+        "placeholder": "[00:00.00]第一行\n[00:05.00]第二行"
+      }
+    },
+    "lyricsStatus": {
+      "lrc": {
+        "title": "已检测到时间轴歌词",
+        "message": "已载入 {count} 行同步歌词。"
+      },
+      "plain": {
+        "title": "已检测到纯文本歌词",
+        "message": "已载入 {count} 行歌词，可转换为 LRC。"
+      }
+    },
+    "upload": {
+      "fileCard": {
+        "title": "音频源文件",
+        "description": "附加将要部署到曲库的音频二进制文件。",
+        "changeFile": "点击更换",
+        "dropActive": "松开即可附加音频文件",
+        "dropIdle": "拖拽文件到这里或点击浏览",
+        "supportedFormats": "mp3、m4a、flac、wav、ogg...",
+        "preview": "预览"
+      },
+      "summary": {
+        "title": "状态摘要",
+        "description": "当前就绪度、歌词状态与部署提示。"
+      },
+      "readiness": {
+        "title": "部署检查",
+        "description": "部署前必须满足的必填项。",
+        "deployReady": "当前草稿已通过必需的部署检查。",
+        "deployBlocked": "请先补齐缺失项再进行部署。",
+        "items": {
+          "audio": "音频源",
+          "title": "标题",
+          "artist": "歌手",
+          "album": "专辑"
+        }
+      },
+      "asset": {
+        "title": "已附加资源",
+        "description": "当前上传源文件的快速摘要。",
+        "fileName": "文件",
+        "fileSize": "大小",
+        "duration": "时长",
+        "emptyTitle": "尚未选择音频",
+        "emptyDescription": "附加文件后可预览大小、时长与就绪状态。"
+      }
+    },
+    "playlist": {
+      "title": "歌单（{count} 首）",
+      "subtitle": "先审阅、搜索并暂存修改，再统一提交到曲库。",
+      "searchPlaceholder": "搜索标题、歌手、专辑或标签",
+      "badges": {
+        "dirty": "已改"
+      },
+      "detail": {
+        "assetTitle": "资源摘要",
+        "assetDescription": "预览并检查当前选中歌曲的资源来源。",
+        "audioUrl": "音频地址",
+        "unsaved": "当前选中的歌曲存在未保存草稿修改。",
+        "synced": "当前草稿与暂存歌单一致。"
+      },
+      "emptyDetail": {
+        "title": "尚未选择歌曲",
+        "description": "从左侧歌单选择一首歌曲以查看或编辑其元数据。"
+      },
+      "emptyList": {
+        "title": "没有匹配的歌曲",
+        "description": "换一个搜索词，或先去上传工作区添加歌曲。"
+      },
+      "mobilePrompt": {
+        "title": "打开详情编辑器",
+        "description": "在小屏设备上，选中的歌曲会在独立抽屉中编辑。",
+        "open": "打开编辑器"
+      },
+      "drawerTitle": "歌曲编辑器",
+      "drawerDescription": "选择一首歌曲开始编辑。"
+    },
+    "confirm": {
+      "discardTitle": "放弃未保存修改？",
+      "discardDescription": "切换歌曲会丢弃当前选中歌曲尚未保存的草稿修改。",
+      "discardConfirm": "放弃并继续",
+      "deleteTitle": "删除这首歌曲？",
+      "deleteDescription": "该歌曲会从当前暂存歌单中移除，直到你保存或重新加载。",
+      "deleteConfirm": "删除歌曲",
+      "cancel": "取消"
+    },
+    "status": {
+      "ready": "已就绪",
+      "missing": "缺失"
+    },
+    "errors": {
+      "workspaceCrashTitle": "工作区异常",
+      "workspaceCrashDescription": "管理工作区发生了未预期的客户端错误，请重置面板后重试。",
+      "playlistLoadTitle": "歌单加载失败"
+    },
+    "notices": {
+      "draftUpdated": {
+        "title": "草稿已更新",
+        "message": "歌曲修改已在本地暂存，保存歌单后才会正式写入。"
+      },
+      "trackRemoved": {
+        "title": "歌曲已移除",
+        "message": "该歌曲已从暂存歌单中移除，保存后才会正式生效。"
+      },
+      "playlistSaving": {
+        "title": "正在保存歌单",
+        "message": "正在将当前暂存曲库写回管理接口。"
+      },
+      "playlistSaved": {
+        "title": "歌单已保存",
+        "message": "已向曲库保存 {count} 首歌曲。"
+      },
+      "saveFailed": {
+        "title": "保存失败"
+      },
+      "metadataExtracting": {
+        "title": "正在提取元数据",
+        "message": "正在读取所选音频文件中的嵌入式元数据。"
+      },
+      "metadataReady": {
+        "title": "元数据已就绪",
+        "message": "未找到嵌入标题信息，但文件本身已可用。"
+      },
+      "metadataUnavailable": {
+        "title": "元数据不可用"
+      },
+      "lyricsFetchFailed": {
+        "title": "歌词抓取失败"
+      },
+      "lyricsSynced": {
+        "title": "歌词已同步",
+        "message": "已从网易云抓取 {count} 行歌词。",
+        "selectedMessage": "已为当前歌曲抓取 {count} 行歌词。"
+      },
+      "lyricsNormalized": {
+        "title": "歌词已规范化",
+        "message": "已清理多余空白并规范歌词内容。",
+        "selectedMessage": "已为当前草稿更新规范化后的歌词内容。"
+      },
+      "conversionFailed": {
+        "title": "转换失败"
+      },
+      "convertedToLrc": {
+        "title": "已转换为 LRC",
+        "uploadMessage": "已根据草稿时长生成估算时间轴。",
+        "selectedMessage": "已为当前草稿生成估算时间轴。"
+      },
+      "deploying": {
+        "title": "正在部署歌曲",
+        "message": "正在上传二进制资源并写入歌单条目。"
+      },
+      "deployComplete": {
+        "title": "部署完成",
+        "message": "{title} 已加入歌单。"
+      },
+      "deployFailed": {
+        "title": "部署失败"
+      },
+      "recordingAttached": {
+        "title": "录音已附加",
+        "message": "{filename} 已作为上传源文件附加。"
+      }
+    }
   }
 }

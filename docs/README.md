@@ -14,6 +14,7 @@ This directory contains the product, process, architecture, and roadmap baseline
 - `roadmap/feature-roadmap.md`: feature roadmap by domain
 - `roadmap/engineering-roadmap.md`: engineering and performance roadmap
 - `roadmap/implementation-plan.md`: branch-by-branch implementation sequence
+- `specs/admin-workspace-refresh.md`: modernized admin upload and playlist editing workspace
 - `specs/recording-export.md`: recording and export design draft
 - `specs/lyrics-sync-hardening.md`: timed lyrics parsing and teleprompter stability notes
 - `specs/tag-grid-explorer.md`: tag-backed grid explorer, mobile adaptation, and progress checklist
