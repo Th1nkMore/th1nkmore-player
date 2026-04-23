@@ -28,6 +28,7 @@
     "artistComment": "// artist: sonic-ide",
     "welcome": "欢迎使用 Sonic IDE",
     "emptyStateDescription": "从资源管理器中选择一个文件以开始查看其内容。",
+    "transitioning": "歌词同步中",
     "shortcutsTitle": "快捷方式：",
     "shortcutOpen": "点击资源管理器中的文件打开",
     "shortcutSwitch": "点击标签页在打开的文件之间切换",
@@ -47,7 +48,8 @@
     "artistLabel": "艺术家:",
     "albumLabel": "专辑:",
     "languageLabel": "语言:",
-    "noFileSelected": "未选择文件"
+    "noFileSelected": "未选择文件",
+    "transitioning": "检查器同步中"
   },
   "terminal": {
     "play": "播放",
@@ -94,7 +96,8 @@
   },
   "explorerNav": {
     "files": "文件",
-    "grid": "网格"
+    "grid": "网格",
+    "switchingPanels": "切换视图中"
   },
   "tagGrid": {
     "title": "标签网格",

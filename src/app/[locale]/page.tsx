@@ -5,7 +5,7 @@ import { InspectorPanel } from "@/components/ide/InspectorPanel";
 import { TerminalPanel } from "@/components/ide/TerminalPanel";
 import { IDEFrame } from "@/components/layout/IDEFrame";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default function HomePage() {
   return (
