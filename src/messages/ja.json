@@ -28,6 +28,7 @@
     "artistComment": "// artist: sonic-ide",
     "welcome": "Sonic IDE へようこそ",
     "emptyStateDescription": "エクスプローラーからファイルを選択してコンテンツを表示します。",
+    "transitioning": "歌詞を同期中",
     "shortcutsTitle": "ショートカット：",
     "shortcutOpen": "エクスプローラーのファイルをクリックして開く",
     "shortcutSwitch": "タブをクリックして開いているファイルを切り替え",
@@ -47,7 +48,8 @@
     "artistLabel": "アーティスト:",
     "albumLabel": "アルバム:",
     "languageLabel": "言語:",
-    "noFileSelected": "ファイルが選択されていません"
+    "noFileSelected": "ファイルが選択されていません",
+    "transitioning": "インスペクターを同期中"
   },
   "terminal": {
     "play": "再生",
@@ -94,7 +96,8 @@
   },
   "explorerNav": {
     "files": "ファイル",
-    "grid": "グリッド"
+    "grid": "グリッド",
+    "switchingPanels": "ビュー切り替え中"
   },
   "tagGrid": {
     "title": "タググリッド",

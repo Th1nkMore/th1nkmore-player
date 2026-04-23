@@ -125,7 +125,7 @@ export async function GET() {
           return NextResponse.json(playlist, {
             headers: {
               "Cache-Control":
-                "public, s-maxage=60, stale-while-revalidate=300",
+                "public, s-maxage=300, stale-while-revalidate=900",
             },
           });
         }
@@ -142,7 +142,7 @@ export async function GET() {
     }
 
     const externalResponse = await fetch(publicPlaylistUrl, {
-      next: { revalidate: 60 }, // Cache for 60 seconds
+      next: { revalidate: 300 },
     });
 
     if (!externalResponse.ok) {
@@ -157,7 +157,7 @@ export async function GET() {
 
     return NextResponse.json(playlist, {
       headers: {
-        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=900",
       },
     });
   } catch (error) {

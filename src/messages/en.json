@@ -28,6 +28,7 @@
     "artistComment": "// artist: sonic-ide",
     "welcome": "Welcome to Sonic IDE",
     "emptyStateDescription": "Select a file from the explorer to start viewing its content.",
+    "transitioning": "Syncing lyrics",
     "shortcutsTitle": "Shortcuts:",
     "shortcutOpen": "Click files in the explorer to open",
     "shortcutSwitch": "Click tabs to switch between open files",
@@ -47,7 +48,8 @@
     "artistLabel": "Artist:",
     "albumLabel": "Album:",
     "languageLabel": "Language:",
-    "noFileSelected": "No file selected"
+    "noFileSelected": "No file selected",
+    "transitioning": "Syncing inspector"
   },
   "terminal": {
     "play": "Play",
@@ -94,7 +96,8 @@
   },
   "explorerNav": {
     "files": "Files",
-    "grid": "Grid"
+    "grid": "Grid",
+    "switchingPanels": "Switching view"
   },
   "tagGrid": {
     "title": "Tag Grid",
