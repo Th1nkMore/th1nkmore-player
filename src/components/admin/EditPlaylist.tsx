@@ -1,312 +1,42 @@
 "use client";
 
-import { Edit2, Loader2, Save, Trash2, X } from "lucide-react";
-import { LyricsTools } from "@/components/admin/LyricsTools";
-import { TagInput } from "@/components/admin/TagInput";
+import { Save, Search, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useEffect, useMemo, useState } from "react";
+import { AdminConfirmDialog } from "@/components/admin/workspace/AdminConfirmDialog";
+import { AdminSongForm } from "@/components/admin/workspace/AdminSongForm";
+import {
+  AdminActionBar,
+  AdminEmptyState,
+  AdminErrorState,
+  AdminLoadingCard,
+  AdminSectionCard,
+  AdminStatusBanner,
+} from "@/components/admin/workspace/AdminWorkspacePrimitives";
 import { Button } from "@/components/ui/button";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  type AdminNotice,
+  formatSongDuration,
+  hasSongChanges,
+} from "@/lib/admin-workspace";
+import { useScreenMode } from "@/lib/hooks/useScreenMode";
+import { cn } from "@/lib/utils";
 import type { Song } from "@/types/music";
-
-type SongItemProps = {
-  song: Song;
-  isEditing: boolean;
-  editedSong: Song | null;
-  neteaseUrlEdit: string;
-  setNeteaseUrlEdit: (url: string) => void;
-  isFetchingLyricsEdit: boolean;
-  onEdit: () => void;
-  onDelete: () => void;
-  onSave: () => void;
-  onCancel: () => void;
-  onConvertLyricsToLrc: () => void;
-  onNormalizeLyrics: () => void;
-  onUpdate: (field: keyof Song, value: Song[keyof Song]) => void;
-  onFetchLyrics: () => void;
-  lyricFormat: "lrc" | "plain" | "empty";
-  lyricLineCount: number;
-};
-
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Admin song editing intentionally groups many controls in one item card
-function SongItem({
-  song,
-  isEditing,
-  editedSong,
-  neteaseUrlEdit,
-  setNeteaseUrlEdit,
-  isFetchingLyricsEdit,
-  onEdit,
-  onDelete,
-  onSave,
-  onCancel,
-  onConvertLyricsToLrc,
-  onNormalizeLyrics,
-  onUpdate,
-  onFetchLyrics,
-  lyricFormat,
-  lyricLineCount,
-}: SongItemProps) {
-  if (isEditing) {
-    return (
-      <div className="space-y-3">
-        <div>
-          <Label className="text-[10px] text-gray-500">Title</Label>
-          <Input
-            value={editedSong?.title || ""}
-            onChange={(e) => onUpdate("title", e.target.value)}
-            className="font-mono bg-[var(--editor-bg)] border-[var(--border)] text-gray-300 text-[11px] h-7"
-          />
-        </div>
-        <div>
-          <Label className="text-[10px] text-gray-500">Artist</Label>
-          <Input
-            value={editedSong?.artist || ""}
-            onChange={(e) => onUpdate("artist", e.target.value)}
-            className="font-mono bg-[var(--editor-bg)] border-[var(--border)] text-gray-300 text-[11px] h-7"
-          />
-        </div>
-        <div>
-          <Label className="text-[10px] text-gray-500">Album</Label>
-          <Input
-            value={editedSong?.album || ""}
-            onChange={(e) => onUpdate("album", e.target.value)}
-            className="font-mono bg-[var(--editor-bg)] border-[var(--border)] text-gray-300 text-[11px] h-7"
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <Label className="text-[10px] text-gray-500">Duration (s)</Label>
-            <Input
-              type="number"
-              value={editedSong?.duration || 0}
-              onChange={(e) =>
-                onUpdate("duration", parseInt(e.target.value, 10) || 0)
-              }
-              className="font-mono bg-[var(--editor-bg)] border-[var(--border)] text-gray-300 text-[11px] h-7"
-            />
-          </div>
-          <div>
-            <Label className="text-[10px] text-gray-500">Language</Label>
-            <select
-              value={editedSong?.language || "en"}
-              onChange={(e) =>
-                onUpdate("language", e.target.value as Song["language"])
-              }
-              className="flex h-7 w-full rounded-md border border-[var(--border)] bg-[var(--editor-bg)] px-2 text-[11px] text-gray-300 font-mono"
-            >
-              <option value="en">en</option>
-              <option value="zh">zh</option>
-              <option value="ja">ja</option>
-            </select>
-          </div>
-        </div>
-        <div>
-          <Label className="text-[10px] text-gray-500">Track Type</Label>
-          <select
-            value={editedSong?.trackType || "portfolio"}
-            onChange={(e) =>
-              onUpdate("trackType", e.target.value as Song["trackType"])
-            }
-            className="flex h-7 w-full rounded-md border border-[var(--border)] bg-[var(--editor-bg)] px-2 text-[11px] text-gray-300 font-mono"
-          >
-            <option value="portfolio">portfolio</option>
-            <option value="personal">personal</option>
-          </select>
-        </div>
-        <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
-          <div>
-            <Label className="text-[10px] text-gray-500">Source Type</Label>
-            <select
-              value={editedSong?.sourceType || "upload"}
-              onChange={(e) =>
-                onUpdate("sourceType", e.target.value as Song["sourceType"])
-              }
-              className="flex h-7 w-full rounded-md border border-[var(--border)] bg-[var(--editor-bg)] px-2 text-[11px] text-gray-300 font-mono"
-            >
-              <option value="upload">upload</option>
-              <option value="external-upload">external-upload</option>
-              <option value="recording">recording</option>
-            </select>
-          </div>
-          <div>
-            <Label className="text-[10px] text-gray-500">Visibility</Label>
-            <select
-              value={editedSong?.visibility || "public"}
-              onChange={(e) =>
-                onUpdate("visibility", e.target.value as Song["visibility"])
-              }
-              className="flex h-7 w-full rounded-md border border-[var(--border)] bg-[var(--editor-bg)] px-2 text-[11px] text-gray-300 font-mono"
-            >
-              <option value="public">public</option>
-              <option value="private">private</option>
-              <option value="unlisted">unlisted</option>
-            </select>
-          </div>
-          <div>
-            <Label className="text-[10px] text-gray-500">Asset Status</Label>
-            <select
-              value={editedSong?.assetStatus || "ready"}
-              onChange={(e) =>
-                onUpdate("assetStatus", e.target.value as Song["assetStatus"])
-              }
-              className="flex h-7 w-full rounded-md border border-[var(--border)] bg-[var(--editor-bg)] px-2 text-[11px] text-gray-300 font-mono"
-            >
-              <option value="ready">ready</option>
-              <option value="draft">draft</option>
-              <option value="archived">archived</option>
-            </select>
-          </div>
-        </div>
-        <div>
-          <Label className="text-[10px] text-gray-500">Tags</Label>
-          <div className="mt-1">
-            <TagInput
-              value={editedSong?.tags || []}
-              onChange={(tags) => onUpdate("tags", tags)}
-              inputClassName="h-7 text-[10px]"
-              placeholder="Rap, Soul, Rock..."
-            />
-          </div>
-        </div>
-        <div>
-          <Label className="text-[10px] text-gray-500">Lyrics (LRC)</Label>
-          <div className="mb-2">
-            <Label className="text-[9px] text-gray-600 mb-1 block">
-              Fetch from NetEase Music:
-            </Label>
-            <div className="flex gap-2">
-              <Input
-                type="text"
-                value={neteaseUrlEdit}
-                onChange={(e) => setNeteaseUrlEdit(e.target.value)}
-                placeholder="https://music.163.com/#/song?id=..."
-                className="font-mono bg-[var(--editor-bg)] border-[var(--border)] text-gray-300 text-[10px] h-6 flex-1"
-              />
-              <Button
-                type="button"
-                onClick={onFetchLyrics}
-                disabled={isFetchingLyricsEdit}
-                variant="outline"
-                size="sm"
-                className="font-mono bg-[var(--editor-bg)] border-[var(--border)] text-gray-300 hover:bg-gray-800/50 text-[10px] h-6 px-2"
-              >
-                {isFetchingLyricsEdit ? (
-                  <Loader2 className="h-2.5 w-2.5 animate-spin" />
-                ) : (
-                  "Fetch"
-                )}
-              </Button>
-            </div>
-          </div>
-          <textarea
-            value={editedSong?.lyrics || ""}
-            onChange={(e) => onUpdate("lyrics", e.target.value)}
-            rows={4}
-            className="flex w-full rounded-md border border-[var(--border)] bg-[var(--editor-bg)] px-2 py-1 text-[11px] text-gray-300 font-mono resize-none"
-          />
-          <div className="mt-2">
-            <LyricsTools
-              format={lyricFormat}
-              lineCount={lyricLineCount}
-              canConvert={
-                lyricFormat === "plain" && (editedSong?.duration || 0) > 0
-              }
-              onConvert={onConvertLyricsToLrc}
-              onNormalize={onNormalizeLyrics}
-            />
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            onClick={onSave}
-            className="font-mono bg-green-600 hover:bg-green-700 text-white text-[11px] h-7"
-          >
-            <Save className="h-3 w-3" />
-            Save
-          </Button>
-          <Button
-            onClick={onCancel}
-            variant="outline"
-            className="font-mono text-[11px] h-7"
-          >
-            <X className="h-3 w-3" />
-            Cancel
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div className="flex items-start justify-between mb-2">
-        <div className="flex-1">
-          <div className="text-[12px] font-semibold text-gray-300">
-            {song.title}
-          </div>
-          <div className="text-[11px] text-gray-500">
-            {song.artist} • {song.album}
-          </div>
-          {song.duration > 0 && (
-            <div className="text-[10px] text-gray-600 mt-1">
-              Duration: {Math.floor(song.duration / 60)}:
-              {String(song.duration % 60).padStart(2, "0")}
-            </div>
-          )}
-          <div className="mt-1 flex flex-wrap gap-2 text-[10px] text-gray-500 font-mono">
-            <span>type:{song.trackType || "portfolio"}</span>
-            <span>source:{song.sourceType || "upload"}</span>
-            <span>visibility:{song.visibility || "public"}</span>
-            <span>status:{song.assetStatus || "ready"}</span>
-          </div>
-          {song.tags.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1">
-              {song.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-full border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 text-[10px] font-mono text-sky-100"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-        <div className="flex gap-1">
-          <Button
-            onClick={onEdit}
-            variant="ghost"
-            size="icon-sm"
-            className="text-gray-400 hover:text-gray-300"
-          >
-            <Edit2 className="h-3 w-3" />
-          </Button>
-          <Button
-            onClick={onDelete}
-            variant="ghost"
-            size="icon-sm"
-            className="text-gray-400 hover:text-red-400"
-          >
-            <Trash2 className="h-3 w-3" />
-          </Button>
-        </div>
-      </div>
-      <div className="text-[10px] text-gray-600 font-mono break-all mb-2">
-        {song.audioUrl}
-      </div>
-      <div className="mt-2 p-2 rounded-md bg-[var(--editor-bg)] border border-[var(--border)]">
-        {/* biome-ignore lint/a11y/useMediaCaption: Music preview doesn't need captions */}
-        <audio controls src={song.audioUrl} className="w-full h-8" />
-      </div>
-    </div>
-  );
-}
 
 type EditPlaylistProps = {
   playlist: Song[];
   isLoadingPlaylist: boolean;
   isSavingPlaylist: boolean;
+  playlistError: string | null;
+  playlistNotice: AdminNotice | null;
   editingSongId: string | null;
   editedSong: Song | null;
   handleEditSong: (song: Song) => void;
@@ -323,12 +53,83 @@ type EditPlaylistProps = {
   handleFetchLyricsEdit: () => void;
   editedLyricFormat: "lrc" | "plain" | "empty";
   editedLyricLineCount: number;
+  loadPlaylist: () => Promise<void>;
 };
 
+function SongListRow({
+  song,
+  isActive,
+  isDirty,
+  dirtyLabel,
+  onSelect,
+}: {
+  song: Song;
+  isActive: boolean;
+  isDirty: boolean;
+  dirtyLabel: string;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={cn(
+        "w-full rounded-2xl border p-3 text-left transition",
+        isActive
+          ? "border-sky-400/50 bg-sky-400/10"
+          : "border-[var(--border)] bg-[rgba(11,15,22,0.88)] hover:border-sky-400/30 hover:bg-[rgba(18,22,30,0.96)]",
+      )}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="truncate text-sm font-semibold text-gray-200">
+            {song.title}
+          </div>
+          <div className="mt-1 truncate text-xs text-gray-500">
+            {song.artist} • {song.album}
+          </div>
+        </div>
+        {isDirty ? (
+          <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-amber-200">
+            {dirtyLabel}
+          </span>
+        ) : null}
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-gray-500">
+        <span>{formatSongDuration(song.duration)}</span>
+        <span>{song.visibility}</span>
+        <span>{song.assetStatus}</span>
+      </div>
+
+      {song.tags.length > 0 ? (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {song.tags.slice(0, 4).map((tag) => (
+            <span
+              key={tag}
+              className="rounded-full border border-sky-500/20 bg-sky-500/8 px-2 py-0.5 text-[10px] text-sky-100"
+            >
+              {tag}
+            </span>
+          ))}
+          {song.tags.length > 4 ? (
+            <span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-[10px] text-gray-500">
+              +{song.tags.length - 4}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+    </button>
+  );
+}
+
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Playlist workspace coordinates list/detail/mobile confirmation flows in one container
 export function EditPlaylist({
   playlist,
   isLoadingPlaylist,
   isSavingPlaylist,
+  playlistError,
+  playlistNotice,
   editingSongId,
   editedSong,
   handleEditSong,
@@ -345,67 +146,315 @@ export function EditPlaylist({
   handleFetchLyricsEdit,
   editedLyricFormat,
   editedLyricLineCount,
+  loadPlaylist,
 }: EditPlaylistProps) {
-  return (
-    <ScrollArea className="flex-1 h-full">
-      <div className="p-6 space-y-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-            Playlist ({playlist.length} songs)
-          </h2>
-          <Button
-            onClick={handleSavePlaylist}
-            disabled={isSavingPlaylist}
-            className="font-mono bg-green-600 hover:bg-green-700 text-white text-[11px]"
-          >
-            {isSavingPlaylist ? (
-              <>
-                <Loader2 className="h-3 w-3 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="h-3 w-3" />
-                Save Changes
-              </>
-            )}
-          </Button>
+  const t = useTranslations("admin");
+  const screenMode = useScreenMode();
+  const isMobile = screenMode !== "desktop";
+  const [query, setQuery] = useState("");
+  const [pendingSongId, setPendingSongId] = useState<string | null>(null);
+  const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false);
+  const [songIdToDelete, setSongIdToDelete] = useState<string | null>(null);
+  const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
+
+  const selectedSong = useMemo(
+    () => playlist.find((song) => song.id === editingSongId) ?? null,
+    [editingSongId, playlist],
+  );
+  const isDirty = hasSongChanges(selectedSong, editedSong);
+
+  const filteredPlaylist = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) {
+      return playlist;
+    }
+
+    return playlist.filter((song) =>
+      [song.title, song.artist, song.album, ...song.tags]
+        .join(" ")
+        .toLowerCase()
+        .includes(normalized),
+    );
+  }, [playlist, query]);
+
+  useEffect(() => {
+    if (!editingSongId && filteredPlaylist[0]) {
+      handleEditSong(filteredPlaylist[0]);
+      if (isMobile) {
+        setMobileDetailOpen(false);
+      }
+    }
+  }, [editingSongId, filteredPlaylist, handleEditSong, isMobile]);
+
+  const selectSong = (song: Song) => {
+    if (editedSong && isDirty && song.id !== editedSong.id) {
+      setPendingSongId(song.id);
+      setConfirmDiscardOpen(true);
+      return;
+    }
+
+    handleEditSong(song);
+    if (isMobile) {
+      setMobileDetailOpen(true);
+    }
+  };
+
+  const detailPane = editedSong ? (
+    <div className="space-y-4">
+      {playlistNotice ? (
+        <AdminStatusBanner
+          tone={playlistNotice.tone}
+          title={playlistNotice.title}
+          message={playlistNotice.message}
+        />
+      ) : null}
+
+      <AdminSongForm
+        draft={editedSong}
+        onChange={(patch) => {
+          for (const [field, value] of Object.entries(patch) as Array<
+            [keyof Song, Song[keyof Song]]
+          >) {
+            updateEditedSong(field, value);
+          }
+        }}
+        neteaseUrl={neteaseUrlEdit}
+        onNeteaseUrlChange={setNeteaseUrlEdit}
+        isFetchingLyrics={isFetchingLyricsEdit}
+        onFetchLyrics={handleFetchLyricsEdit}
+        lyricFormat={editedLyricFormat}
+        lyricLineCount={editedLyricLineCount}
+        onConvertLyricsToLrc={handleConvertEditedLyricsToLrc}
+        onNormalizeLyrics={handleNormalizeEditedLyrics}
+        mode="edit"
+      />
+
+      <AdminSectionCard
+        title={t("playlist.detail.assetTitle")}
+        description={t("playlist.detail.assetDescription")}
+      >
+        <div className="space-y-2 text-sm text-gray-400">
+          <div className="flex items-center justify-between gap-3">
+            <span>{t("upload.asset.duration")}</span>
+            <span className="text-gray-200">
+              {formatSongDuration(editedSong.duration)}
+            </span>
+          </div>
+          <div className="flex items-start justify-between gap-3">
+            <span>{t("playlist.detail.audioUrl")}</span>
+            <span className="max-w-[24rem] break-all text-right text-gray-300">
+              {editedSong.audioUrl}
+            </span>
+          </div>
         </div>
 
-        {isLoadingPlaylist ? (
-          <div className="text-gray-500 text-[11px]">Loading playlist...</div>
-        ) : playlist.length === 0 ? (
-          <div className="text-gray-500 text-[11px]">No songs in playlist</div>
-        ) : (
-          <div className="space-y-2">
-            {playlist.map((song) => (
-              <div
-                key={song.id}
-                className="border border-[var(--border)] bg-[var(--sidebar-bg)] rounded p-3"
-              >
-                <SongItem
-                  song={song}
-                  isEditing={editingSongId === song.id}
-                  editedSong={editedSong}
-                  neteaseUrlEdit={neteaseUrlEdit}
-                  setNeteaseUrlEdit={setNeteaseUrlEdit}
-                  isFetchingLyricsEdit={isFetchingLyricsEdit}
-                  onEdit={() => handleEditSong(song)}
-                  onDelete={() => handleDeleteSong(song.id)}
-                  onSave={handleSaveEdit}
-                  onCancel={handleCancelEdit}
-                  onConvertLyricsToLrc={handleConvertEditedLyricsToLrc}
-                  onNormalizeLyrics={handleNormalizeEditedLyrics}
-                  onUpdate={updateEditedSong}
-                  onFetchLyrics={handleFetchLyricsEdit}
-                  lyricFormat={editedLyricFormat}
-                  lyricLineCount={editedLyricLineCount}
+        <div className="mt-4 rounded-2xl border border-[var(--border)] bg-[rgba(7,10,15,0.82)] p-3">
+          {/* biome-ignore lint/a11y/useMediaCaption: audio preview does not need captions */}
+          <audio controls src={editedSong.audioUrl} className="h-10 w-full" />
+        </div>
+      </AdminSectionCard>
+
+      <AdminActionBar className="justify-between">
+        <div className="text-xs text-gray-500">
+          {isDirty ? t("playlist.detail.unsaved") : t("playlist.detail.synced")}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="button" variant="outline" onClick={handleCancelEdit}>
+            {t("actions.reset")}
+          </Button>
+          <Button type="button" onClick={handleSaveEdit}>
+            <Save className="h-3.5 w-3.5" />
+            {t("actions.stageChanges")}
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => setSongIdToDelete(editedSong.id)}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            {t("actions.delete")}
+          </Button>
+        </div>
+      </AdminActionBar>
+    </div>
+  ) : (
+    <AdminEmptyState
+      title={t("playlist.emptyDetail.title")}
+      description={t("playlist.emptyDetail.description")}
+    />
+  );
+
+  return (
+    <>
+      <div className="flex h-full flex-col overflow-hidden bg-[var(--editor-bg)]">
+        <div className="border-b border-[var(--border)] px-4 py-3 md:px-6">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-gray-400">
+                {t("playlist.title", { count: playlist.length })}
+              </div>
+              <p className="mt-1 text-sm text-gray-500">
+                {t("playlist.subtitle")}
+              </p>
+            </div>
+            <Button
+              type="button"
+              onClick={handleSavePlaylist}
+              disabled={isSavingPlaylist}
+            >
+              <Save className="h-3.5 w-3.5" />
+              {isSavingPlaylist
+                ? t("actions.saving")
+                : t("actions.savePlaylist")}
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex flex-1 overflow-hidden">
+          <div className="flex w-full flex-col border-r border-[var(--border)] lg:w-[24rem] lg:min-w-[24rem]">
+            <div className="border-b border-[var(--border)] p-4">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
+                <Input
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder={t("playlist.searchPlaceholder")}
+                  className="border-[var(--border)] bg-[rgba(7,10,15,0.92)] pl-9 text-gray-200 placeholder:text-gray-600"
                 />
               </div>
-            ))}
+            </div>
+
+            {isLoadingPlaylist ? (
+              <div className="space-y-3 p-4">
+                <AdminLoadingCard
+                  lines={3}
+                  label={t("loading.loadingPlaylist")}
+                />
+                <AdminLoadingCard
+                  lines={2}
+                  label={t("loading.loadingPlaylist")}
+                />
+              </div>
+            ) : playlistError ? (
+              <div className="p-4">
+                <AdminErrorState
+                  title={t("errors.playlistLoadTitle")}
+                  description={playlistError}
+                  retryLabel={t("actions.retry")}
+                  onRetry={() => {
+                    void loadPlaylist();
+                  }}
+                />
+              </div>
+            ) : filteredPlaylist.length === 0 ? (
+              <div className="p-4">
+                <AdminEmptyState
+                  title={t("playlist.emptyList.title")}
+                  description={t("playlist.emptyList.description")}
+                />
+              </div>
+            ) : (
+              <ScrollArea className="flex-1">
+                <div className="space-y-3 p-4">
+                  {filteredPlaylist.map((song) => (
+                    <SongListRow
+                      key={song.id}
+                      song={song}
+                      isActive={song.id === editingSongId}
+                      isDirty={Boolean(
+                        song.id === editingSongId &&
+                          editedSong &&
+                          hasSongChanges(song, editedSong),
+                      )}
+                      dirtyLabel={t("playlist.badges.dirty")}
+                      onSelect={() => selectSong(song)}
+                    />
+                  ))}
+                </div>
+              </ScrollArea>
+            )}
           </div>
-        )}
+
+          {!isMobile ? (
+            <div className="hidden flex-1 overflow-y-auto p-4 lg:block lg:p-6">
+              {detailPane}
+            </div>
+          ) : (
+            <div className="flex flex-1 items-center justify-center p-4">
+              <AdminEmptyState
+                title={t("playlist.mobilePrompt.title")}
+                description={t("playlist.mobilePrompt.description")}
+                action={
+                  editedSong ? (
+                    <Button
+                      type="button"
+                      onClick={() => setMobileDetailOpen(true)}
+                    >
+                      {t("playlist.mobilePrompt.open")}
+                    </Button>
+                  ) : undefined
+                }
+              />
+            </div>
+          )}
+        </div>
       </div>
-    </ScrollArea>
+
+      <Drawer open={mobileDetailOpen} onOpenChange={setMobileDetailOpen}>
+        <DrawerContent className="max-h-[92dvh] border-[var(--border)] bg-[var(--editor-bg)]">
+          <div className="px-4 pb-4 pt-2">
+            <DrawerTitle className="text-sm font-semibold uppercase tracking-[0.22em] text-gray-300">
+              {editedSong?.title || t("playlist.drawerTitle")}
+            </DrawerTitle>
+            <DrawerDescription className="mt-1 text-sm text-gray-500">
+              {editedSong
+                ? `${editedSong.artist} • ${editedSong.album}`
+                : t("playlist.drawerDescription")}
+            </DrawerDescription>
+          </div>
+          <ScrollArea className="max-h-[calc(92dvh-4rem)] px-4 pb-6">
+            {detailPane}
+          </ScrollArea>
+        </DrawerContent>
+      </Drawer>
+
+      <AdminConfirmDialog
+        open={confirmDiscardOpen}
+        title={t("confirm.discardTitle")}
+        description={t("confirm.discardDescription")}
+        confirmLabel={t("confirm.discardConfirm")}
+        cancelLabel={t("confirm.cancel")}
+        onCancel={() => {
+          setConfirmDiscardOpen(false);
+          setPendingSongId(null);
+        }}
+        onConfirm={() => {
+          const nextSong = playlist.find((song) => song.id === pendingSongId);
+          if (nextSong) {
+            handleEditSong(nextSong);
+            if (isMobile) {
+              setMobileDetailOpen(true);
+            }
+          }
+          setConfirmDiscardOpen(false);
+          setPendingSongId(null);
+        }}
+      />
+
+      <AdminConfirmDialog
+        open={Boolean(songIdToDelete)}
+        title={t("confirm.deleteTitle")}
+        description={t("confirm.deleteDescription")}
+        confirmLabel={t("confirm.deleteConfirm")}
+        cancelLabel={t("confirm.cancel")}
+        onCancel={() => setSongIdToDelete(null)}
+        onConfirm={() => {
+          if (songIdToDelete) {
+            handleDeleteSong(songIdToDelete);
+          }
+          setSongIdToDelete(null);
+        }}
+      />
+    </>
   );
 }

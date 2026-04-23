@@ -139,5 +139,257 @@
     "closePlayer": "Player schließen",
     "volumeControl": "Lautstärke",
     "progressControl": "Wiedergabefortschritt"
+  },
+  "admin": {
+    "tabs": {
+      "upload": "Neu hochladen",
+      "record": "Audio aufnehmen",
+      "edit": "Playlist bearbeiten"
+    },
+    "shell": {
+      "title": "Admin-Arbeitsbereich",
+      "subtitle": "Modernisierte Oberfläche für Upload, Tags und Playlist-Steuerung.",
+      "logCount": "{count} Laufzeitprotokolle"
+    },
+    "actions": {
+      "logout": "Abmelden",
+      "signingOut": "Wird abgemeldet...",
+      "retry": "Erneut versuchen",
+      "fetchLyrics": "Songtext laden",
+      "fetching": "Wird geladen...",
+      "deploy": "Track bereitstellen",
+      "deploying": "Wird bereitgestellt...",
+      "reset": "Entwurf zurücksetzen",
+      "stageChanges": "Änderungen vormerken",
+      "delete": "Track löschen",
+      "saving": "Wird gespeichert...",
+      "savePlaylist": "Playlist speichern"
+    },
+    "sections": {
+      "track": {
+        "title": "Track-Info",
+        "description": "Grunddaten des Tracks und zeitbezogene Metadaten."
+      },
+      "classification": {
+        "title": "Klassifizierung",
+        "description": "Bibliothekssemantik, Sichtbarkeit und Tag-Zuordnung."
+      },
+      "lyrics": {
+        "title": "Songtext",
+        "description": "Songtexte laden, normalisieren und synchron bearbeiten."
+      }
+    },
+    "fields": {
+      "title": {
+        "label": "Titel",
+        "placeholder": "Songtitel"
+      },
+      "artist": {
+        "label": "Interpret",
+        "placeholder": "Name des Interpreten"
+      },
+      "album": {
+        "label": "Album",
+        "placeholder": "Albumname"
+      },
+      "duration": {
+        "label": "Dauer",
+        "description": "In Sekunden, für Liedtext-Schätzung und Zusammenfassungen."
+      },
+      "language": {
+        "label": "Sprache"
+      },
+      "trackType": {
+        "label": "Track-Typ"
+      },
+      "sourceType": {
+        "label": "Quelltyp"
+      },
+      "visibility": {
+        "label": "Sichtbarkeit"
+      },
+      "assetStatus": {
+        "label": "Asset-Status"
+      },
+      "tags": {
+        "label": "Tags",
+        "description": "Wiederverwendbare Tags für Filter und Massenaktionen.",
+        "suggestions": "Vorgeschlagene Tags",
+        "placeholder": "Tags eingeben und mit Enter oder Komma bestätigen",
+        "emptyHint": "Geben Sie einen Tag ein oder wählen Sie einen Vorschlag.",
+        "duplicateHint": "Dieser Tag ist bereits ausgewählt.",
+        "removeLabel": "Entfernen"
+      },
+      "neteaseUrl": {
+        "label": "NetEase-Music-URL",
+        "description": "Lädt Liedtext und Metadaten aus einem unterstützten NetEase-Link."
+      },
+      "lyrics": {
+        "label": "Songtext",
+        "placeholder": "[00:00.00]Zeile 1\n[00:05.00]Zeile 2"
+      }
+    },
+    "lyricsStatus": {
+      "lrc": {
+        "title": "Zeitcodierter Songtext erkannt",
+        "message": "{count} Zeilen synchronisierter Songtext sind bereit."
+      },
+      "plain": {
+        "title": "Klartext-Songtext erkannt",
+        "message": "{count} Zeilen Songtext geladen. Kann zu LRC konvertiert werden."
+      }
+    },
+    "upload": {
+      "fileCard": {
+        "title": "Audioquelle",
+        "description": "Binärdatei anhängen, die in die Bibliothek bereitgestellt wird.",
+        "changeFile": "zum Ändern klicken",
+        "dropActive": "Loslassen, um die Audioquelle anzuhängen",
+        "dropIdle": "Datei hier ablegen oder zum Auswählen klicken",
+        "supportedFormats": "mp3, m4a, flac, wav, ogg...",
+        "preview": "Vorschau"
+      },
+      "summary": {
+        "title": "Statusübersicht",
+        "description": "Aktuelle Bereitschaft, Songtext-Status und Bereitstellungshinweise."
+      },
+      "readiness": {
+        "title": "Bereitstellungs-Checkliste",
+        "description": "Pflichtfelder, die vor dem Bereitstellen erfüllt sein müssen.",
+        "deployReady": "Der Entwurf erfüllt alle erforderlichen Bereitstellungsprüfungen.",
+        "deployBlocked": "Ergänzen Sie die fehlenden Punkte vor dem Bereitstellen.",
+        "items": {
+          "audio": "Audioquelle",
+          "title": "Titel",
+          "artist": "Interpret",
+          "album": "Album"
+        }
+      },
+      "asset": {
+        "title": "Angehängtes Asset",
+        "description": "Kurzübersicht zur aktuell ausgewählten Upload-Quelle.",
+        "fileName": "Datei",
+        "fileSize": "Größe",
+        "duration": "Dauer",
+        "emptyTitle": "Kein Audio ausgewählt",
+        "emptyDescription": "Hängen Sie eine Datei an, um Größe, Dauer und Status zu sehen."
+      }
+    },
+    "playlist": {
+      "title": "Playlist ({count} Songs)",
+      "subtitle": "Prüfen, suchen und Änderungen vormerken, bevor die Bibliothek gespeichert wird.",
+      "searchPlaceholder": "Titel, Interpret, Album oder Tag suchen",
+      "badges": {
+        "dirty": "Geändert"
+      },
+      "detail": {
+        "assetTitle": "Asset-Zusammenfassung",
+        "assetDescription": "Quelle des aktuell gewählten Tracks prüfen und vorhören.",
+        "audioUrl": "Audio-URL",
+        "unsaved": "Für den ausgewählten Track gibt es ungespeicherte Entwurfsänderungen.",
+        "synced": "Der aktuelle Entwurf entspricht der vorgemerkten Playlist."
+      },
+      "emptyDetail": {
+        "title": "Kein Track ausgewählt",
+        "description": "Wählen Sie links einen Song aus, um Metadaten zu prüfen oder zu bearbeiten."
+      },
+      "emptyList": {
+        "title": "Keine passenden Songs",
+        "description": "Versuchen Sie einen anderen Suchbegriff oder fügen Sie Songs im Upload-Bereich hinzu."
+      },
+      "mobilePrompt": {
+        "title": "Detail-Editor öffnen",
+        "description": "Auf kleineren Bildschirmen wird der gewählte Song in einem fokussierten Drawer bearbeitet.",
+        "open": "Editor öffnen"
+      },
+      "drawerTitle": "Track-Editor",
+      "drawerDescription": "Wählen Sie einen Song zum Bearbeiten."
+    },
+    "confirm": {
+      "discardTitle": "Ungespeicherte Änderungen verwerfen?",
+      "discardDescription": "Beim Wechsel des Songs gehen ungespeicherte Änderungen am aktuellen Entwurf verloren.",
+      "discardConfirm": "Verwerfen und fortfahren",
+      "deleteTitle": "Diesen Track löschen?",
+      "deleteDescription": "Der Track wird aus der vorgemerkten Playlist entfernt, bis Sie speichern oder neu laden.",
+      "deleteConfirm": "Track löschen",
+      "cancel": "Abbrechen"
+    },
+    "status": {
+      "ready": "Bereit",
+      "missing": "Fehlt"
+    },
+    "errors": {
+      "workspaceCrashTitle": "Arbeitsbereich abgestürzt",
+      "workspaceCrashDescription": "Im Admin-Arbeitsbereich ist ein unerwarteter Client-Fehler aufgetreten. Setzen Sie das Panel zurück, um fortzufahren.",
+      "playlistLoadTitle": "Playlist konnte nicht geladen werden"
+    },
+    "notices": {
+      "draftUpdated": {
+        "title": "Entwurf aktualisiert",
+        "message": "Track-Änderungen bleiben lokal vorgemerkt, bis die Playlist gespeichert wird."
+      },
+      "trackRemoved": {
+        "title": "Track entfernt",
+        "message": "Der Song wurde aus der vorgemerkten Playlist entfernt. Zum Übernehmen speichern."
+      },
+      "playlistSaving": {
+        "title": "Playlist wird gespeichert",
+        "message": "Die aktuell vorgemerkte Bibliothek wird an die Admin-API übertragen."
+      },
+      "playlistSaved": {
+        "title": "Playlist gespeichert",
+        "message": "{count} Song-Einträge wurden in die Bibliothek geschrieben."
+      },
+      "saveFailed": {
+        "title": "Speichern fehlgeschlagen"
+      },
+      "metadataExtracting": {
+        "title": "Metadaten werden gelesen",
+        "message": "Eingebettete Metadaten der gewählten Audiodatei werden ausgelesen."
+      },
+      "metadataReady": {
+        "title": "Metadaten bereit",
+        "message": "Es wurden keine eingebetteten Titelinformationen gefunden, aber die Datei ist einsatzbereit."
+      },
+      "metadataUnavailable": {
+        "title": "Metadaten nicht verfügbar"
+      },
+      "lyricsFetchFailed": {
+        "title": "Songtext-Laden fehlgeschlagen"
+      },
+      "lyricsSynced": {
+        "title": "Songtext synchronisiert",
+        "message": "{count} Zeilen wurden von NetEase geladen.",
+        "selectedMessage": "{count} Zeilen wurden für den ausgewählten Track geladen."
+      },
+      "lyricsNormalized": {
+        "title": "Songtext normalisiert",
+        "message": "Zusätzliche Leerzeichen wurden entfernt und der Inhalt vereinheitlicht.",
+        "selectedMessage": "Der Songtext des ausgewählten Entwurfs wurde normalisiert."
+      },
+      "conversionFailed": {
+        "title": "Konvertierung fehlgeschlagen"
+      },
+      "convertedToLrc": {
+        "title": "In LRC konvertiert",
+        "uploadMessage": "Geschätzte Zeitstempel wurden aus der Entwurfsdauer erzeugt.",
+        "selectedMessage": "Für den ausgewählten Entwurf wurden geschätzte Zeitstempel erzeugt."
+      },
+      "deploying": {
+        "title": "Track wird bereitgestellt",
+        "message": "Binärdateien werden hochgeladen und der Playlist-Eintrag wird geschrieben."
+      },
+      "deployComplete": {
+        "title": "Bereitstellung abgeschlossen",
+        "message": "{title} ist jetzt in der Playlist verfügbar."
+      },
+      "deployFailed": {
+        "title": "Bereitstellung fehlgeschlagen"
+      },
+      "recordingAttached": {
+        "title": "Aufnahme angehängt",
+        "message": "{filename} ist jetzt als Upload-Quelle bereit."
+      }
+    }
   }
 }

@@ -20,6 +20,7 @@ The codebase combines a public listening experience and an authenticated admin e
 - Password-based admin access with cookie-backed session state
 - Audio upload flow using signed URLs
 - Playlist loading and editing
+- Workspace-card upload editing and master-detail playlist management
 - NetEase lyric fetching
 - Shared LRC normalization for imported and fetched lyrics
 - Metadata extraction from selected audio files
