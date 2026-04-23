@@ -310,8 +310,8 @@ export function EditPlaylist({
           </div>
         </div>
 
-        <div className="flex flex-1 overflow-hidden">
-          <div className="flex w-full flex-col border-r border-[var(--border)] lg:w-[24rem] lg:min-w-[24rem]">
+        <div className="flex min-h-0 flex-1 overflow-hidden">
+          <div className="flex min-h-0 w-full flex-col border-r border-[var(--border)] lg:w-[24rem] lg:min-w-[24rem]">
             <div className="border-b border-[var(--border)] p-4">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
@@ -354,7 +354,7 @@ export function EditPlaylist({
                 />
               </div>
             ) : (
-              <ScrollArea className="flex-1">
+              <ScrollArea className="min-h-0 flex-1">
                 <div className="space-y-3 p-4">
                   {filteredPlaylist.map((song) => (
                     <SongListRow
@@ -376,7 +376,7 @@ export function EditPlaylist({
           </div>
 
           {!isMobile ? (
-            <div className="hidden flex-1 overflow-y-auto p-4 lg:block lg:p-6">
+            <div className="hidden min-h-0 flex-1 overflow-y-auto p-4 lg:block lg:p-6">
               {detailPane}
             </div>
           ) : (
@@ -402,7 +402,7 @@ export function EditPlaylist({
 
       <Drawer open={mobileDetailOpen} onOpenChange={setMobileDetailOpen}>
         <DrawerContent className="max-h-[92dvh] border-[var(--border)] bg-[var(--editor-bg)]">
-          <div className="px-4 pb-4 pt-2">
+          <div className="shrink-0 px-4 pb-4 pt-2">
             <DrawerTitle className="text-sm font-semibold uppercase tracking-[0.22em] text-gray-300">
               {editedSong?.title || t("playlist.drawerTitle")}
             </DrawerTitle>
@@ -412,7 +412,7 @@ export function EditPlaylist({
                 : t("playlist.drawerDescription")}
             </DrawerDescription>
           </div>
-          <ScrollArea className="max-h-[calc(92dvh-4rem)] px-4 pb-6">
+          <ScrollArea className="min-h-0 flex-1 px-4 pb-6">
             {detailPane}
           </ScrollArea>
         </DrawerContent>

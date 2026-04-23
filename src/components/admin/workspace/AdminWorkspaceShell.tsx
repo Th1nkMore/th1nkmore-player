@@ -40,8 +40,8 @@ export function AdminWorkspaceShell({
         onTabChange={onTabChange}
       />
 
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <div className="flex-1 overflow-hidden bg-[var(--editor-bg)]">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div className="min-h-0 flex-1 overflow-hidden bg-[var(--editor-bg)]">
           {children}
         </div>
 
