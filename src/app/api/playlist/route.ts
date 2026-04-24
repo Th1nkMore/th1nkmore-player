@@ -1,8 +1,8 @@
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { NextResponse } from "next/server";
 import { R2_BUCKET_NAME, r2Client } from "@/lib/r2";
+import { normalizeSong } from "@/lib/song";
 import { getPublicPlaylistUrl } from "@/lib/storage";
-import { normalizeLanguage } from "@/lib/utils";
 import type { Song } from "@/types/music";
 
 /**
@@ -93,11 +93,10 @@ function normalizePlaylist(playlist: Song[]): Song[] {
       }
     }
 
-    return {
+    return normalizeSong({
       ...song,
       audioUrl,
-      language: normalizeLanguage(song.language),
-    };
+    });
   });
 }
 

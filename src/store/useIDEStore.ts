@@ -5,15 +5,21 @@ import type { Song } from "@/types/music";
 
 const PLAYLIST_CACHE_KEY = "sonic-ide-playlist";
 const PLAYLIST_CACHE_TTL_MS = 5 * 60 * 1000; // 5m, align with API s-maxage
+const PLAYLIST_CACHE_VERSION = 2;
 
-type CachedPlaylist = { songs: Song[]; cachedAt: number };
+type CachedPlaylist = {
+  songs: Song[];
+  cachedAt: number;
+  schemaVersion?: number;
+};
 
 function getCachedPlaylist(): Song[] | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = localStorage.getItem(PLAYLIST_CACHE_KEY);
     if (!raw) return null;
-    const { songs, cachedAt }: CachedPlaylist = JSON.parse(raw);
+    const { songs, cachedAt, schemaVersion }: CachedPlaylist = JSON.parse(raw);
+    if (schemaVersion !== PLAYLIST_CACHE_VERSION) return null;
     if (!Array.isArray(songs)) return null;
     if (Date.now() - cachedAt > PLAYLIST_CACHE_TTL_MS) return null;
     return normalizePlaylistSongs(songs);
@@ -31,6 +37,7 @@ function setCachedPlaylist(songs: Song[]) {
       JSON.stringify({
         songs: normalizedSongs,
         cachedAt: Date.now(),
+        schemaVersion: PLAYLIST_CACHE_VERSION,
       } satisfies CachedPlaylist),
     );
   } catch {
@@ -86,12 +93,13 @@ export const useIDEStore = create<IDEState>((set, get) => ({
     const cached = getCachedPlaylist();
     if (cached !== null) {
       set({ files: cached, isLoading: false });
-      return;
+    } else {
+      set({ isLoading: true });
     }
-    set({ isLoading: true });
+
     try {
-      const response = await fetch("/api/playlist", {
-        cache: "force-cache",
+      const response = await fetch(`/api/playlist?refresh=${Date.now()}`, {
+        cache: "no-store",
       });
       if (!response.ok) {
         throw new Error(`Failed to fetch playlist: ${response.statusText}`);
@@ -103,7 +111,7 @@ export const useIDEStore = create<IDEState>((set, get) => ({
       console.error("Error fetching playlist:", error);
       const stale = getStalePlaylist();
       set({
-        files: stale ?? [],
+        files: cached ?? stale ?? [],
         isLoading: false,
       });
     }
