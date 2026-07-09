@@ -118,7 +118,7 @@ export function SongItem({
           }}
           className="shrink-0 p-1.5 mr-1 text-muted-foreground/60 hover:text-primary hover:bg-accent rounded transition-colors active:bg-accent"
           aria-label={tControls("addTrackToQueue", { title })}
-          whileTap={{ scale: 0.9 }}
+          whileTap={{ scale: 0.96 }}
         >
           <Plus className="h-3.5 w-3.5" />
         </motion.button>

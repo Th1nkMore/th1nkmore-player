@@ -178,7 +178,7 @@ export function RuntimeQueue() {
         items={queue.map((song) => song.id)}
         strategy={verticalListSortingStrategy}
       >
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence initial={false} mode="popLayout">
           {queue.map((song) => (
             <QueueItem
               key={song.id}

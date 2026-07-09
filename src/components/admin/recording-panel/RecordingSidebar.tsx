@@ -112,7 +112,7 @@ function RecordingMetadataEditor({
               Lyrics Source
             </Label>
             <div className="flex items-center gap-2">
-              <div className="text-[11px] text-slate-400/75">
+              <div className="text-[11px] text-slate-400/75 tabular-nums">
                 {lyrics.lineCount} lines · {lyrics.format}
               </div>
               <Button
@@ -241,7 +241,7 @@ function RecordingSessionActions({
             <div className="text-[10px] uppercase tracking-[0.28em] text-slate-400/70">
               Capture Preview
             </div>
-            <div className="text-[11px] text-slate-400/75">
+            <div className="text-[11px] text-slate-400/75 tabular-nums">
               {(recording.recordedBlob
                 ? recording.recordedBlob.size / 1024 / 1024
                 : 0
@@ -326,7 +326,7 @@ export function RecordingSidebar(props: {
                   伴奏会驱动歌词同步和录唱节奏。拖动底部进度条时，提词舞台会同步跳转。
                 </div>
               </div>
-              <div className="flex items-center justify-between text-[11px] text-slate-400/75">
+              <div className="flex items-center justify-between text-[11px] text-slate-400/75 tabular-nums">
                 <span>Ready</span>
                 <span>{accompaniment.isReady ? "yes" : "no"}</span>
               </div>

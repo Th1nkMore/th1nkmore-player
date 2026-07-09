@@ -74,7 +74,7 @@ function SongListRow({
       type="button"
       onClick={onSelect}
       className={cn(
-        "w-full rounded-2xl border p-3 text-left transition",
+        "w-full rounded-2xl border p-3 text-left transition-[background-color,border-color,box-shadow] duration-150 ease-out",
         isActive
           ? "border-sky-400/50 bg-sky-400/10"
           : "border-[var(--border)] bg-[rgba(11,15,22,0.88)] hover:border-sky-400/30 hover:bg-[rgba(18,22,30,0.96)]",
@@ -97,7 +97,9 @@ function SongListRow({
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-gray-500">
-        <span>{formatSongDuration(song.duration)}</span>
+        <span className="tabular-nums">
+          {formatSongDuration(song.duration)}
+        </span>
         <span>{song.visibility}</span>
         <span>{song.assetStatus}</span>
       </div>
@@ -236,7 +238,7 @@ export function EditPlaylist({
         <div className="space-y-2 text-sm text-gray-400">
           <div className="flex items-center justify-between gap-3">
             <span>{t("upload.asset.duration")}</span>
-            <span className="text-gray-200">
+            <span className="text-gray-200 tabular-nums">
               {formatSongDuration(editedSong.duration)}
             </span>
           </div>

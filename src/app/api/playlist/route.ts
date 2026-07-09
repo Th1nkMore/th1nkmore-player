@@ -100,6 +100,14 @@ function normalizePlaylist(playlist: Song[]): Song[] {
   });
 }
 
+function playlistResponse(playlist: Song[]) {
+  return NextResponse.json(playlist, {
+    headers: {
+      "Cache-Control": "public, s-maxage=300, stale-while-revalidate=900",
+    },
+  });
+}
+
 /**
  * GET /api/playlist
  * Public endpoint to fetch the playlist.json from R2
@@ -121,12 +129,7 @@ export async function GET() {
           const bodyString = await streamToString(response.Body);
           const playlist = normalizePlaylist(JSON.parse(bodyString) as Song[]);
 
-          return NextResponse.json(playlist, {
-            headers: {
-              "Cache-Control":
-                "public, s-maxage=300, stale-while-revalidate=900",
-            },
-          });
+          return playlistResponse(playlist);
         }
       } catch (r2Error) {
         // If R2 fetch fails, fall through to external URL
@@ -137,7 +140,7 @@ export async function GET() {
     // Fallback: fetch from external public URL
     const publicPlaylistUrl = getPublicPlaylistUrl();
     if (!publicPlaylistUrl) {
-      throw new Error("No public playlist URL is configured");
+      return playlistResponse([]);
     }
 
     const externalResponse = await fetch(publicPlaylistUrl, {
@@ -154,15 +157,11 @@ export async function GET() {
       (await externalResponse.json()) as Song[],
     );
 
-    return NextResponse.json(playlist, {
-      headers: {
-        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=900",
-      },
-    });
+    return playlistResponse(playlist);
   } catch (error) {
     // If file doesn't exist, return empty array
     if ((error as { name?: string }).name === "NoSuchKey") {
-      return NextResponse.json([]);
+      return playlistResponse([]);
     }
 
     console.error("Error fetching playlist:", error);

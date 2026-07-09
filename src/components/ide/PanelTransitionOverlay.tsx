@@ -10,7 +10,7 @@ export function PanelTransitionOverlay({
   label: string;
 }) {
   return (
-    <AnimatePresence>
+    <AnimatePresence initial={false}>
       {visible ? (
         <motion.div
           initial={{ opacity: 0 }}

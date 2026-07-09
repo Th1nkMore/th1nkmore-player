@@ -41,7 +41,7 @@ export function MobileHeaderLead({
         <SheetTrigger asChild>
           <button
             type="button"
-            className="flex h-8 w-8 items-center justify-center rounded border border-border bg-sidebar text-muted-foreground transition-colors hover:bg-accent"
+            className="flex size-10 items-center justify-center rounded border border-border bg-sidebar text-muted-foreground transition-[scale,color,background-color,border-color] duration-150 ease-out hover:bg-accent active:scale-[0.96]"
             aria-label={tLayout("openMenu")}
           >
             <Menu className="h-4 w-4" />
@@ -96,7 +96,7 @@ export function HeaderControls({
           <SheetTrigger asChild>
             <button
               type="button"
-              className="flex h-8 w-8 items-center justify-center rounded border border-border bg-sidebar text-muted-foreground transition-colors hover:bg-accent"
+              className="flex size-10 items-center justify-center rounded border border-border bg-sidebar text-muted-foreground transition-[scale,color,background-color,border-color] duration-150 ease-out hover:bg-accent active:scale-[0.96]"
               aria-label={tLayout("openInspector")}
             >
               <Settings2 className="h-4 w-4" />
@@ -114,7 +114,7 @@ export function HeaderControls({
       <button
         type="button"
         onClick={handleHiddenAdminEntry}
-        className="group relative flex h-8 w-8 items-center justify-center rounded-full border border-transparent bg-transparent text-muted-foreground/40 transition-colors hover:border-border hover:bg-accent/30 hover:text-foreground/70"
+        className="group relative flex size-10 items-center justify-center rounded-full border border-transparent bg-transparent text-muted-foreground/40 transition-[scale,color,background-color,border-color] duration-150 ease-out hover:border-border hover:bg-accent/30 hover:text-foreground/70 active:scale-[0.96]"
         aria-label="System status node"
       >
         <span className="absolute h-4 w-4 rounded-full bg-emerald-500/10 blur-sm transition-opacity group-hover:opacity-100" />
@@ -126,7 +126,7 @@ export function HeaderControls({
           type="button"
           onClick={handleToggleLyrics}
           className={cn(
-            "flex h-8 w-8 items-center justify-center rounded border border-border bg-sidebar text-muted-foreground transition-colors hover:bg-accent",
+            "flex size-10 items-center justify-center rounded border border-border bg-sidebar text-muted-foreground transition-[scale,color,background-color,border-color] duration-150 ease-out hover:bg-accent active:scale-[0.96]",
             lyricsCollapsed && "bg-accent text-foreground",
           )}
           aria-label={
@@ -148,7 +148,7 @@ export function HeaderControls({
           type="button"
           onClick={handleToggleTerminal}
           className={cn(
-            "flex h-8 w-8 items-center justify-center rounded border border-border bg-sidebar text-muted-foreground transition-colors hover:bg-accent",
+            "flex size-10 items-center justify-center rounded border border-border bg-sidebar text-muted-foreground transition-[scale,color,background-color,border-color] duration-150 ease-out hover:bg-accent active:scale-[0.96]",
             terminalVisible && "bg-accent text-foreground",
           )}
           aria-label={

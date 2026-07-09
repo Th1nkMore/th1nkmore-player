@@ -56,7 +56,7 @@ function Line({
       <button
         type="button"
         className={cn(
-          "select-none border-r border-border bg-background w-10 md:w-12 px-2 md:px-3 py-0 text-right text-muted-foreground cursor-pointer hover:bg-accent/30 transition-colors shrink-0",
+          "w-10 shrink-0 cursor-pointer select-none border-r border-border bg-background px-2 py-0 text-right text-muted-foreground transition-colors hover:bg-accent/30 tabular-nums md:w-12 md:px-3",
           isActive && "bg-accent/50 text-foreground",
         )}
         onClick={handleInteraction}
@@ -72,7 +72,7 @@ function Line({
         )}
       >
         {isActive && time !== null && (
-          <span className="text-muted-foreground text-[10px] md:text-[11px] mr-2">
+          <span className="mr-2 text-[10px] text-muted-foreground tabular-nums md:text-[11px]">
             [{formatDuration(time)}]
           </span>
         )}
@@ -262,7 +262,7 @@ export function CodeEditor({ className }: CodeEditorProps) {
         <span className="text-[10px] md:text-[11px] text-muted-foreground truncate">
           {filePath}
         </span>
-        <span className="text-[9px] md:text-[10px] text-muted-foreground/60">
+        <span className="text-[9px] text-muted-foreground/60 tabular-nums md:text-[10px]">
           {formatDuration(currentTrack.duration)}
         </span>
       </div>

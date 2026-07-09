@@ -112,7 +112,7 @@ function SortableTab({
         )}
         aria-label={tControls("closeTrack", { title: song.title })}
         whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
+        whileTap={{ scale: 0.96 }}
       >
         <X className="h-3 w-3" aria-hidden="true" />
       </motion.button>
@@ -308,7 +308,7 @@ export function EditorTabs({ className }: EditorTabsProps) {
             onWheel={handleWheel}
             className="flex items-center gap-0 bg-background overflow-x-auto scrollbar-none"
           >
-            <AnimatePresence mode="popLayout">
+            <AnimatePresence initial={false} mode="popLayout">
               {queue.map((song) => {
                 const isActive = song.id === currentTrackId;
                 return (

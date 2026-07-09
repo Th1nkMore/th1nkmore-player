@@ -94,7 +94,7 @@ export function TagGridExplorer({ className }: { className?: string }) {
         <button
           type="button"
           onClick={() => setActiveTag(null)}
-          className="rounded border border-border px-2 py-1 text-[10px] text-muted-foreground hover:bg-accent hover:text-foreground"
+          className="min-h-10 rounded border border-border px-3 py-1 text-[10px] text-muted-foreground transition-[scale,color,background-color,border-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
         >
           {t("clear")}
         </button>
@@ -116,7 +116,8 @@ export function TagGridExplorer({ className }: { className?: string }) {
                   <div
                     key={stat.tag}
                     className={cn(
-                      "group relative overflow-hidden rounded-xl border px-3 py-3 text-left transition-all",
+                      "group relative overflow-hidden rounded-xl border px-3 py-3 text-left",
+                      "transition-[scale,border-color,box-shadow,background-color] duration-150 ease-out",
                       getDesktopTileSpan(stat, index),
                       disabled
                         ? "border-border/60 bg-muted/20 text-muted-foreground/60"
@@ -133,15 +134,15 @@ export function TagGridExplorer({ className }: { className?: string }) {
                           setActiveTag(stat.tag);
                           appendSongs(stat.tag, 5);
                         }}
-                        className="flex flex-1 flex-col text-left"
+                        className="flex flex-1 flex-col text-left transition-transform duration-150 ease-out active:scale-[0.96]"
                       >
                         <div className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-100/90">
                           {stat.tag}
                         </div>
-                        <div className="mt-2 text-[11px] text-muted-foreground">
+                        <div className="mt-2 text-[11px] text-muted-foreground tabular-nums">
                           {t("availableCount", { count: stat.availableCount })}
                         </div>
-                        <div className="mt-1 text-[10px] text-muted-foreground/80">
+                        <div className="mt-1 text-[10px] text-muted-foreground/80 tabular-nums">
                           {t("totalCount", { count: stat.totalCount })}
                         </div>
                       </button>
@@ -156,7 +157,7 @@ export function TagGridExplorer({ className }: { className?: string }) {
                               appendSongs(stat.tag, count);
                             }}
                             disabled={disabled}
-                            className="inline-flex items-center gap-1 rounded-full border border-sky-400/20 bg-sky-400/10 px-2 py-1 text-[10px] text-sky-100 disabled:opacity-50"
+                            className="inline-flex min-h-8 items-center gap-1 rounded-full border border-sky-400/20 bg-sky-400/10 px-2.5 py-1 text-[10px] text-sky-100 transition-[scale,background-color,border-color] duration-150 ease-out active:scale-[0.96] disabled:opacity-50"
                           >
                             <Plus className="h-3 w-3" />
                             {count}
@@ -169,7 +170,7 @@ export function TagGridExplorer({ className }: { className?: string }) {
                             appendSongs(stat.tag, "all");
                           }}
                           disabled={disabled}
-                          className="inline-flex items-center rounded-full border border-white/15 bg-white/8 px-2 py-1 text-[10px] text-white/85 disabled:opacity-50"
+                          className="inline-flex min-h-8 items-center rounded-full border border-white/15 bg-white/8 px-2.5 py-1 text-[10px] text-white/85 transition-[scale,background-color,border-color] duration-150 ease-out active:scale-[0.96] disabled:opacity-50"
                         >
                           {t("all")}
                         </button>
@@ -190,7 +191,7 @@ export function TagGridExplorer({ className }: { className?: string }) {
                   <div
                     key={stat.tag}
                     className={cn(
-                      "rounded-xl border p-3 text-left transition-colors",
+                      "rounded-xl border p-3 text-left transition-[border-color,background-color] duration-150 ease-out",
                       disabled
                         ? "border-border/60 bg-muted/20 text-muted-foreground/60"
                         : "border-border bg-card hover:border-sky-400/50 hover:bg-accent/30",
@@ -208,7 +209,7 @@ export function TagGridExplorer({ className }: { className?: string }) {
                       <div className="text-xs font-semibold uppercase tracking-[0.18em] text-foreground">
                         {stat.tag}
                       </div>
-                      <div className="mt-2 text-[11px] text-muted-foreground">
+                      <div className="mt-2 text-[11px] text-muted-foreground tabular-nums">
                         {t("availableCount", { count: stat.availableCount })}
                       </div>
                     </button>
@@ -222,7 +223,7 @@ export function TagGridExplorer({ className }: { className?: string }) {
                             appendSongs(stat.tag, count);
                           }}
                           disabled={disabled}
-                          className="rounded-full border border-border bg-background px-2 py-1 text-[10px] disabled:opacity-50"
+                          className="min-h-8 rounded-full border border-border bg-background px-2.5 py-1 text-[10px] transition-[scale,background-color,border-color] duration-150 ease-out active:scale-[0.96] disabled:opacity-50"
                         >
                           +{count}
                         </button>
@@ -234,7 +235,7 @@ export function TagGridExplorer({ className }: { className?: string }) {
                           appendSongs(stat.tag, "all");
                         }}
                         disabled={disabled}
-                        className="rounded-full border border-border bg-background px-2 py-1 text-[10px] disabled:opacity-50"
+                        className="min-h-8 rounded-full border border-border bg-background px-2.5 py-1 text-[10px] transition-[scale,background-color,border-color] duration-150 ease-out active:scale-[0.96] disabled:opacity-50"
                       >
                         {t("all")}
                       </button>
