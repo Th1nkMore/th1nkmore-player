@@ -230,7 +230,7 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 mr-1 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
+            className="mr-1 flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
             aria-label={tControls("closeTerminal")}
           >
             <X className="h-3.5 w-3.5" strokeWidth={2} />
@@ -248,7 +248,7 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
                 key={log.id}
                 className="flex gap-2 leading-5 hover:bg-accent/30 px-1 rounded transition-colors"
               >
-                <span className="text-muted-foreground/60 shrink-0">
+                <span className="shrink-0 text-muted-foreground/60 tabular-nums">
                   [{log.timestamp}]
                 </span>
                 <span className={logTypeStyles[log.type]}>{log.message}</span>
@@ -270,17 +270,22 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
                 const percent = Math.max(0, Math.min(1, x / rect.width));
                 handleSeekWithLog(percent * duration);
               }}
-              className="w-full h-1.5 bg-border rounded-full overflow-hidden cursor-pointer group"
+              className="group relative flex h-10 w-full cursor-pointer items-center"
               aria-label={tControls("progressPercent", {
                 percent: Math.round(percentage),
               })}
             >
               <div
-                className="h-full bg-muted-foreground group-hover:bg-foreground transition-colors"
-                style={{ width: `${percentage}%` }}
-              />
+                className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-full bg-border"
+                aria-hidden="true"
+              >
+                <div
+                  className="h-full bg-muted-foreground transition-colors duration-150 ease-out group-hover:bg-foreground"
+                  style={{ width: `${percentage}%` }}
+                />
+              </div>
             </button>
-            <div className="flex justify-between mt-1 text-[10px] text-muted-foreground/80">
+            <div className="flex justify-between text-[10px] text-muted-foreground/80 tabular-nums">
               <span>{formatDuration(currentTime)}</span>
               <span>{formatDuration(duration)}</span>
             </div>
@@ -291,7 +296,7 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
             <button
               type="button"
               onClick={handlePreviousWithLog}
-              className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
+              className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
               aria-label={tControls("previous")}
             >
               <SkipBack className="h-3.5 w-3.5" />
@@ -299,19 +304,19 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
             <button
               type="button"
               onClick={handlePlayPauseWithLog}
-              className="p-2 text-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
+              className="flex size-10 items-center justify-center rounded text-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
               aria-label={isPlaying ? tControls("pause") : tControls("play")}
             >
               {isPlaying ? (
                 <Pause className="h-4 w-4" />
               ) : (
-                <Play className="h-4 w-4" />
+                <Play className="ml-0.5 h-4 w-4" />
               )}
             </button>
             <button
               type="button"
               onClick={handleNextWithLog}
-              className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
+              className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
               aria-label={tControls("next")}
             >
               <SkipForward className="h-3.5 w-3.5" />
@@ -323,7 +328,7 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
                 onClick={handleCyclePlayOrder}
                 onMouseEnter={handlePlayOrderMouseEnter}
                 onMouseLeave={handlePlayOrderMouseLeave}
-                className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
+                className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
                 aria-label={playOrderText}
               >
                 <PlayOrderIcon className="h-3.5 w-3.5" />
@@ -344,7 +349,7 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
             <button
               type="button"
               onClick={() => handleVolumeChange(Math.max(0, volume - 0.1))}
-              className="p-0.5 text-muted-foreground hover:text-foreground rounded transition-colors"
+              className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
               aria-label={tControls("decreaseVolume")}
             >
               <Minus className="h-3 w-3" />
@@ -357,25 +362,30 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
                 const percent = Math.max(0, Math.min(1, x / rect.width));
                 handleVolumeChange(percent);
               }}
-              className="flex-1 h-1.5 bg-border rounded-full overflow-hidden cursor-pointer group"
+              className="group relative flex h-10 flex-1 cursor-pointer items-center"
               aria-label={tControls("volumePercent", {
                 percent: Math.round(volume * 100),
               })}
             >
               <div
-                className="h-full bg-muted-foreground/60 group-hover:bg-muted-foreground transition-colors"
-                style={{ width: `${volume * 100}%` }}
-              />
+                className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-full bg-border"
+                aria-hidden="true"
+              >
+                <div
+                  className="h-full bg-muted-foreground/60 transition-colors duration-150 ease-out group-hover:bg-muted-foreground"
+                  style={{ width: `${volume * 100}%` }}
+                />
+              </div>
             </button>
             <button
               type="button"
               onClick={() => handleVolumeChange(Math.min(1, volume + 0.1))}
-              className="p-0.5 text-muted-foreground hover:text-foreground rounded transition-colors"
+              className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
               aria-label={tControls("increaseVolume")}
             >
               <Plus className="h-3 w-3" />
             </button>
-            <span className="text-[10px] text-muted-foreground/80 w-8 text-right">
+            <span className="w-8 text-right text-[10px] text-muted-foreground/80 tabular-nums">
               {Math.round(volume * 100)}%
             </span>
           </div>

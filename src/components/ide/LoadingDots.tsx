@@ -8,7 +8,7 @@ type LoadingDotsProps = {
 
 export function LoadingDots({ show }: LoadingDotsProps) {
   return (
-    <AnimatePresence>
+    <AnimatePresence initial={false}>
       {show && (
         <motion.div
           initial={{ opacity: 0 }}

@@ -22,7 +22,7 @@ export function LyricsTools({
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2 text-[10px] text-gray-500 font-mono">
         <span>format:{format}</span>
-        <span>lines:{lineCount}</span>
+        <span className="tabular-nums">lines:{lineCount}</span>
       </div>
       <div className="flex flex-wrap gap-2">
         <Button

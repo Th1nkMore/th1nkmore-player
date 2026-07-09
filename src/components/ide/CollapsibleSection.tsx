@@ -43,7 +43,7 @@ export function CollapsibleSection({
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center gap-1.5 px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground hover:bg-accent/30 transition-colors shrink-0"
+        className="flex min-h-10 w-full shrink-0 items-center gap-1.5 px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground transition-[color,background-color] duration-150 ease-out hover:bg-accent/30"
       >
         {isOpen ? (
           <ChevronDown className="h-3 w-3" aria-hidden="true" />

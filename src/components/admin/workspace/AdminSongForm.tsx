@@ -18,9 +18,9 @@ import type { Song } from "@/types/music";
 const fieldClassName =
   "border-[var(--border)] bg-[rgba(7,10,15,0.92)] text-gray-200 placeholder:text-gray-600";
 const selectClassName =
-  "flex h-9 w-full rounded-md border border-[var(--border)] bg-[rgba(7,10,15,0.92)] px-3 py-1 text-sm text-gray-200 outline-none transition focus:border-sky-400/60";
+  "flex h-9 w-full rounded-md border border-[var(--border)] bg-[rgba(7,10,15,0.92)] px-3 py-1 text-sm text-gray-200 outline-none transition-[border-color,box-shadow] duration-150 ease-out focus:border-sky-400/60";
 const textareaClassName =
-  "flex min-h-[11rem] w-full rounded-xl border border-[var(--border)] bg-[rgba(7,10,15,0.92)] px-3 py-3 text-sm text-gray-200 outline-none transition focus:border-sky-400/60";
+  "flex min-h-[11rem] w-full rounded-xl border border-[var(--border)] bg-[rgba(7,10,15,0.92)] px-3 py-3 text-sm text-gray-200 outline-none transition-[border-color,box-shadow] duration-150 ease-out focus:border-sky-400/60";
 
 type SongDraft = Partial<Song> | Song;
 

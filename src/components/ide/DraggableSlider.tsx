@@ -71,7 +71,7 @@ export function DraggableSlider({
       aria-valuemax={100}
       aria-valuenow={Math.round(percentage)}
       className={cn(
-        "relative h-6 flex items-center cursor-pointer touch-none select-none group",
+        "group relative flex min-h-10 cursor-pointer touch-none select-none items-center",
         className,
       )}
       onPointerDown={handlePointerDown}
@@ -92,7 +92,7 @@ export function DraggableSlider({
       {/* Track */}
       <div
         className={cn(
-          "absolute inset-x-0 h-1.5 rounded-full bg-border transition-[height] duration-150",
+          "absolute inset-x-0 h-1.5 rounded-full bg-border transition-[height] duration-150 ease-out",
           isDragging && "h-2",
           trackClassName,
         )}
@@ -100,7 +100,7 @@ export function DraggableSlider({
         {/* Fill */}
         <div
           className={cn(
-            "h-full rounded-full bg-primary/60 group-hover:bg-primary transition-colors",
+            "h-full rounded-full bg-primary/60 transition-colors duration-150 ease-out group-hover:bg-primary",
             fillClassName,
           )}
           style={{ width: `${percentage}%` }}
@@ -110,7 +110,7 @@ export function DraggableSlider({
       {/* Thumb */}
       <div
         className={cn(
-          "absolute h-3.5 w-3.5 rounded-full bg-foreground border-2 border-background shadow-sm -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity",
+          "absolute h-3.5 w-3.5 -translate-x-1/2 rounded-full border-2 border-background bg-foreground opacity-0 shadow-sm transition-[opacity,scale] duration-150 ease-out group-hover:opacity-100",
           isDragging && "opacity-100 scale-110",
           thumbClassName,
         )}

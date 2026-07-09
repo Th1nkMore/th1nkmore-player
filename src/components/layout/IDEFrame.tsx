@@ -130,7 +130,7 @@ function DesktopLayout({
         {leftSidebar}
       </Panel>
 
-      <Separator className="w-px bg-border hover:w-1 hover:bg-primary/50 transition-all cursor-col-resize" />
+      <Separator className="w-px cursor-col-resize bg-border transition-[width,background-color] duration-150 ease-out hover:w-1 hover:bg-primary/50" />
 
       <Panel
         panelRef={centerPanelRef}
@@ -145,7 +145,7 @@ function DesktopLayout({
               <div className="h-full overflow-hidden">{centerEditor}</div>
             </Panel>
 
-            <Separator className="h-px bg-border hover:h-1 hover:bg-primary/50 transition-all cursor-row-resize" />
+            <Separator className="h-px cursor-row-resize bg-border transition-[height,background-color] duration-150 ease-out hover:h-1 hover:bg-primary/50" />
 
             <Panel
               panelRef={terminalPanelRef}
@@ -161,7 +161,7 @@ function DesktopLayout({
         )}
       </Panel>
 
-      <Separator className="w-px bg-border hover:w-1 hover:bg-primary/50 transition-all cursor-col-resize" />
+      <Separator className="w-px cursor-col-resize bg-border transition-[width,background-color] duration-150 ease-out hover:w-1 hover:bg-primary/50" />
 
       <Panel
         defaultSize="30"

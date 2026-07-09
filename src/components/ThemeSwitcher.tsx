@@ -28,7 +28,7 @@ export function ThemeSwitcher({ className }: ThemeSwitcherProps) {
       <button
         type="button"
         className={cn(
-          "flex h-7 w-7 items-center justify-center rounded border border-border/60 bg-card",
+          "flex size-10 items-center justify-center rounded border border-border/60 bg-card",
           className,
         )}
         aria-label={t("switchTheme")}
@@ -42,7 +42,7 @@ export function ThemeSwitcher({ className }: ThemeSwitcherProps) {
       type="button"
       onClick={handleClick}
       className={cn(
-        "flex items-center justify-center rounded border border-border/60 bg-card px-2 py-1.5 text-foreground hover:bg-accent hover:text-accent-foreground transition-colors",
+        "flex size-10 items-center justify-center rounded border border-border/60 bg-card text-foreground transition-[scale,color,background-color,border-color] duration-150 ease-out hover:bg-accent hover:text-accent-foreground active:scale-[0.96]",
         className,
       )}
       aria-label={t("switchTheme")}

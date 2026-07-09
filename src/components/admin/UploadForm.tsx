@@ -193,7 +193,7 @@ export function UploadForm({
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
                 className={[
-                  "flex min-h-[12rem] cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-5 py-6 text-center transition",
+                  "flex min-h-[12rem] cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-5 py-6 text-center transition-[background-color,border-color] duration-150 ease-out",
                   isDragging
                     ? "border-sky-400/70 bg-sky-400/8"
                     : audioFile

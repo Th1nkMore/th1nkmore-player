@@ -42,19 +42,21 @@ export function AdminPageChrome({
             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-500">
               <span>{t("shell.subtitle")}</span>
               <span className="hidden text-gray-700 md:inline">/</span>
-              <span>{t("shell.logCount", { count: logCount })}</span>
+              <span className="tabular-nums">
+                {t("shell.logCount", { count: logCount })}
+              </span>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
-            <span className="rounded-full border border-[var(--border)] px-3 py-1">
+            <span className="rounded-full border border-[var(--border)] px-3 py-1 tabular-nums">
               {currentTime || "--:--:--"}
             </span>
             <button
               type="button"
               onClick={onLogout}
               disabled={isSigningOut}
-              className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] px-3 py-1.5 text-gray-400 transition hover:border-rose-500/30 hover:text-rose-200 disabled:cursor-not-allowed disabled:text-gray-600"
+              className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[var(--border)] px-3 py-1.5 text-gray-400 transition-[scale,color,border-color] duration-150 ease-out hover:border-rose-500/30 hover:text-rose-200 active:scale-[0.96] disabled:cursor-not-allowed disabled:text-gray-600"
             >
               <LogOut className="h-3.5 w-3.5" />
               {isSigningOut ? t("actions.signingOut") : t("actions.logout")}
@@ -71,7 +73,7 @@ export function AdminPageChrome({
               type="button"
               onClick={() => onTabChange(id)}
               className={cn(
-                "inline-flex items-center gap-2 rounded-full border px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] transition-colors",
+                "inline-flex min-h-10 items-center gap-2 rounded-full border px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] transition-[scale,color,background-color,border-color] duration-150 ease-out active:scale-[0.96]",
                 activeTab === id
                   ? "border-sky-400/50 bg-sky-400/10 text-sky-100"
                   : "border-[var(--border)] text-gray-500 hover:text-gray-300",
