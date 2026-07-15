@@ -39,7 +39,7 @@ function getTimestamp(): string {
 }
 
 const logTypeStyles: Record<LogEntry["type"], string> = {
-  info: "text-muted-foreground/60",
+  info: "text-muted-foreground",
   action: "text-log-action",
   success: "text-log-success",
   warning: "text-log-warning",
@@ -222,7 +222,7 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
     >
       {/* Tab Bar */}
       <div className="flex items-center border-b border-border bg-muted shrink-0">
-        <div className="flex items-center px-3 py-1.5 bg-background text-foreground border-r border-border text-[10px] uppercase tracking-wide">
+        <div className="flex items-center px-3 py-1.5 bg-background text-foreground border-r border-border text-[11px] uppercase tracking-wide">
           {t("output")}
         </div>
         <div className="flex-1" />
@@ -248,7 +248,7 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
                 key={log.id}
                 className="flex gap-2 leading-5 hover:bg-accent/30 px-1 rounded transition-colors"
               >
-                <span className="shrink-0 text-muted-foreground/60 tabular-nums">
+                <span className="shrink-0 text-muted-foreground tabular-nums">
                   [{log.timestamp}]
                 </span>
                 <span className={logTypeStyles[log.type]}>{log.message}</span>
@@ -285,7 +285,7 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
                 />
               </div>
             </button>
-            <div className="flex justify-between text-[10px] text-muted-foreground/80 tabular-nums">
+            <div className="flex justify-between text-[11px] text-muted-foreground tabular-nums">
               <span>{formatDuration(currentTime)}</span>
               <span>{formatDuration(duration)}</span>
             </div>
@@ -333,7 +333,7 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
               >
                 <PlayOrderIcon className="h-3.5 w-3.5" />
               </button>
-              <span className="absolute left-full ml-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground whitespace-nowrap pointer-events-none">
+              <span className="absolute left-full ml-2 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground whitespace-nowrap pointer-events-none">
                 {displayedPlayOrderText}
                 {displayedPlayOrderText.length > 0 &&
                   displayedPlayOrderText.length < playOrderText.length && (
@@ -385,7 +385,7 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
             >
               <Plus className="h-3 w-3" />
             </button>
-            <span className="w-8 text-right text-[10px] text-muted-foreground/80 tabular-nums">
+            <span className="w-8 text-right text-[11px] text-muted-foreground tabular-nums">
               {Math.round(volume * 100)}%
             </span>
           </div>

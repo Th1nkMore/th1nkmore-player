@@ -28,12 +28,13 @@ type GroupedSongs = {
 };
 
 export function FileExplorer({ className, onFileClick }: FileExplorerProps) {
-  const { files, getFileById, isLoading } = useIDEStore();
-  const { setTrack, play, addToQueue, queue, currentTrackId } =
-    usePlayerStore();
-  const [isQueueOpen, setIsQueueOpen] = useState(true);
+  const { files, getFileById, isLoading, openFile } = useIDEStore();
+  const { play, addToQueue, currentTrackId } = usePlayerStore();
+  const [isQueueOpen, setIsQueueOpen] = useState(false);
   const [isRepoOpen, setIsRepoOpen] = useState(true);
-  const [openAlbums, setOpenAlbums] = useState<Set<string>>(new Set());
+  const [openAlbums, setOpenAlbums] = useState<Set<string>>(
+    () => new Set(files.map((song) => song.album)),
+  );
   const deviceType = useDeviceType();
   const isTouchDevice = deviceType === "touch";
   const t = useTranslations("fileExplorer");
@@ -103,14 +104,10 @@ export function FileExplorer({ className, onFileClick }: FileExplorerProps) {
     setSplitRatio(0.5);
   }, []);
 
-  // Track which songs are in the queue
-  const queuedSongIds = useMemo(() => new Set(queue.map((s) => s.id)), [queue]);
-
-  // Group songs by album, excluding songs already in queue
+  // The library is stable. Queue membership never removes a song from browsing.
   const groupedSongs = useMemo(() => {
     const grouped: GroupedSongs = {};
     for (const song of files) {
-      if (queuedSongIds.has(song.id)) continue;
       if (!grouped[song.album]) {
         grouped[song.album] = [];
       }
@@ -121,11 +118,11 @@ export function FileExplorer({ className, onFileClick }: FileExplorerProps) {
       });
     }
     return grouped;
-  }, [files, queuedSongIds]);
+  }, [files]);
 
   // Album keys memoized
   const albumKeys = useMemo(() => Object.keys(groupedSongs), [groupedSongs]);
-  const hasInitializedRef = useRef(false);
+  const hasInitializedRef = useRef(openAlbums.size > 0);
 
   // Initialize open albums only once when data first loads
   useEffect(() => {
@@ -147,20 +144,16 @@ export function FileExplorer({ className, onFileClick }: FileExplorerProps) {
     });
   }, []);
 
-  // Single click adds to queue; only plays if nothing is currently playing
+  // A library click always selects and plays. Queueing is an explicit action.
   const handleFileClick = useCallback(
     (fileId: string) => {
       const song = getFileById(fileId);
       if (!song) return;
-      addToQueue(song);
-      // Only switch and play if no song is currently playing
-      if (!currentTrackId) {
-        setTrack(fileId);
-        setTimeout(() => play(song), 100);
-      }
+      openFile(fileId);
+      play(song);
       onFileClick?.();
     },
-    [getFileById, addToQueue, setTrack, play, onFileClick, currentTrackId],
+    [getFileById, onFileClick, openFile, play],
   );
 
   // handlePlay explicitly plays the song (used in context menu)
@@ -168,18 +161,20 @@ export function FileExplorer({ className, onFileClick }: FileExplorerProps) {
     (fileId: string) => {
       const song = getFileById(fileId);
       if (!song) return;
-      addToQueue(song);
-      setTrack(fileId);
-      setTimeout(() => play(song), 100);
+      openFile(fileId);
+      play(song);
       onFileClick?.();
     },
-    [getFileById, addToQueue, setTrack, play, onFileClick],
+    [getFileById, onFileClick, openFile, play],
   );
 
   const handleAddToQueue = useCallback(
     (fileId: string) => {
       const song = getFileById(fileId);
-      if (song) addToQueue(song);
+      if (song) {
+        addToQueue(song);
+        setIsQueueOpen(true);
+      }
     },
     [getFileById, addToQueue],
   );
@@ -200,16 +195,16 @@ export function FileExplorer({ className, onFileClick }: FileExplorerProps) {
     [files],
   );
 
-  // Properties just adds to queue without playing
+  // Properties selects the song without changing playback.
   const handleProperties = useCallback(
     (fileId: string) => {
       const song = getFileById(fileId);
       if (song) {
-        addToQueue(song);
+        openFile(fileId);
         onFileClick?.();
       }
     },
-    [getFileById, addToQueue, onFileClick],
+    [getFileById, onFileClick, openFile],
   );
 
   // Calculate section heights based on open states

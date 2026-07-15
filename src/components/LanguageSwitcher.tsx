@@ -41,7 +41,7 @@ export function LanguageSwitcher({ className }: LanguageSwitcherProps) {
         "flex min-h-10 min-w-10 items-center justify-center gap-2 rounded border border-border/60 bg-card px-3 py-1.5 text-xs text-foreground transition-[scale,color,background-color,border-color] duration-150 ease-out hover:bg-accent hover:text-accent-foreground active:scale-[0.96]",
         className,
       )}
-      aria-label={t("switchLanguage")}
+      aria-label={`${localeLabels[currentLocale] || localeLabels[routing.defaultLocale]} · ${t("switchLanguage")}`}
     >
       <Languages className="h-3 w-3" />
       <span className="hidden sm:inline">

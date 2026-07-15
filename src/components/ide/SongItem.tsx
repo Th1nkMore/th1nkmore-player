@@ -62,7 +62,7 @@ export function SongItem({
             onClick={onClick}
             onDoubleClick={!isTouchDevice ? onDoubleClick : undefined}
             className={cn(
-              "flex flex-1 items-center gap-1.5 px-2 py-1 text-[11px] text-muted-foreground hover:bg-accent cursor-pointer transition-colors",
+              "flex min-h-10 flex-1 cursor-pointer items-center gap-1.5 px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-accent md:min-h-0",
               isActive && "bg-accent text-foreground",
             )}
             style={{ paddingLeft: "36px" }}
@@ -79,28 +79,28 @@ export function SongItem({
         <ContextMenuContent className="bg-sidebar border-border text-foreground">
           <ContextMenuItem
             onClick={onPlay}
-            className="cursor-pointer hover:bg-accent"
+            className="min-h-10 cursor-pointer hover:bg-accent md:min-h-0"
           >
             <Play className="h-3 w-3 mr-2" />
             {t("play")}
           </ContextMenuItem>
           <ContextMenuItem
             onClick={onAddToQueue}
-            className="cursor-pointer hover:bg-accent"
+            className="min-h-10 cursor-pointer hover:bg-accent md:min-h-0"
           >
             <Plus className="h-3 w-3 mr-2" />
             {t("addToQueue")}
           </ContextMenuItem>
           <ContextMenuItem
             onClick={onCopyLink}
-            className="cursor-pointer hover:bg-accent"
+            className="min-h-10 cursor-pointer hover:bg-accent md:min-h-0"
           >
             <Copy className="h-3 w-3 mr-2" />
             {t("copyLink")}
           </ContextMenuItem>
           <ContextMenuItem
             onClick={onProperties}
-            className="cursor-pointer hover:bg-accent"
+            className="min-h-10 cursor-pointer hover:bg-accent md:min-h-0"
           >
             <Info className="h-3 w-3 mr-2" />
             {t("properties")}
@@ -116,7 +116,7 @@ export function SongItem({
             e.stopPropagation();
             onAddToQueue();
           }}
-          className="shrink-0 p-1.5 mr-1 text-muted-foreground/60 hover:text-primary hover:bg-accent rounded transition-colors active:bg-accent"
+          className="mr-1 flex size-10 shrink-0 items-center justify-center rounded text-muted-foreground/60 transition-colors hover:bg-accent hover:text-primary active:bg-accent"
           aria-label={tControls("addTrackToQueue", { title })}
           whileTap={{ scale: 0.96 }}
         >

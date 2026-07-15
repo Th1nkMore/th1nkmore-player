@@ -55,3 +55,5 @@ These fields are now part of the practical baseline rather than a purely future 
 ## Current Constraint
 
 The app still stores flat song records rather than a richer media catalog. The implemented classification fields improve semantics and admin control, but the underlying library shape is still playlist-oriented. Future work should continue extending the model carefully without breaking existing playback and admin flows.
+
+Visibility is currently enforced when the public app and playlist API select tracks. Because the backing R2 manifest and audio objects are publicly addressable, `private` and `unlisted` are discovery controls rather than access-control guarantees. Confidential assets require private object storage and authenticated or signed delivery.

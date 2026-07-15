@@ -9,7 +9,7 @@ It is not only a showcase site for original work. It is also a daily-use listeni
 ## Core Identity
 
 - A portfolio for self-created songs and audio works
-- A personal player for other songs the owner uploads for private listening
+- A personal player for other songs the owner uploads for personal listening
 - A stylized interface where songs behave like files, lyrics behave like editor content, and playback behaves like a runtime terminal
 
 ## Library Model
@@ -38,6 +38,8 @@ The owner acts as an administrator with elevated capabilities. Over time, the ad
 - Public marketplace behavior
 - Fine-grained copyright workflow design
 - A full DAW-style music production environment
+
+"Personal" describes the single-owner workflow, not guaranteed asset secrecy. With the current public R2 URLs, application visibility settings control discovery in the public UI/API but do not prevent direct object access. Storage-level privacy is a separate future backend capability.
 
 ## Product Principles
 

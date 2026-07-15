@@ -15,10 +15,8 @@ export function usePlaybackControls() {
     play,
     pause,
     seek,
-    setTrack,
     playNext,
     playPrevious,
-    addToQueue,
   } = usePlayerStore();
 
   const { files, activeFileId } = useIDEStore();
@@ -32,23 +30,12 @@ export function usePlaybackControls() {
         : files[0];
 
       if (trackToPlay) {
-        addToQueue(trackToPlay);
-        setTrack(trackToPlay.id);
-        setTimeout(() => play(trackToPlay), 100);
+        play(trackToPlay);
       }
     } else {
       play();
     }
-  }, [
-    isPlaying,
-    currentTrackId,
-    activeFileId,
-    files,
-    pause,
-    play,
-    addToQueue,
-    setTrack,
-  ]);
+  }, [isPlaying, currentTrackId, activeFileId, files, pause, play]);
 
   const handlePrevious = useCallback(() => {
     if (!currentTrackId) return;

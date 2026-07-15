@@ -27,7 +27,11 @@
     "trackComment": "// track: midnight-refactor",
     "artistComment": "// artist: sonic-ide",
     "welcome": "欢迎使用 Sonic IDE",
-    "emptyStateDescription": "从资源管理器中选择一个文件以开始查看其内容。",
+    "emptyStateDescription": "一个藏在熟悉编辑器里的个人音乐作品集。从下面选一首开始播放，再按自己的节奏浏览曲库与队列。",
+    "featuredTitle": "推荐作品",
+    "loadingFeatured": "正在加载推荐作品",
+    "noLyricsTitle": "纯音乐 / 暂无歌词",
+    "noLyricsDescription": "这首曲目可以正常播放，但目前没有可显示的歌词。",
     "transitioning": "歌词同步中",
     "shortcutsTitle": "快捷方式：",
     "shortcutOpen": "点击资源管理器中的文件打开",
@@ -129,8 +133,8 @@
     "playTrack": "播放 {title}",
     "removeTrackFromQueue": "将 {title} 从队列移除",
     "addTrackToQueue": "将 {title} 添加到队列",
-    "openTrack": "打开 {title}",
-    "openTrackWithHint": "打开 {title}。双击可添加到队列。",
+    "openTrack": "播放 {title}",
+    "openTrackWithHint": "播放 {title}。可通过右键菜单将它加入队列。",
     "goToTime": "跳转到 {time}",
     "seekWaveform": "波形图，点击后跳转播放位置"
   },
@@ -141,7 +145,9 @@
     "openPlayer": "打开播放器",
     "closePlayer": "关闭播放器",
     "volumeControl": "音量",
-    "progressControl": "播放进度"
+    "progressControl": "播放进度",
+    "buffering": "正在缓冲音频",
+    "playbackError": "音频播放失败"
   },
   "admin": {
     "tabs": {

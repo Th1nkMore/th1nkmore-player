@@ -4,7 +4,6 @@ import {
   closestCenter,
   DndContext,
   type DragEndEvent,
-  KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
@@ -12,7 +11,6 @@ import {
 import {
   horizontalListSortingStrategy,
   SortableContext,
-  sortableKeyboardCoordinates,
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -47,14 +45,8 @@ function SortableTab({
   tabRef,
 }: SortableTabProps) {
   const tControls = useTranslations("controls");
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: song.id });
+  const { listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: song.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -90,24 +82,27 @@ function SortableTab({
         duration: 0.2,
         layout: { duration: 0.2, type: "spring", bounce: 0.2 },
       }}
-      {...attributes}
       {...listeners}
-      onClick={() => onTabClick(song)}
       className={cn(
-        "group flex items-center gap-2 border-r border-border px-3 py-1.5 text-[11px] text-muted-foreground transition-colors hover:bg-accent/30 cursor-pointer shrink-0",
+        "group flex shrink-0 items-center border-r border-border text-[11px] text-muted-foreground transition-colors hover:bg-accent/30",
         isActive && "bg-background text-foreground",
         isDragging && "shadow-lg",
       )}
-      aria-label={tControls("switchToTrack", { title: song.title })}
-      aria-selected={isActive}
-      role="tab"
     >
-      <span className="truncate max-w-[120px]">{song.title}</span>
+      <button
+        type="button"
+        onClick={() => onTabClick(song)}
+        className="flex min-h-10 min-w-0 items-center px-3 py-1.5 md:min-h-0"
+        aria-label={tControls("switchToTrack", { title: song.title })}
+        aria-current={isActive ? "true" : undefined}
+      >
+        <span className="max-w-[120px] truncate">{song.title}</span>
+      </button>
       <motion.button
         type="button"
         onClick={(e) => onTabClose(e, song.id)}
         className={cn(
-          "opacity-0 group-hover:opacity-100 transition-opacity rounded hover:bg-accent p-0.5",
+          "mr-1 flex size-10 items-center justify-center rounded opacity-0 transition-opacity hover:bg-accent group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 md:mr-2 md:size-4",
           isActive && "opacity-100",
         )}
         aria-label={tControls("closeTrack", { title: song.title })}
@@ -146,9 +141,6 @@ export function EditorTabs({ className }: EditorTabsProps) {
       activationConstraint: {
         distance: 5,
       },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
     }),
   );
 
