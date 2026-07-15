@@ -88,13 +88,11 @@
     "loadingPlaylist": "プレイリストを読み込み中..."
   },
   "layout": {
-    "openMenu": "メニューを開く",
     "openInspector": "インスペクターを開く",
     "hideTerminal": "ターミナルを隠す",
     "showTerminal": "ターミナルを表示",
     "collapseLyrics": "歌詞を折りたたむ",
     "expandLyrics": "歌詞を展開する",
-    "fileExplorer": "ファイルエクスプローラー",
     "inspector": "インスペクター",
     "mobileNavigation": "モバイルナビゲーション"
   },
@@ -115,7 +113,7 @@
   "mobileNav": {
     "lyrics": "歌詞",
     "songs": "曲",
-    "settings": "設定"
+    "info": "情報"
   },
   "controls": {
     "previous": "前の曲",

@@ -88,13 +88,11 @@
     "loadingPlaylist": "加载播放列表..."
   },
   "layout": {
-    "openMenu": "打开菜单",
     "openInspector": "打开检查器",
     "hideTerminal": "隐藏终端",
     "showTerminal": "显示终端",
     "collapseLyrics": "收起歌词",
     "expandLyrics": "展开歌词",
-    "fileExplorer": "文件浏览器",
     "inspector": "检查器",
     "mobileNavigation": "移动端导航"
   },
@@ -115,7 +113,7 @@
   "mobileNav": {
     "lyrics": "歌词",
     "songs": "歌曲",
-    "settings": "设置"
+    "info": "信息"
   },
   "controls": {
     "previous": "上一首",
