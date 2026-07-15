@@ -76,6 +76,51 @@ function getPreviousTrack(
   return currentIndex > 0 ? (queue[currentIndex - 1] ?? null) : null;
 }
 
+type PlaybackNavigationInput = {
+  currentTrackId: string | null;
+  playbackContext: Song[];
+  playOrder: PlayOrder;
+  queue: Song[];
+};
+
+function getPlaybackSequence({
+  playbackContext,
+  queue,
+}: Pick<PlaybackNavigationInput, "playbackContext" | "queue">) {
+  return queue.length > 0 ? queue : playbackContext;
+}
+
+export function getPlaybackNavigationState({
+  currentTrackId,
+  playbackContext,
+  playOrder,
+  queue,
+}: PlaybackNavigationInput) {
+  const sequence = getPlaybackSequence({ playbackContext, queue });
+  if (!currentTrackId || sequence.length === 0) {
+    return { canGoNext: false, canGoPrevious: false };
+  }
+
+  const currentIndex = sequence.findIndex((song) => song.id === currentTrackId);
+  if (currentIndex < 0) {
+    return { canGoNext: queue.length > 0, canGoPrevious: false };
+  }
+
+  if (playOrder === "repeat" || playOrder === "repeat-one") {
+    return { canGoNext: true, canGoPrevious: true };
+  }
+
+  if (playOrder === "shuffle") {
+    const canShuffle = sequence.length > 1;
+    return { canGoNext: canShuffle, canGoPrevious: canShuffle };
+  }
+
+  return {
+    canGoNext: currentIndex < sequence.length - 1,
+    canGoPrevious: currentIndex > 0,
+  };
+}
+
 type PlayerState = {
   isPlaying: boolean;
   volume: number;
@@ -83,9 +128,11 @@ type PlayerState = {
   currentTime: number;
   currentTrackId: string | null;
   queue: Song[];
+  playbackContext: Song[];
   playOrder: PlayOrder;
   playbackStatus: PlaybackStatus;
   play: (song?: Song) => void;
+  playFromCollection: (song: Song, collection: Song[]) => void;
   pause: () => void;
   stop: () => void;
   setIsPlaying: (isPlaying: boolean) => void;
@@ -111,6 +158,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   currentTime: 0,
   currentTrackId: null,
   queue: [],
+  playbackContext: [],
   playOrder: "sequential",
   playbackStatus: "idle",
 
@@ -118,8 +166,13 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     if (song) {
       const state = get();
 
+      if (state.currentTrackId === song.id) {
+        set({ isPlaying: true });
+        return;
+      }
+
       // If switching to a different song, stop and clear previous state first
-      if (state.currentTrackId && state.currentTrackId !== song.id) {
+      if (state.currentTrackId) {
         set(resetPlaybackState());
       }
 
@@ -129,10 +182,33 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         currentTrackId: song.id,
         isPlaying: true,
         playbackStatus: "loading",
+        playbackContext: [],
       });
     } else if (get().currentTrackId) {
       set({ isPlaying: true });
     }
+  },
+  playFromCollection: (song, collection) => {
+    const state = get();
+    const playbackContext = collection.some((item) => item.id === song.id)
+      ? collection
+      : [song, ...collection];
+
+    if (state.currentTrackId === song.id) {
+      set({ isPlaying: true, playbackContext });
+      return;
+    }
+
+    if (state.currentTrackId) {
+      set(resetPlaybackState());
+    }
+
+    set({
+      currentTrackId: song.id,
+      isPlaying: true,
+      playbackStatus: "loading",
+      playbackContext,
+    });
   },
   pause: () => set({ isPlaying: false }),
   stop: () => {
@@ -203,10 +279,16 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   },
   playNext: () => {
     const state = get();
-    if (!state.currentTrackId || state.queue.length === 0) return;
+    if (!state.currentTrackId) return;
+
+    const sequence = getPlaybackSequence(state);
+    if (sequence.length === 0) {
+      set(resetPlaybackState(null));
+      return;
+    }
 
     const nextTrack = getNextTrack(
-      state.queue,
+      sequence,
       state.currentTrackId,
       state.playOrder,
     );
@@ -219,10 +301,13 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   },
   playPrevious: () => {
     const state = get();
-    if (!state.currentTrackId || state.queue.length === 0) return;
+    if (!state.currentTrackId) return;
+
+    const sequence = getPlaybackSequence(state);
+    if (sequence.length === 0) return;
 
     const previousTrack = getPreviousTrack(
-      state.queue,
+      sequence,
       state.currentTrackId,
       state.playOrder,
     );

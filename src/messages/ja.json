@@ -20,7 +20,19 @@
     "copyLink": "リンクをコピー",
     "properties": "プロパティ",
     "noSongsInQueue": "キューに曲がありません",
-    "resizeSections": "セクションの高さを調整"
+    "resizeSections": "セクションの高さを調整",
+    "library": "ライブラリ",
+    "songCount": "{count} 曲",
+    "queue": "次に再生",
+    "openQueue": "次に再生する {count} 曲を開く",
+    "queueDescription": "{count} 曲が再生待ちです",
+    "closeQueue": "再生待ちを閉じる",
+    "searchPlaceholder": "曲、アーティスト、アルバム、タグを検索",
+    "allSongs": "すべて",
+    "clearTag": "{tag} フィルターを解除",
+    "addedToQueue": "{title} を追加しました",
+    "loadingSongs": "曲を読み込み中…",
+    "noMatchingSongs": "条件に一致する曲がありません"
   },
   "codeEditor": {
     "filePath": "lyrics/midnight-refactor.lyr",
@@ -97,17 +109,14 @@
     "mobileNavigation": "モバイルナビゲーション"
   },
   "explorerNav": {
-    "files": "ファイル",
-    "grid": "グリッド",
-    "switchingPanels": "ビュー切り替え中"
+    "files": "ライブラリ",
+    "grid": "タグ"
   },
   "tagGrid": {
-    "title": "タググリッド",
-    "allTags": "すべてのタグ",
-    "clear": "クリア",
-    "empty": "現在、すべてのタグ曲がキューに入っています",
-    "all": "すべて",
-    "availableCount": "追加可能 {count} 曲",
+    "title": "タグから探す",
+    "subtitle": "タグを選ぶと、再生やキューを変えずにライブラリを絞り込みます。",
+    "allTags": "すべての曲",
+    "untagged": "未分類",
     "totalCount": "合計 {count} 曲"
   },
   "mobileNav": {
@@ -131,6 +140,8 @@
     "playTrack": "{title} を再生",
     "removeTrackFromQueue": "{title} をキューから削除",
     "addTrackToQueue": "{title} をキューに追加",
+    "trackQueued": "{title} はキューに追加済みです",
+    "trackActions": "{title} のその他の操作",
     "openTrack": "{title} を再生",
     "openTrackWithHint": "{title} を再生。コンテキストメニューからキューに追加できます。",
     "goToTime": "{time} に移動",
