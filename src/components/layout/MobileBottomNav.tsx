@@ -1,10 +1,10 @@
 "use client";
 
-import { ListMusic, Music2, Settings } from "lucide-react";
+import { Info, ListMusic, Music2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
-export type MobileTab = "lyrics" | "songs" | "settings";
+export type MobileTab = "lyrics" | "songs" | "info";
 
 type MobileBottomNavProps = {
   activeTab: MobileTab;
@@ -23,7 +23,7 @@ export function MobileBottomNav({
   const tabs: Array<{ id: MobileTab; icon: typeof Music2; label: string }> = [
     { id: "lyrics", icon: Music2, label: t("lyrics") },
     { id: "songs", icon: ListMusic, label: t("songs") },
-    { id: "settings", icon: Settings, label: t("settings") },
+    { id: "info", icon: Info, label: t("info") },
   ];
 
   return (
