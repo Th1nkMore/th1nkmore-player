@@ -88,13 +88,11 @@
     "loadingPlaylist": "Loading playlist..."
   },
   "layout": {
-    "openMenu": "Open menu",
     "openInspector": "Open inspector",
     "hideTerminal": "Hide terminal",
     "showTerminal": "Show terminal",
     "collapseLyrics": "Collapse lyrics",
     "expandLyrics": "Expand lyrics",
-    "fileExplorer": "File explorer",
     "inspector": "Inspector",
     "mobileNavigation": "Mobile navigation"
   },
@@ -115,7 +113,7 @@
   "mobileNav": {
     "lyrics": "Lyrics",
     "songs": "Songs",
-    "settings": "Settings"
+    "info": "Info"
   },
   "controls": {
     "previous": "Previous",

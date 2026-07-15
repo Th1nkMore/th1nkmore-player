@@ -11,7 +11,7 @@ import { FullPlayerSheet } from "@/components/ide/FullPlayerSheet";
 import { MiniPlayerBar } from "@/components/ide/MiniPlayerBar";
 import {
   HeaderControls,
-  MobileHeaderLead,
+  MobileHeaderTitle,
 } from "@/components/layout/IDEFrameHeader";
 import type { MobileTab } from "@/components/layout/MobileBottomNav";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
@@ -52,7 +52,7 @@ function MobilePortraitLayout({
       <main className="flex-1 min-h-0 overflow-hidden bg-background">
         {mobileTab === "lyrics" && centerEditor}
         {mobileTab === "songs" && leftSidebar}
-        {mobileTab === "settings" && rightInspector}
+        {mobileTab === "info" && rightInspector}
       </main>
 
       <MiniPlayerBar onTap={() => onPlayerSheetChange(true)} />
@@ -185,7 +185,6 @@ export function IDEFrame({
   rightInspector,
   bottomTerminal,
 }: IDEFrameProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [lyricsCollapsed, setLyricsCollapsed] = useState(false);
   const [terminalVisible, setTerminalVisible] = useState(false);
   const [mobileTab, setMobileTab] = useState<MobileTab>("songs");
@@ -290,12 +289,7 @@ export function IDEFrame({
         {/* Header */}
         <header className="flex items-center justify-between gap-2 border-b border-border bg-sidebar px-4 py-2 pt-[calc(0.5rem+env(safe-area-inset-top))]">
           {isPortrait && (
-            <MobileHeaderLead
-              activeFileTitle={activeFile?.title}
-              leftSidebar={mobileLeftSidebar || leftSidebar}
-              open={mobileMenuOpen}
-              setOpen={setMobileMenuOpen}
-            />
+            <MobileHeaderTitle activeFileTitle={activeFile?.title} />
           )}
 
           {isLandscape && (

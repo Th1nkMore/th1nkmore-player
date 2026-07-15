@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  ChevronLeft,
-  ChevronRight,
-  Menu,
-  Settings2,
-  Terminal,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Settings2, Terminal } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -19,42 +13,15 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
-type MobileHeaderLeadProps = {
+type MobileHeaderTitleProps = {
   activeFileTitle: string | null | undefined;
-  leftSidebar: ReactNode;
-  open: boolean;
-  setOpen: (open: boolean) => void;
 };
 
-export function MobileHeaderLead({
-  activeFileTitle,
-  leftSidebar,
-  open,
-  setOpen,
-}: MobileHeaderLeadProps) {
+export function MobileHeaderTitle({ activeFileTitle }: MobileHeaderTitleProps) {
   const tCommon = useTranslations("common");
-  const tLayout = useTranslations("layout");
 
   return (
-    <div className="flex min-w-0 flex-1 items-center gap-3">
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger asChild>
-          <button
-            type="button"
-            className="flex size-10 items-center justify-center rounded border border-border bg-sidebar text-muted-foreground transition-[scale,color,background-color,border-color] duration-150 ease-out hover:bg-accent active:scale-[0.96]"
-            aria-label={tLayout("openMenu")}
-          >
-            <Menu className="h-4 w-4" />
-          </button>
-        </SheetTrigger>
-        <SheetContent
-          side="left"
-          className="w-[min(20rem,85vw)] border-border bg-sidebar p-0"
-        >
-          <SheetTitle className="sr-only">{tLayout("fileExplorer")}</SheetTitle>
-          {leftSidebar}
-        </SheetContent>
-      </Sheet>
+    <div className="flex min-w-0 flex-1 items-center">
       <span className="min-w-0 flex-1 truncate text-[11px] text-muted-foreground">
         {activeFileTitle || tCommon("appTitle")}
       </span>

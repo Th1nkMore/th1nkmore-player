@@ -88,13 +88,11 @@
     "loadingPlaylist": "Wiedergabeliste wird geladen..."
   },
   "layout": {
-    "openMenu": "Menü öffnen",
     "openInspector": "Inspektor öffnen",
     "hideTerminal": "Terminal ausblenden",
     "showTerminal": "Terminal anzeigen",
     "collapseLyrics": "Songtext einklappen",
     "expandLyrics": "Songtext ausklappen",
-    "fileExplorer": "Datei-Explorer",
     "inspector": "Inspektor",
     "mobileNavigation": "Mobile Navigation"
   },
@@ -115,7 +113,7 @@
   "mobileNav": {
     "lyrics": "Texte",
     "songs": "Titel",
-    "settings": "Einstellungen"
+    "info": "Info"
   },
   "controls": {
     "previous": "Vorheriger Titel",
