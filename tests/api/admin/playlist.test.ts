@@ -1,7 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { songOne, songTwo } from "@/../tests/fixtures/songs";
 
-const sendMock = vi.fn();
+const cacheMocks = vi.hoisted(() => ({
+  revalidateTagMock: vi.fn(),
+}));
+const sendMock = vi.hoisted(() => vi.fn());
+
+vi.mock("next/cache", () => ({
+  revalidateTag: cacheMocks.revalidateTagMock,
+}));
 
 vi.mock("@/lib/r2", () => ({
   R2_BUCKET_NAME: "test-bucket",
@@ -17,6 +24,7 @@ async function importRoute() {
 describe("admin playlist route", () => {
   beforeEach(() => {
     sendMock.mockReset();
+    cacheMocks.revalidateTagMock.mockReset();
   });
 
   it("returns an empty playlist when the file does not exist", async () => {
@@ -123,5 +131,35 @@ describe("admin playlist route", () => {
     expect(JSON.parse(command.input.Body as string)).toEqual([
       { ...songOne, language: "ja", tags: ["Rock"] },
     ]);
+    expect(cacheMocks.revalidateTagMock).toHaveBeenCalledWith(
+      "public-playlist",
+      { expire: 0 },
+    );
+  });
+
+  it("reports a successful save when only cache invalidation fails", async () => {
+    sendMock.mockResolvedValueOnce({});
+    cacheMocks.revalidateTagMock.mockImplementationOnce(() => {
+      throw new Error("cache unavailable");
+    });
+    const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { PUT } = await importRoute();
+    const request = new Request("http://localhost/api/admin/playlist", {
+      method: "PUT",
+      body: JSON.stringify([songOne]),
+      headers: {
+        "content-type": "application/json",
+      },
+    });
+
+    const response = await PUT(request as never);
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ success: true, count: 1 });
+    expect(warning).toHaveBeenCalledWith(
+      "Playlist saved, but cache invalidation failed:",
+      expect.any(Error),
+    );
+    warning.mockRestore();
   });
 });

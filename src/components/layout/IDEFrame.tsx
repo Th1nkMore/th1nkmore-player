@@ -18,6 +18,7 @@ import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { useScreenMode } from "@/lib/hooks/useScreenMode";
 import { cn } from "@/lib/utils";
 import { useIDEStore } from "@/store/useIDEStore";
+import { usePlayerStore } from "@/store/usePlayerStore";
 
 type IDEFrameProps = {
   className?: string;
@@ -149,7 +150,7 @@ function DesktopLayout({
 
             <Panel
               panelRef={terminalPanelRef}
-              defaultSize="30"
+              defaultSize="0"
               minSize="0"
               collapsible
               onResize={onTerminalResize}
@@ -175,21 +176,6 @@ function DesktopLayout({
   );
 }
 
-function LoadingScreen({ message }: { message: string }) {
-  return (
-    <div className="flex h-screen w-full items-center justify-center bg-background">
-      <div className="text-center">
-        <div className="mb-4 font-mono text-[14px] text-muted-foreground">
-          {message}
-        </div>
-        <div className="h-1 w-48 overflow-hidden rounded-full bg-muted">
-          <div className="h-full w-full animate-pulse bg-muted-foreground/30" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function IDEFrame({
   className,
   leftSidebar,
@@ -201,17 +187,17 @@ export function IDEFrame({
 }: IDEFrameProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [lyricsCollapsed, setLyricsCollapsed] = useState(false);
-  const [terminalVisible, setTerminalVisible] = useState(true);
-  const [mobileTab, setMobileTab] = useState<MobileTab>("lyrics");
+  const [terminalVisible, setTerminalVisible] = useState(false);
+  const [mobileTab, setMobileTab] = useState<MobileTab>("songs");
   const [playerSheetOpen, setPlayerSheetOpen] = useState(false);
   const [mobileInspectorOpen, setMobileInspectorOpen] = useState(false);
   const [adminTapCount, setAdminTapCount] = useState(0);
   const centerPanelRef = useRef<PanelImperativeHandle | null>(null);
   const terminalPanelRef = useRef<PanelImperativeHandle | null>(null);
   const adminTapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const { getActiveFile, fetchSongs, isLoading } = useIDEStore();
+  const { activeFileId, getActiveFile, fetchSongs, openFile } = useIDEStore();
+  const currentTrackId = usePlayerStore((state) => state.currentTrackId);
   const activeFile = getActiveFile();
-  const t = useTranslations("loading");
   const tCommon = useTranslations("common");
   const screenMode = useScreenMode();
   const router = useRouter();
@@ -223,6 +209,18 @@ export function IDEFrame({
   useEffect(() => {
     fetchSongs();
   }, [fetchSongs]);
+
+  useEffect(() => {
+    if (currentTrackId && currentTrackId !== activeFileId) {
+      openFile(currentTrackId);
+    }
+  }, [activeFileId, currentTrackId, openFile]);
+
+  useEffect(() => {
+    if (activeFileId && isPortrait) {
+      setMobileTab("lyrics");
+    }
+  }, [activeFileId, isPortrait]);
 
   useEffect(
     () => () => {
@@ -236,7 +234,7 @@ export function IDEFrame({
   const handleToggleTerminal = () => {
     if (!terminalPanelRef.current) return;
     if (terminalPanelRef.current.isCollapsed()) {
-      terminalPanelRef.current.expand();
+      terminalPanelRef.current.resize("30%");
     } else {
       terminalPanelRef.current.collapse();
     }
@@ -279,10 +277,6 @@ export function IDEFrame({
       setAdminTapCount(0);
     }, 2400);
   };
-
-  if (isLoading) {
-    return <LoadingScreen message={t("bootingSystem")} />;
-  }
 
   return (
     <>

@@ -2,10 +2,12 @@ import { create } from "zustand";
 import type { Song } from "@/types/music";
 
 export type PlayOrder = "sequential" | "shuffle" | "repeat" | "repeat-one";
+export type PlaybackStatus = "idle" | "loading" | "ready" | "error";
 
 function resetPlaybackState(trackId?: string | null) {
   return {
     isPlaying: false,
+    playbackStatus: "idle" as PlaybackStatus,
     currentTime: 0,
     duration: 0,
     ...(trackId !== undefined ? { currentTrackId: trackId } : {}),
@@ -29,7 +31,7 @@ function getNextTrack(
 ): Song | null {
   const currentIndex = queue.findIndex((song) => song.id === currentTrackId);
   if (currentIndex < 0) {
-    return null;
+    return queue[0] ?? null;
   }
 
   if (playOrder === "repeat-one") {
@@ -82,6 +84,7 @@ type PlayerState = {
   currentTrackId: string | null;
   queue: Song[];
   playOrder: PlayOrder;
+  playbackStatus: PlaybackStatus;
   play: (song?: Song) => void;
   pause: () => void;
   stop: () => void;
@@ -91,6 +94,7 @@ type PlayerState = {
   setTrack: (trackId: string | null) => void;
   setDuration: (duration: number) => void;
   setCurrentTime: (time: number) => void;
+  setPlaybackStatus: (status: PlaybackStatus) => void;
   addToQueue: (song: Song) => void;
   addManyToQueue: (songs: Song[]) => void;
   removeFromQueue: (songId: string) => void;
@@ -108,6 +112,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   currentTrackId: null,
   queue: [],
   playOrder: "sequential",
+  playbackStatus: "idle",
 
   play: (song) => {
     if (song) {
@@ -118,14 +123,14 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         set(resetPlaybackState());
       }
 
-      // Ensure song is in queue
-      if (!state.queue.find((s) => s.id === song.id)) {
-        set({ queue: [...state.queue, song] });
-      }
-
-      // Set new track and start playing
-      set({ currentTrackId: song.id, isPlaying: true });
-    } else {
+      // Playback and queueing are separate actions. The library and featured
+      // controls can play immediately without silently mutating the queue.
+      set({
+        currentTrackId: song.id,
+        isPlaying: true,
+        playbackStatus: "loading",
+      });
+    } else if (get().currentTrackId) {
       set({ isPlaying: true });
     }
   },
@@ -151,6 +156,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   },
   setDuration: (duration) => set({ duration: Math.max(0, duration) }),
   setCurrentTime: (time) => set({ currentTime: Math.max(0, time) }),
+  setPlaybackStatus: (playbackStatus) => set({ playbackStatus }),
   addToQueue: (song) => {
     const state = get();
     if (!state.queue.find((s) => s.id === song.id)) {

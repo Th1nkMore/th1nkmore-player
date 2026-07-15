@@ -26,7 +26,8 @@ function getDesktopTileSpan(stat: TagStat, index: number) {
 
 export function TagGridExplorer({ className }: { className?: string }) {
   const t = useTranslations("tagGrid");
-  const { activeTag, getTagStats, setActiveTag } = useIDEStore();
+  const { activeTag, files, getSongsByTag, getTagStats, setActiveTag } =
+    useIDEStore();
   const { addManyToQueue, currentTrackId, play, queue, setTrack } =
     usePlayerStore();
 
@@ -48,12 +49,9 @@ export function TagGridExplorer({ className }: { className?: string }) {
 
     const selectedSongs =
       count === "all"
-        ? useIDEStore
-            .getState()
-            .getSongsByTag(tag)
-            .filter((song) => !queuedSongIds.includes(song.id))
+        ? getSongsByTag(tag).filter((song) => !queuedSongIds.includes(song.id))
         : pickRandomSongsByTag({
-            songs: useIDEStore.getState().files,
+            songs: files,
             tag,
             count,
             queuedSongIds,
@@ -223,7 +221,7 @@ export function TagGridExplorer({ className }: { className?: string }) {
                             appendSongs(stat.tag, count);
                           }}
                           disabled={disabled}
-                          className="min-h-8 rounded-full border border-border bg-background px-2.5 py-1 text-[10px] transition-[scale,background-color,border-color] duration-150 ease-out active:scale-[0.96] disabled:opacity-50"
+                          className="min-h-10 rounded-full border border-border bg-background px-2.5 py-1 text-[10px] transition-[scale,background-color,border-color] duration-150 ease-out active:scale-[0.96] disabled:opacity-50"
                         >
                           +{count}
                         </button>
@@ -235,7 +233,7 @@ export function TagGridExplorer({ className }: { className?: string }) {
                           appendSongs(stat.tag, "all");
                         }}
                         disabled={disabled}
-                        className="min-h-8 rounded-full border border-border bg-background px-2.5 py-1 text-[10px] transition-[scale,background-color,border-color] duration-150 ease-out active:scale-[0.96] disabled:opacity-50"
+                        className="min-h-10 rounded-full border border-border bg-background px-2.5 py-1 text-[10px] transition-[scale,background-color,border-color] duration-150 ease-out active:scale-[0.96] disabled:opacity-50"
                       >
                         {t("all")}
                       </button>

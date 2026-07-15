@@ -1,13 +1,14 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { FileCode } from "lucide-react";
+import { FileCode, Music2, Play } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PanelTransitionOverlay } from "@/components/ide/PanelTransitionOverlay";
 import { lyricsToLrc, parseLrc } from "@/lib/lrcParser";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/utils/audio";
+import { useIDEStore } from "@/store/useIDEStore";
 import { usePlayerStore } from "@/store/usePlayerStore";
 
 // Auto-scroll delay after user stops scrolling (ms)
@@ -51,12 +52,15 @@ function Line({
   };
 
   return (
-    <div className="flex leading-6 md:leading-7" ref={lineRef}>
+    <div
+      className="flex min-h-10 leading-6 md:min-h-0 md:leading-7"
+      ref={lineRef}
+    >
       {/* Line Number */}
       <button
         type="button"
         className={cn(
-          "w-10 shrink-0 cursor-pointer select-none border-r border-border bg-background px-2 py-0 text-right text-muted-foreground transition-colors hover:bg-accent/30 tabular-nums md:w-12 md:px-3",
+          "min-h-10 w-10 shrink-0 cursor-pointer select-none border-r border-border bg-background px-2 py-0 text-right text-muted-foreground transition-colors hover:bg-accent/30 tabular-nums md:min-h-0 md:w-12 md:px-3",
           isActive && "bg-accent/50 text-foreground",
         )}
         onClick={handleInteraction}
@@ -72,7 +76,7 @@ function Line({
         )}
       >
         {isActive && time !== null && (
-          <span className="mr-2 text-[10px] text-muted-foreground tabular-nums md:text-[11px]">
+          <span className="mr-2 text-[11px] text-muted-foreground tabular-nums md:text-[12px]">
             [{formatDuration(time)}]
           </span>
         )}
@@ -85,12 +89,15 @@ function Line({
 export function CodeEditor({ className }: CodeEditorProps) {
   const t = useTranslations("codeEditor");
   const tControls = useTranslations("controls");
-  const { currentTrackId, currentTime, seek, queue } = usePlayerStore();
+  const { files, isLoading, openFile } = useIDEStore();
+  const { currentTrackId, currentTime, duration, play, seek } =
+    usePlayerStore();
 
-  // Get current track from queue
+  // Playback does not imply queue membership; resolve the active audio from
+  // the stable public library instead.
   const currentTrack = useMemo(
-    () => queue.find((s) => s.id === currentTrackId) ?? null,
-    [queue, currentTrackId],
+    () => files.find((song) => song.id === currentTrackId) ?? null,
+    [files, currentTrackId],
   );
 
   // State for controlling auto-scroll behavior
@@ -154,8 +161,11 @@ export function CodeEditor({ className }: CodeEditorProps) {
     }
 
     // Convert plain lyrics to LRC with estimated timestamps
-    return lyricsToLrc(currentTrack.lyrics, currentTrack.duration);
-  }, [currentTrack]);
+    return lyricsToLrc(
+      currentTrack.lyrics,
+      duration > 0 ? duration : currentTrack.duration,
+    );
+  }, [currentTrack, duration]);
 
   // Find current active line index based on currentTime
   const activeLineIndex = useMemo(() => {
@@ -215,36 +225,85 @@ export function CodeEditor({ className }: CodeEditorProps) {
 
   const visibleLines = displayLines;
   if (!currentTrack) {
+    const featuredTracks = files.slice(0, 3);
+
     return (
       <div
         className={cn(
-          "flex h-full flex-col items-center justify-center bg-background font-mono text-[13px] text-muted-foreground px-4",
+          "h-full overflow-y-auto bg-background px-5 py-8 font-mono text-muted-foreground md:px-10 md:py-12",
           className,
         )}
       >
-        <FileCode
-          className="h-12 w-12 md:h-16 md:w-16 mb-4 text-muted-foreground/60"
-          aria-hidden="true"
-        />
-        <h2 className="text-base md:text-lg font-semibold text-muted-foreground mb-2 text-center">
-          {t("welcome")}
-        </h2>
-        <p className="text-[11px] md:text-[12px] text-muted-foreground text-center max-w-md">
-          {t("emptyStateDescription")}
-        </p>
-        <div className="mt-6 text-[10px] md:text-[11px] text-muted-foreground/60">
-          <p>{t("shortcutsTitle")}</p>
-          <ul className="mt-2 space-y-1 list-disc list-inside">
-            <li>{t("shortcutOpen")}</li>
-            <li>{t("shortcutSwitch")}</li>
-            <li>{t("shortcutClose")}</li>
-          </ul>
+        <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col justify-center">
+          <div className="mb-5 flex items-center gap-2 text-[12px] text-muted-foreground">
+            <FileCode className="size-4" aria-hidden="true" />
+            <span>README.md</span>
+          </div>
+
+          <h1 className="text-balance text-xl font-semibold tracking-tight text-foreground md:text-2xl">
+            {t("welcome")}
+          </h1>
+          <p className="mt-3 max-w-xl text-pretty text-[13px] leading-6 text-muted-foreground md:text-[14px]">
+            {t("emptyStateDescription")}
+          </p>
+
+          <div className="mt-8">
+            <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              <Music2 className="size-3.5" aria-hidden="true" />
+              {t("featuredTitle")}
+            </div>
+
+            {isLoading && featuredTracks.length === 0 ? (
+              <output className="space-y-2" aria-label={t("loadingFeatured")}>
+                {[0, 1, 2].map((item) => (
+                  <div
+                    key={item}
+                    className="h-11 animate-pulse rounded-md bg-muted"
+                  />
+                ))}
+              </output>
+            ) : (
+              <div className="space-y-2">
+                {featuredTracks.map((song, index) => (
+                  <button
+                    key={song.id}
+                    type="button"
+                    onClick={() => {
+                      openFile(song.id);
+                      play(song);
+                    }}
+                    className="group flex min-h-11 w-full items-center gap-3 rounded-md bg-muted/45 px-3 py-2 text-left shadow-[0_0_0_1px_rgba(255,255,255,0.06)] transition-[scale,background-color,box-shadow] duration-150 ease-out hover:bg-accent/60 hover:shadow-[0_0_0_1px_rgba(255,255,255,0.12)] active:scale-[0.96]"
+                    aria-label={tControls("playTrack", { title: song.title })}
+                  >
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded bg-background text-primary shadow-[0_0_0_1px_rgba(255,255,255,0.08)]">
+                      <Play
+                        className="ml-px size-3.5 fill-current"
+                        aria-hidden="true"
+                      />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[13px] font-medium text-foreground">
+                        {song.title}
+                      </span>
+                      <span className="block truncate text-[12px] text-muted-foreground">
+                        {song.artist} · {song.album}
+                      </span>
+                    </span>
+                    <span className="tabular-nums text-[11px] text-muted-foreground">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
   }
 
   const filePath = `${currentTrack.album}/${currentTrack.title}`;
+  const effectiveDuration = duration > 0 ? duration : currentTrack.duration;
 
   return (
     <div
@@ -259,56 +318,71 @@ export function CodeEditor({ className }: CodeEditorProps) {
       />
       {/* File path bar - fixed at top */}
       <div className="border-b border-border px-3 md:px-4 py-2 flex items-center gap-2 shrink-0 bg-background">
-        <span className="text-[10px] md:text-[11px] text-muted-foreground truncate">
+        <span className="truncate text-[12px] text-muted-foreground">
           {filePath}
         </span>
-        <span className="text-[9px] text-muted-foreground/60 tabular-nums md:text-[10px]">
-          {formatDuration(currentTrack.duration)}
+        <span className="text-[11px] text-muted-foreground tabular-nums">
+          {formatDuration(effectiveDuration)}
         </span>
       </div>
       {/* Scrollable lyrics area - hidden scrollbar */}
       <div className="relative flex-1 overflow-hidden">
-        <div
-          ref={scrollContainerRef}
-          className="h-full overflow-y-auto scrollbar-none"
-          onScroll={handleScroll}
-        >
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={currentTrack.id}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="py-4"
-            >
-              {visibleLines.map((line) => {
-                const isActive =
-                  line.time !== null &&
-                  activeLineIndex >= 0 &&
-                  lrcLines[activeLineIndex]?.time === line.time;
+        {currentTrack.lyrics.trim().length === 0 ? (
+          <div className="flex h-full flex-col items-center justify-center px-6 text-center">
+            <Music2
+              className="mb-4 size-10 text-muted-foreground"
+              aria-hidden="true"
+            />
+            <h2 className="text-balance text-[15px] font-semibold text-foreground">
+              {t("noLyricsTitle")}
+            </h2>
+            <p className="mt-2 max-w-sm text-pretty text-[13px] leading-5 text-muted-foreground">
+              {t("noLyricsDescription")}
+            </p>
+          </div>
+        ) : (
+          <div
+            ref={scrollContainerRef}
+            className="h-full overflow-y-auto scrollbar-none"
+            onScroll={handleScroll}
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={currentTrack.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="py-4"
+              >
+                {visibleLines.map((line) => {
+                  const isActive =
+                    line.time !== null &&
+                    activeLineIndex >= 0 &&
+                    lrcLines[activeLineIndex]?.time === line.time;
 
-                return (
-                  <Line
-                    key={`${line.time}-${line.originalIndex}`}
-                    lineNumber={line.originalIndex + 1}
-                    content={line.content}
-                    time={line.time}
-                    isActive={isActive ?? false}
-                    goToTimeLabel={tControls("goToTime", {
-                      time:
-                        line.time !== null
-                          ? formatDuration(line.time)
-                          : "--:--",
-                    })}
-                    lineRef={isActive ? activeLineRef : undefined}
-                    onLineClick={seek}
-                  />
-                );
-              })}
-            </motion.div>
-          </AnimatePresence>
-        </div>
+                  return (
+                    <Line
+                      key={`${line.time}-${line.originalIndex}`}
+                      lineNumber={line.originalIndex + 1}
+                      content={line.content}
+                      time={line.time}
+                      isActive={isActive ?? false}
+                      goToTimeLabel={tControls("goToTime", {
+                        time:
+                          line.time !== null
+                            ? formatDuration(line.time)
+                            : "--:--",
+                      })}
+                      lineRef={isActive ? activeLineRef : undefined}
+                      onLineClick={seek}
+                    />
+                  );
+                })}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        )}
       </div>
     </div>
   );
