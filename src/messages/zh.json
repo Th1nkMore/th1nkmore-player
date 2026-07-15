@@ -20,7 +20,19 @@
     "copyLink": "复制链接",
     "properties": "属性",
     "noSongsInQueue": "队列中没有歌曲",
-    "resizeSections": "调整分区大小"
+    "resizeSections": "调整分区大小",
+    "library": "曲库",
+    "songCount": "{count} 首",
+    "queue": "待播",
+    "openQueue": "打开待播队列，共 {count} 首",
+    "queueDescription": "已有 {count} 首等待播放",
+    "closeQueue": "关闭待播队列",
+    "searchPlaceholder": "搜索歌曲、歌手、专辑或标签",
+    "allSongs": "全部",
+    "clearTag": "清除 {tag} 标签筛选",
+    "addedToQueue": "已加入：{title}",
+    "loadingSongs": "正在加载歌曲…",
+    "noMatchingSongs": "没有符合当前条件的歌曲"
   },
   "codeEditor": {
     "filePath": "lyrics/midnight-refactor.lyr",
@@ -97,17 +109,14 @@
     "mobileNavigation": "移动端导航"
   },
   "explorerNav": {
-    "files": "文件",
-    "grid": "网格",
-    "switchingPanels": "切换视图中"
+    "files": "曲库",
+    "grid": "标签"
   },
   "tagGrid": {
-    "title": "标签网格",
-    "allTags": "全部标签",
-    "clear": "清空",
-    "empty": "当前所有标签歌曲都已在队列中",
-    "all": "全部",
-    "availableCount": "可添加 {count} 首",
+    "title": "按标签浏览",
+    "subtitle": "选择标签只会筛选曲库，不会改变当前播放或待播队列。",
+    "allTags": "全部歌曲",
+    "untagged": "未分类",
     "totalCount": "总计 {count} 首"
   },
   "mobileNav": {
@@ -131,6 +140,8 @@
     "playTrack": "播放 {title}",
     "removeTrackFromQueue": "将 {title} 从队列移除",
     "addTrackToQueue": "将 {title} 添加到队列",
+    "trackQueued": "{title} 已在待播队列中",
+    "trackActions": "{title} 的更多操作",
     "openTrack": "播放 {title}",
     "openTrackWithHint": "播放 {title}。可通过右键菜单将它加入队列。",
     "goToTime": "跳转到 {time}",

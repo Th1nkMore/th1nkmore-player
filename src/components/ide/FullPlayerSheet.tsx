@@ -43,8 +43,15 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
   } = usePlayerStore();
 
   const { getFileById } = useIDEStore();
-  const { isPlaying, handlePlayPause, handlePrevious, handleNext, handleSeek } =
-    usePlaybackControls();
+  const {
+    canGoNext,
+    canGoPrevious,
+    isPlaying,
+    handlePlayPause,
+    handlePrevious,
+    handleNext,
+    handleSeek,
+  } = usePlaybackControls();
   const t = useTranslations("terminal");
   const tPlayer = useTranslations("player");
   const tControls = useTranslations("controls");
@@ -122,7 +129,8 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
             <button
               type="button"
               onClick={handlePrevious}
-              className="flex size-12 items-center justify-center rounded-full text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
+              disabled={!canGoPrevious}
+              className="flex size-12 items-center justify-center rounded-full text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96] disabled:pointer-events-none disabled:opacity-35"
               aria-label={tControls("previous")}
             >
               <SkipBack className="h-5 w-5" />
@@ -142,7 +150,8 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
             <button
               type="button"
               onClick={handleNext}
-              className="flex size-12 items-center justify-center rounded-full text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
+              disabled={!canGoNext}
+              className="flex size-12 items-center justify-center rounded-full text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96] disabled:pointer-events-none disabled:opacity-35"
               aria-label={tControls("next")}
             >
               <SkipForward className="h-5 w-5" />

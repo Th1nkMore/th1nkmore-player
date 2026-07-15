@@ -1,250 +1,115 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { ArrowRight, Hash, Library, Tags } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
-import { pickRandomSongsByTag, type TagStat } from "@/lib/tags";
+import { UNTAGGED_TAG } from "@/lib/tags";
 import { cn } from "@/lib/utils";
 import { useIDEStore } from "@/store/useIDEStore";
-import { usePlayerStore } from "@/store/usePlayerStore";
 
-function getDesktopTileSpan(stat: TagStat, index: number) {
-  if (stat.availableCount <= 0) {
-    return "col-span-1 row-span-1";
-  }
+type TagCardProps = {
+  active: boolean;
+  count: number;
+  icon: typeof Hash;
+  label: string;
+  onClick: () => void;
+};
 
-  if (index === 0 || stat.share >= 0.28) {
-    return "col-span-2 row-span-2";
-  }
+function TagCard({ active, count, icon: Icon, label, onClick }: TagCardProps) {
+  const t = useTranslations("tagGrid");
 
-  if (stat.share >= 0.16) {
-    return "col-span-2 row-span-1";
-  }
-
-  return "col-span-1 row-span-1";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "group flex min-h-24 flex-col justify-between rounded-2xl p-4 text-left",
+        "shadow-[0_0_0_1px_rgba(0,0,0,0.08),0_2px_4px_rgba(0,0,0,0.04)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08)]",
+        "transition-[scale,background-color,box-shadow] duration-150 ease-out active:scale-[0.96]",
+        active
+          ? "bg-sky-400/12 shadow-[0_0_0_1px_rgba(56,189,248,0.45)]"
+          : "bg-card hover:bg-accent/45 hover:shadow-[0_0_0_1px_rgba(56,189,248,0.28)]",
+      )}
+    >
+      <span className="flex w-full items-center justify-between gap-3">
+        <Icon
+          className={cn(
+            "size-4",
+            active ? "text-primary" : "text-muted-foreground",
+          )}
+        />
+        <ArrowRight className="size-4 text-muted-foreground transition-transform duration-150 ease-out group-hover:translate-x-0.5" />
+      </span>
+      <span className="mt-4 min-w-0">
+        <span className="block truncate text-sm font-semibold text-foreground">
+          {label}
+        </span>
+        <span className="mt-1 block text-xs text-muted-foreground tabular-nums">
+          {t("totalCount", { count })}
+        </span>
+      </span>
+    </button>
+  );
 }
 
 export function TagGridExplorer({ className }: { className?: string }) {
   const t = useTranslations("tagGrid");
-  const { activeTag, files, getSongsByTag, getTagStats, setActiveTag } =
+  const { activeTag, files, getTagStats, setActiveTag, setExplorerView } =
     useIDEStore();
-  const { addManyToQueue, currentTrackId, play, queue, setTrack } =
-    usePlayerStore();
-
-  const queuedSongIds = useMemo(() => queue.map((song) => song.id), [queue]);
-  const tagStats = useMemo(
-    () => getTagStats(queuedSongIds),
-    [getTagStats, queuedSongIds],
-  );
-  const statsByTag = useMemo(
-    () => new Map(tagStats.map((stat) => [stat.tag, stat])),
-    [tagStats],
+  const tagStats = useMemo(() => getTagStats([]), [getTagStats]);
+  const untaggedCount = useMemo(
+    () => files.filter((song) => song.tags.length === 0).length,
+    [files],
   );
 
-  const appendSongs = (tag: string, count: number | "all") => {
-    const stat = statsByTag.get(tag);
-    if (!stat || stat.availableCount <= 0) {
-      return;
-    }
-
-    const selectedSongs =
-      count === "all"
-        ? getSongsByTag(tag).filter((song) => !queuedSongIds.includes(song.id))
-        : pickRandomSongsByTag({
-            songs: files,
-            tag,
-            count,
-            queuedSongIds,
-          });
-
-    if (selectedSongs.length === 0) {
-      return;
-    }
-
-    addManyToQueue(selectedSongs);
-
-    if (!currentTrackId) {
-      const [firstSong] = selectedSongs;
-      if (firstSong) {
-        setTrack(firstSong.id);
-        window.setTimeout(() => play(firstSong), 100);
-      }
-    }
+  const selectTag = (tag: string | null) => {
+    setActiveTag(tag);
+    setExplorerView("files");
   };
 
-  const hasAvailableSongs = tagStats.some((stat) => stat.availableCount > 0);
-
   return (
-    <div
-      className={cn(
-        "flex h-full flex-col bg-sidebar text-foreground",
-        className,
-      )}
-    >
-      <div className="border-b border-border bg-sidebar px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-        {t("title")}
+    <div className={cn("flex h-full flex-col bg-sidebar", className)}>
+      <div className="shrink-0 border-b border-border px-4 py-4">
+        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <Tags className="size-4 text-primary" />
+          {t("title")}
+        </div>
+        <p className="mt-1.5 text-pretty text-xs leading-relaxed text-muted-foreground">
+          {t("subtitle")}
+        </p>
       </div>
 
-      <div className="flex items-center gap-2 border-b border-border px-3 py-2">
-        <div className="truncate text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-          {activeTag || t("allTags")}
+      <div className="min-h-0 flex-1 overflow-y-auto p-3">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-1 lg:grid-cols-2">
+          <TagCard
+            active={activeTag === null}
+            count={files.length}
+            icon={Library}
+            label={t("allTags")}
+            onClick={() => selectTag(null)}
+          />
+          {tagStats.map((stat) => (
+            <TagCard
+              key={stat.tag}
+              active={activeTag === stat.tag}
+              count={stat.totalCount}
+              icon={Hash}
+              label={stat.tag}
+              onClick={() => selectTag(stat.tag)}
+            />
+          ))}
+          {untaggedCount > 0 && (
+            <TagCard
+              active={activeTag === UNTAGGED_TAG}
+              count={untaggedCount}
+              icon={Tags}
+              label={t("untagged")}
+              onClick={() => selectTag(UNTAGGED_TAG)}
+            />
+          )}
         </div>
-        <button
-          type="button"
-          onClick={() => setActiveTag(null)}
-          className="min-h-10 rounded border border-border px-3 py-1 text-[10px] text-muted-foreground transition-[scale,color,background-color,border-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
-        >
-          {t("clear")}
-        </button>
       </div>
-
-      {!hasAvailableSongs ? (
-        <div className="flex flex-1 items-center justify-center px-6 text-center text-sm text-muted-foreground">
-          {t("empty")}
-        </div>
-      ) : (
-        <>
-          <div className="hidden flex-1 overflow-y-auto p-3 md:block">
-            <div className="grid auto-rows-[88px] grid-cols-4 gap-3">
-              {tagStats.map((stat, index) => {
-                const isActive = activeTag === stat.tag;
-                const disabled = stat.availableCount === 0;
-
-                return (
-                  <div
-                    key={stat.tag}
-                    className={cn(
-                      "group relative overflow-hidden rounded-xl border px-3 py-3 text-left",
-                      "transition-[scale,border-color,box-shadow,background-color] duration-150 ease-out",
-                      getDesktopTileSpan(stat, index),
-                      disabled
-                        ? "border-border/60 bg-muted/20 text-muted-foreground/60"
-                        : "border-border bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_45%),linear-gradient(180deg,rgba(18,24,33,0.96),rgba(11,15,23,0.98))] hover:border-sky-400/60 hover:shadow-[0_0_0_1px_rgba(56,189,248,0.15)]",
-                      isActive &&
-                        "border-sky-400/70 shadow-[0_0_0_1px_rgba(56,189,248,0.18)]",
-                    )}
-                  >
-                    <div className="flex h-full flex-col justify-between">
-                      <button
-                        type="button"
-                        disabled={disabled}
-                        onClick={() => {
-                          setActiveTag(stat.tag);
-                          appendSongs(stat.tag, 5);
-                        }}
-                        className="flex flex-1 flex-col text-left transition-transform duration-150 ease-out active:scale-[0.96]"
-                      >
-                        <div className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-100/90">
-                          {stat.tag}
-                        </div>
-                        <div className="mt-2 text-[11px] text-muted-foreground tabular-nums">
-                          {t("availableCount", { count: stat.availableCount })}
-                        </div>
-                        <div className="mt-1 text-[10px] text-muted-foreground/80 tabular-nums">
-                          {t("totalCount", { count: stat.totalCount })}
-                        </div>
-                      </button>
-
-                      <div className="mt-3 flex flex-wrap gap-1">
-                        {[5, 10, 20].map((count) => (
-                          <button
-                            key={count}
-                            type="button"
-                            onClick={() => {
-                              setActiveTag(stat.tag);
-                              appendSongs(stat.tag, count);
-                            }}
-                            disabled={disabled}
-                            className="inline-flex min-h-8 items-center gap-1 rounded-full border border-sky-400/20 bg-sky-400/10 px-2.5 py-1 text-[10px] text-sky-100 transition-[scale,background-color,border-color] duration-150 ease-out active:scale-[0.96] disabled:opacity-50"
-                          >
-                            <Plus className="h-3 w-3" />
-                            {count}
-                          </button>
-                        ))}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setActiveTag(stat.tag);
-                            appendSongs(stat.tag, "all");
-                          }}
-                          disabled={disabled}
-                          className="inline-flex min-h-8 items-center rounded-full border border-white/15 bg-white/8 px-2.5 py-1 text-[10px] text-white/85 transition-[scale,background-color,border-color] duration-150 ease-out active:scale-[0.96] disabled:opacity-50"
-                        >
-                          {t("all")}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-3 md:hidden">
-            <div className="grid grid-cols-2 gap-3">
-              {tagStats.map((stat) => {
-                const disabled = stat.availableCount === 0;
-
-                return (
-                  <div
-                    key={stat.tag}
-                    className={cn(
-                      "rounded-xl border p-3 text-left transition-[border-color,background-color] duration-150 ease-out",
-                      disabled
-                        ? "border-border/60 bg-muted/20 text-muted-foreground/60"
-                        : "border-border bg-card hover:border-sky-400/50 hover:bg-accent/30",
-                    )}
-                  >
-                    <button
-                      type="button"
-                      disabled={disabled}
-                      onClick={() => {
-                        setActiveTag(stat.tag);
-                        appendSongs(stat.tag, 5);
-                      }}
-                      className="block w-full text-left"
-                    >
-                      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-foreground">
-                        {stat.tag}
-                      </div>
-                      <div className="mt-2 text-[11px] text-muted-foreground tabular-nums">
-                        {t("availableCount", { count: stat.availableCount })}
-                      </div>
-                    </button>
-                    <div className="mt-3 flex flex-wrap gap-1">
-                      {[5, 10, 20].map((count) => (
-                        <button
-                          key={count}
-                          type="button"
-                          onClick={() => {
-                            setActiveTag(stat.tag);
-                            appendSongs(stat.tag, count);
-                          }}
-                          disabled={disabled}
-                          className="min-h-10 rounded-full border border-border bg-background px-2.5 py-1 text-[10px] transition-[scale,background-color,border-color] duration-150 ease-out active:scale-[0.96] disabled:opacity-50"
-                        >
-                          +{count}
-                        </button>
-                      ))}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setActiveTag(stat.tag);
-                          appendSongs(stat.tag, "all");
-                        }}
-                        disabled={disabled}
-                        className="min-h-10 rounded-full border border-border bg-background px-2.5 py-1 text-[10px] transition-[scale,background-color,border-color] duration-150 ease-out active:scale-[0.96] disabled:opacity-50"
-                      >
-                        {t("all")}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </>
-      )}
     </div>
   );
 }

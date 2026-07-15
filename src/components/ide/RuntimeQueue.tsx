@@ -18,7 +18,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Circle, FileAudio, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
-import { useDeviceType } from "@/lib/hooks/useDeviceType";
 import { cn } from "@/lib/utils";
 import { useIDEStore } from "@/store/useIDEStore";
 import { usePlayerStore } from "@/store/usePlayerStore";
@@ -26,10 +25,9 @@ import { usePlayerStore } from "@/store/usePlayerStore";
 type QueueItemProps = {
   songId: string;
   isActive: boolean;
-  isTouchDevice: boolean;
 };
 
-function QueueItem({ songId, isActive, isTouchDevice }: QueueItemProps) {
+function QueueItem({ songId, isActive }: QueueItemProps) {
   const { files } = useIDEStore();
   const { removeFromQueue, setTrack, play } = usePlayerStore();
   const tControls = useTranslations("controls");
@@ -80,10 +78,10 @@ function QueueItem({ songId, isActive, isTouchDevice }: QueueItemProps) {
         transition: { duration: 0.2 },
       }}
       transition={{
-        layout: { duration: 0.3, type: "spring", bounce: 0.2 },
+        layout: { duration: 0.3, type: "spring", bounce: 0 },
       }}
       className={cn(
-        "group flex min-h-10 items-center text-[11px] text-muted-foreground transition-colors hover:bg-accent md:min-h-0",
+        "group flex min-h-11 items-center text-[11px] text-muted-foreground transition-colors hover:bg-accent",
         isActive && "bg-accent text-foreground",
       )}
       {...listeners}
@@ -91,7 +89,7 @@ function QueueItem({ songId, isActive, isTouchDevice }: QueueItemProps) {
       <button
         type="button"
         onClick={handleClick}
-        className="flex min-h-10 min-w-0 flex-1 items-center gap-1.5 px-2 py-1 text-left md:min-h-0"
+        className="flex min-h-11 min-w-0 flex-1 items-center gap-1.5 px-3 py-1 text-left"
         aria-label={tControls("playTrack", { title: song.title })}
         aria-current={isActive ? "true" : undefined}
       >
@@ -110,12 +108,7 @@ function QueueItem({ songId, isActive, isTouchDevice }: QueueItemProps) {
       <button
         type="button"
         onClick={handleRemove}
-        className={cn(
-          "flex size-10 shrink-0 items-center justify-center rounded transition-opacity hover:bg-accent md:size-4",
-          isTouchDevice
-            ? "opacity-100 text-muted-foreground/60 active:bg-accent"
-            : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100",
-        )}
+        className="mr-1 flex size-11 shrink-0 items-center justify-center rounded-lg text-muted-foreground/70 transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
         aria-label={tControls("removeTrackFromQueue", { title: song.title })}
       >
         <X className="h-3 w-3 shrink-0" aria-hidden="true" />
@@ -127,8 +120,6 @@ function QueueItem({ songId, isActive, isTouchDevice }: QueueItemProps) {
 export function RuntimeQueue() {
   const { queue, currentTrackId, reorderQueue } = usePlayerStore();
   const t = useTranslations("fileExplorer");
-  const deviceType = useDeviceType();
-  const isTouchDevice = deviceType === "touch";
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -176,7 +167,6 @@ export function RuntimeQueue() {
               key={song.id}
               songId={song.id}
               isActive={song.id === currentTrackId}
-              isTouchDevice={isTouchDevice}
             />
           ))}
         </AnimatePresence>

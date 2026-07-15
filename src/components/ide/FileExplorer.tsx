@@ -3,19 +3,23 @@
 import { AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useDeviceType } from "@/lib/hooks/useDeviceType";
+import { AlbumFolder } from "@/components/ide/AlbumFolder";
+import { CollapsibleSection } from "@/components/ide/CollapsibleSection";
+import { LibraryToolbar } from "@/components/ide/LibraryToolbar";
+import { LoadingDots } from "@/components/ide/LoadingDots";
+import { MobileQueueDrawer } from "@/components/ide/MobileQueueDrawer";
+import { RuntimeQueue } from "@/components/ide/RuntimeQueue";
+import { SongItem } from "@/components/ide/SongItem";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useScreenMode } from "@/lib/hooks/useScreenMode";
+import { filterLibrarySongs } from "@/lib/song-library";
+import { UNTAGGED_TAG } from "@/lib/tags";
 import { cn } from "@/lib/utils";
 import { useIDEStore } from "@/store/useIDEStore";
 import { usePlayerStore } from "@/store/usePlayerStore";
-import { AlbumFolder } from "./AlbumFolder";
-import { CollapsibleSection } from "./CollapsibleSection";
-import { LoadingDots } from "./LoadingDots";
-import { RuntimeQueue } from "./RuntimeQueue";
-import { SongItem } from "./SongItem";
+import type { Song } from "@/types/music";
 
-// Minimum height for each section (header + some content space)
 const MIN_SECTION_HEIGHT = 96;
-// Header height for collapsed sections
 const HEADER_HEIGHT = 40;
 
 type FileExplorerProps = {
@@ -23,35 +27,105 @@ type FileExplorerProps = {
   onFileClick?: () => void;
 };
 
-type GroupedSongs = {
-  [album: string]: Array<{ id: string; title: string; album: string }>;
-};
+function groupSongsByAlbum(songs: Song[]) {
+  const grouped = new Map<string, Song[]>();
+  for (const song of songs) {
+    const albumSongs = grouped.get(song.album) ?? [];
+    albumSongs.push(song);
+    grouped.set(song.album, albumSongs);
+  }
+  return grouped;
+}
+
+function getActiveTagLabel(activeTag: string | null, untaggedLabel: string) {
+  return activeTag === UNTAGGED_TAG ? untaggedLabel : activeTag;
+}
+
+function getDesktopSectionStyles(
+  isQueueOpen: boolean,
+  isRepoOpen: boolean,
+  splitRatio: number,
+) {
+  if (isQueueOpen && isRepoOpen) {
+    return { top: { flex: splitRatio }, bottom: { flex: 1 - splitRatio } };
+  }
+
+  return {
+    top: isQueueOpen ? { flex: 1 } : { height: HEADER_HEIGHT },
+    bottom: isRepoOpen ? { flex: 1 } : { height: HEADER_HEIGHT },
+  };
+}
 
 export function FileExplorer({ className, onFileClick }: FileExplorerProps) {
-  const { files, getFileById, isLoading, openFile } = useIDEStore();
-  const { play, addToQueue, currentTrackId } = usePlayerStore();
-  const [isQueueOpen, setIsQueueOpen] = useState(false);
+  const { activeTag, files, getFileById, isLoading, openFile, setActiveTag } =
+    useIDEStore();
+  const { addToQueue, currentTrackId, isPlaying, playFromCollection, queue } =
+    usePlayerStore();
+  const t = useTranslations("fileExplorer");
+  const tTag = useTranslations("tagGrid");
+  const screenMode = useScreenMode();
+  const isMobile = screenMode !== "desktop";
+
+  const [activeAlbum, setActiveAlbum] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [isQueueDrawerOpen, setIsQueueDrawerOpen] = useState(false);
+  const [isQueueSectionOpen, setIsQueueSectionOpen] = useState(false);
   const [isRepoOpen, setIsRepoOpen] = useState(true);
+  const [query, setQuery] = useState("");
+  const [splitRatio, setSplitRatio] = useState(0.5);
+  const [isResizing, setIsResizing] = useState(false);
   const [openAlbums, setOpenAlbums] = useState<Set<string>>(
     () => new Set(files.map((song) => song.album)),
   );
-  const deviceType = useDeviceType();
-  const isTouchDevice = deviceType === "touch";
-  const t = useTranslations("fileExplorer");
-
-  // Resizable panel state
   const containerRef = useRef<HTMLDivElement>(null);
-  const [splitRatio, setSplitRatio] = useState(0.5); // 0-1, portion for top section
-  const [isResizing, setIsResizing] = useState(false);
+  const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Handle resize drag
+  const albums = useMemo(
+    () => Array.from(new Set(files.map((song) => song.album))),
+    [files],
+  );
+  const queuedSongIds = useMemo(
+    () => new Set(queue.map((song) => song.id)),
+    [queue],
+  );
+  const visibleSongs = useMemo(
+    () => filterLibrarySongs(files, { activeAlbum, activeTag, query }),
+    [activeAlbum, activeTag, files, query],
+  );
+  const groupedSongs = useMemo(
+    () => groupSongsByAlbum(visibleSongs),
+    [visibleSongs],
+  );
+  const activeTagLabel = getActiveTagLabel(activeTag, tTag("untagged"));
+
+  useEffect(() => {
+    setOpenAlbums((previous) => {
+      const next = new Set(previous);
+      for (const album of albums) next.add(album);
+      return next;
+    });
+  }, [albums]);
+
+  useEffect(() => {
+    if (!activeTag) return;
+    setActiveAlbum(null);
+    setQuery("");
+  }, [activeTag]);
+
+  useEffect(
+    () => () => {
+      if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
+    },
+    [],
+  );
+
   const handleResizeStart = useCallback(
-    (e: React.MouseEvent | React.TouchEvent) => {
-      if (!(isQueueOpen && isRepoOpen)) return; // Only resize when both are open
-      e.preventDefault();
+    (event: React.MouseEvent | React.TouchEvent) => {
+      if (!(isQueueSectionOpen && isRepoOpen)) return;
+      event.preventDefault();
       setIsResizing(true);
     },
-    [isQueueOpen, isRepoOpen],
+    [isQueueSectionOpen, isRepoOpen],
   );
 
   useEffect(() => {
@@ -60,32 +134,24 @@ export function FileExplorer({ className, onFileClick }: FileExplorerProps) {
     const handleMove = (clientY: number) => {
       if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
-      const containerHeight = rect.height;
-      const relativeY = clientY - rect.top;
-
-      // Calculate min/max ratios based on minimum section heights
-      const minRatio = MIN_SECTION_HEIGHT / containerHeight;
-      const maxRatio = 1 - MIN_SECTION_HEIGHT / containerHeight;
-
-      // Clamp the ratio
-      const newRatio = Math.max(
-        minRatio,
-        Math.min(maxRatio, relativeY / containerHeight),
+      const minRatio = MIN_SECTION_HEIGHT / rect.height;
+      const maxRatio = 1 - minRatio;
+      setSplitRatio(
+        Math.max(
+          minRatio,
+          Math.min(maxRatio, (clientY - rect.top) / rect.height),
+        ),
       );
-      setSplitRatio(newRatio);
     };
-
-    const handleMouseMove = (e: MouseEvent) => handleMove(e.clientY);
-    const handleTouchMove = (e: TouchEvent) => handleMove(e.touches[0].clientY);
-
+    const handleMouseMove = (event: MouseEvent) => handleMove(event.clientY);
+    const handleTouchMove = (event: TouchEvent) =>
+      handleMove(event.touches[0].clientY);
     const handleEnd = () => setIsResizing(false);
 
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("touchmove", handleTouchMove);
     document.addEventListener("mouseup", handleEnd);
     document.addEventListener("touchend", handleEnd);
-
-    // Prevent text selection while resizing
     document.body.style.userSelect = "none";
     document.body.style.cursor = "ns-resize";
 
@@ -99,243 +165,196 @@ export function FileExplorer({ className, onFileClick }: FileExplorerProps) {
     };
   }, [isResizing]);
 
-  // Double-click to reset to equal split
-  const handleResizeDoubleClick = useCallback(() => {
-    setSplitRatio(0.5);
-  }, []);
-
-  // The library is stable. Queue membership never removes a song from browsing.
-  const groupedSongs = useMemo(() => {
-    const grouped: GroupedSongs = {};
-    for (const song of files) {
-      if (!grouped[song.album]) {
-        grouped[song.album] = [];
-      }
-      grouped[song.album].push({
-        id: song.id,
-        title: song.title,
-        album: song.album,
-      });
-    }
-    return grouped;
-  }, [files]);
-
-  // Album keys memoized
-  const albumKeys = useMemo(() => Object.keys(groupedSongs), [groupedSongs]);
-  const hasInitializedRef = useRef(openAlbums.size > 0);
-
-  // Initialize open albums only once when data first loads
-  useEffect(() => {
-    if (albumKeys.length > 0 && !hasInitializedRef.current) {
-      setOpenAlbums(new Set(albumKeys));
-      hasInitializedRef.current = true;
-    }
-  }, [albumKeys]);
-
-  const toggleAlbum = useCallback((album: string) => {
-    setOpenAlbums((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(album)) {
-        newSet.delete(album);
-      } else {
-        newSet.add(album);
-      }
-      return newSet;
-    });
-  }, []);
-
-  // A library click always selects and plays. Queueing is an explicit action.
-  const handleFileClick = useCallback(
-    (fileId: string) => {
-      const song = getFileById(fileId);
-      if (!song) return;
-      openFile(fileId);
-      play(song);
-      onFileClick?.();
-    },
-    [getFileById, onFileClick, openFile, play],
-  );
-
-  // handlePlay explicitly plays the song (used in context menu)
   const handlePlay = useCallback(
     (fileId: string) => {
       const song = getFileById(fileId);
       if (!song) return;
       openFile(fileId);
-      play(song);
+      playFromCollection(song, visibleSongs);
       onFileClick?.();
     },
-    [getFileById, onFileClick, openFile, play],
+    [getFileById, onFileClick, openFile, playFromCollection, visibleSongs],
   );
 
   const handleAddToQueue = useCallback(
     (fileId: string) => {
       const song = getFileById(fileId);
-      if (song) {
-        addToQueue(song);
-        setIsQueueOpen(true);
-      }
+      if (!song || queuedSongIds.has(fileId)) return;
+      addToQueue(song);
+      setFeedback(t("addedToQueue", { title: song.title }));
+      if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
+      feedbackTimerRef.current = setTimeout(() => setFeedback(null), 1600);
     },
-    [getFileById, addToQueue],
+    [addToQueue, getFileById, queuedSongIds, t],
   );
 
   const handleCopyLink = useCallback(
     (fileId: string) => {
-      const file = files.find((f) => f.id === fileId);
-      if (!file) return;
-      navigator.clipboard.writeText(file.audioUrl).catch(() => {
+      const song = getFileById(fileId);
+      if (!song) return;
+      navigator.clipboard.writeText(song.audioUrl).catch(() => {
         const textArea = document.createElement("textarea");
-        textArea.value = file.audioUrl;
+        textArea.value = song.audioUrl;
         document.body.appendChild(textArea);
         textArea.select();
         document.execCommand("copy");
         document.body.removeChild(textArea);
       });
     },
-    [files],
+    [getFileById],
   );
 
-  // Properties selects the song without changing playback.
-  const handleProperties = useCallback(
-    (fileId: string) => {
-      const song = getFileById(fileId);
-      if (song) {
-        openFile(fileId);
-        onFileClick?.();
-      }
-    },
-    [getFileById, onFileClick, openFile],
+  const renderSong = (song: Song) => (
+    <SongItem
+      key={song.id}
+      artist={song.artist}
+      title={song.title}
+      isActive={song.id === currentTrackId}
+      isPlaying={isPlaying}
+      isQueued={queuedSongIds.has(song.id)}
+      onPlay={() => handlePlay(song.id)}
+      onClick={() => handlePlay(song.id)}
+      onAddToQueue={() => handleAddToQueue(song.id)}
+      onCopyLink={() => handleCopyLink(song.id)}
+      onProperties={() => openFile(song.id)}
+    />
   );
 
-  // Calculate section heights based on open states
-  const getSectionStyles = useCallback((): {
-    top: React.CSSProperties;
-    bottom: React.CSSProperties;
-  } => {
-    const bothOpen = isQueueOpen && isRepoOpen;
-    const noneOpen = !(isQueueOpen || isRepoOpen);
+  const toolbar = (
+    <LibraryToolbar
+      activeAlbum={activeAlbum}
+      activeTagLabel={activeTagLabel}
+      albums={albums}
+      feedback={feedback}
+      onAlbumChange={setActiveAlbum}
+      onClearTag={() => setActiveTag(null)}
+      onOpenQueue={() => setIsQueueDrawerOpen(true)}
+      onQueryChange={setQuery}
+      query={query}
+      queueCount={queue.length}
+      showQueue={isMobile}
+      songCount={visibleSongs.length}
+    />
+  );
 
-    if (noneOpen) {
-      // Both collapsed: just headers
-      return {
-        top: { height: HEADER_HEIGHT },
-        bottom: { height: HEADER_HEIGHT },
-      };
-    }
+  const emptyState = (
+    <div className="flex min-h-40 items-center justify-center px-6 text-center text-sm text-muted-foreground">
+      {isLoading ? t("loadingSongs") : t("noMatchingSongs")}
+    </div>
+  );
 
-    if (!bothOpen) {
-      // One open, one collapsed
-      return {
-        top: isQueueOpen ? { flex: 1 } : { height: HEADER_HEIGHT },
-        bottom: isRepoOpen ? { flex: 1 } : { height: HEADER_HEIGHT },
-      };
-    }
+  if (isMobile) {
+    return (
+      <div className={cn("flex h-full flex-col bg-sidebar", className)}>
+        {toolbar}
+        <ScrollArea className="min-h-0 flex-1">
+          {visibleSongs.length === 0 ? (
+            emptyState
+          ) : (
+            <div className="pb-4">
+              {Array.from(groupedSongs).map(([album, songs]) => (
+                <section key={album} aria-label={album}>
+                  <div className="sticky top-0 z-10 flex min-h-10 items-center justify-between border-y border-border/70 bg-sidebar/95 px-4 backdrop-blur-sm">
+                    <span className="truncate text-xs font-semibold text-foreground/85">
+                      {album}
+                    </span>
+                    <span className="ml-3 text-[10px] text-muted-foreground tabular-nums">
+                      {t("songCount", { count: songs.length })}
+                    </span>
+                  </div>
+                  <AnimatePresence initial={false} mode="popLayout">
+                    {songs.map(renderSong)}
+                  </AnimatePresence>
+                </section>
+              ))}
+            </div>
+          )}
+        </ScrollArea>
+        <MobileQueueDrawer
+          open={isQueueDrawerOpen}
+          onOpenChange={setIsQueueDrawerOpen}
+        />
+      </div>
+    );
+  }
 
-    // Both open: use split ratio
-    return {
-      top: { flex: splitRatio },
-      bottom: { flex: 1 - splitRatio },
-    };
-  }, [isQueueOpen, isRepoOpen, splitRatio]);
-
-  const sectionStyles = getSectionStyles();
-  const showResizeHandle = isQueueOpen && isRepoOpen;
-  const allCollapsed = !(isQueueOpen || isRepoOpen);
+  const bothOpen = isQueueSectionOpen && isRepoOpen;
+  const sectionStyles = getDesktopSectionStyles(
+    isQueueSectionOpen,
+    isRepoOpen,
+    splitRatio,
+  );
 
   return (
-    <div
-      className={cn(
-        "flex h-full flex-col bg-sidebar text-foreground",
-        className,
-      )}
-    >
-      <div className="border-b border-border px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground bg-sidebar shrink-0">
+    <div className={cn("flex h-full flex-col bg-sidebar", className)}>
+      <div className="shrink-0 border-b border-border px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
         {t("title").toUpperCase()}
       </div>
-
       <div
         ref={containerRef}
         className={cn(
-          "flex-1 min-h-0 flex flex-col overflow-hidden",
-          // VS Code behavior: when all collapsed, headers drop to bottom
-          allCollapsed && "justify-end",
+          "flex min-h-0 flex-1 flex-col overflow-hidden",
+          !(isQueueSectionOpen || isRepoOpen) && "justify-end",
         )}
       >
-        {/* Runtime Queue Section */}
         <CollapsibleSection
           title={t("runtimeQueue")}
-          isOpen={isQueueOpen}
-          onToggle={() => setIsQueueOpen(!isQueueOpen)}
+          isOpen={isQueueSectionOpen}
+          onToggle={() => setIsQueueSectionOpen((open) => !open)}
           style={sectionStyles.top}
         >
           <RuntimeQueue />
         </CollapsibleSection>
 
-        {/* Resize Handle - VS Code style */}
-        {showResizeHandle && (
+        {bothOpen && (
           <button
             type="button"
             aria-label={t("resizeSections")}
             className={cn(
-              "group relative h-10 shrink-0 cursor-ns-resize",
-              "transition-colors duration-150 ease-out hover:bg-primary/30",
-              isResizing && "bg-primary/50",
+              "group relative h-10 shrink-0 cursor-ns-resize transition-colors duration-150 ease-out hover:bg-primary/20",
+              isResizing && "bg-primary/30",
             )}
             onMouseDown={handleResizeStart}
             onTouchStart={handleResizeStart}
-            onDoubleClick={handleResizeDoubleClick}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                handleResizeDoubleClick();
-              }
-            }}
+            onDoubleClick={() => setSplitRatio(0.5)}
           >
-            {/* Visual indicator line */}
-            <div
-              className={cn(
-                "absolute inset-x-0 top-1/2 h-px -translate-y-1/2",
-                "bg-border group-hover:bg-primary/50 transition-colors",
-                isResizing && "bg-primary",
-              )}
-            />
+            <span className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-border transition-colors duration-150 group-hover:bg-primary/60" />
           </button>
         )}
 
-        {/* TH1NKMORE_REPO Section */}
         <CollapsibleSection
           title={t("repoName")}
           isOpen={isRepoOpen}
-          onToggle={() => setIsRepoOpen(!isRepoOpen)}
+          onToggle={() => setIsRepoOpen((open) => !open)}
           style={sectionStyles.bottom}
         >
-          <div className="py-2">
-            {Object.entries(groupedSongs).map(([album, songs]) => (
-              <AlbumFolder
-                key={album}
-                name={album}
-                isOpen={openAlbums.has(album)}
-                onToggle={() => toggleAlbum(album)}
-              >
-                <AnimatePresence initial={false} mode="popLayout">
-                  {songs.map((song) => (
-                    <SongItem
-                      key={song.id}
-                      title={song.title}
-                      isActive={song.id === currentTrackId}
-                      isTouchDevice={isTouchDevice}
-                      onPlay={() => handlePlay(song.id)}
-                      onClick={() => handleFileClick(song.id)}
-                      onAddToQueue={() => handleAddToQueue(song.id)}
-                      onCopyLink={() => handleCopyLink(song.id)}
-                      onProperties={() => handleProperties(song.id)}
-                    />
-                  ))}
-                </AnimatePresence>
-              </AlbumFolder>
-            ))}
-          </div>
+          {toolbar}
+          {visibleSongs.length === 0 ? (
+            emptyState
+          ) : (
+            <div className="pb-3">
+              {Array.from(groupedSongs).map(([album, songs]) => (
+                <AlbumFolder
+                  key={album}
+                  name={album}
+                  isOpen={openAlbums.has(album)}
+                  onToggle={() =>
+                    setOpenAlbums((previous) => {
+                      const next = new Set(previous);
+                      if (next.has(album)) next.delete(album);
+                      else next.add(album);
+                      return next;
+                    })
+                  }
+                >
+                  <AnimatePresence initial={false} mode="popLayout">
+                    {songs.map(renderSong)}
+                  </AnimatePresence>
+                </AlbumFolder>
+              ))}
+            </div>
+          )}
         </CollapsibleSection>
-
         <LoadingDots show={!isRepoOpen && isLoading} />
       </div>
     </div>
