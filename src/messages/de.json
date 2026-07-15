@@ -20,7 +20,19 @@
     "copyLink": "Link kopieren",
     "properties": "Eigenschaften",
     "noSongsInQueue": "Keine Titel in der Warteschlange",
-    "resizeSections": "Bereiche in der Höhe anpassen"
+    "resizeSections": "Bereiche in der Höhe anpassen",
+    "library": "Bibliothek",
+    "songCount": "{count} Titel",
+    "queue": "Als Nächstes",
+    "openQueue": "Warteschlange mit {count} Titeln öffnen",
+    "queueDescription": "{count} Titel warten auf die Wiedergabe",
+    "closeQueue": "Warteschlange schließen",
+    "searchPlaceholder": "Titel, Künstler, Alben oder Tags suchen",
+    "allSongs": "Alle",
+    "clearTag": "Filter {tag} entfernen",
+    "addedToQueue": "{title} hinzugefügt",
+    "loadingSongs": "Titel werden geladen…",
+    "noMatchingSongs": "Keine Titel entsprechen diesen Filtern"
   },
   "codeEditor": {
     "filePath": "lyrics/midnight-refactor.lyr",
@@ -97,17 +109,14 @@
     "mobileNavigation": "Mobile Navigation"
   },
   "explorerNav": {
-    "files": "Dateien",
-    "grid": "Raster",
-    "switchingPanels": "Ansicht wird gewechselt"
+    "files": "Bibliothek",
+    "grid": "Tags"
   },
   "tagGrid": {
-    "title": "Tag-Raster",
-    "allTags": "Alle Tags",
-    "clear": "Zurücksetzen",
-    "empty": "Alle Tag-Songs befinden sich bereits in der Warteschlange",
-    "all": "Alle",
-    "availableCount": "{count} verfügbar",
+    "title": "Nach Tag durchsuchen",
+    "subtitle": "Ein Tag filtert nur die Bibliothek und ändert weder Wiedergabe noch Warteschlange.",
+    "allTags": "Alle Titel",
+    "untagged": "Ohne Tag",
     "totalCount": "{count} gesamt"
   },
   "mobileNav": {
@@ -131,6 +140,8 @@
     "playTrack": "{title} abspielen",
     "removeTrackFromQueue": "{title} aus der Warteschlange entfernen",
     "addTrackToQueue": "{title} zur Warteschlange hinzufügen",
+    "trackQueued": "{title} ist in der Warteschlange",
+    "trackActions": "Weitere Aktionen für {title}",
     "openTrack": "{title} abspielen",
     "openTrackWithHint": "{title} abspielen. Über das Kontextmenü zur Warteschlange hinzufügen.",
     "goToTime": "Zu Zeit {time} springen",

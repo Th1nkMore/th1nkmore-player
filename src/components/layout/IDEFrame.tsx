@@ -50,9 +50,15 @@ function MobilePortraitLayout({
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
       <main className="flex-1 min-h-0 overflow-hidden bg-background">
-        {mobileTab === "lyrics" && centerEditor}
-        {mobileTab === "songs" && leftSidebar}
-        {mobileTab === "info" && rightInspector}
+        <section className="h-full" hidden={mobileTab !== "lyrics"}>
+          {centerEditor}
+        </section>
+        <section className="h-full" hidden={mobileTab !== "songs"}>
+          {leftSidebar}
+        </section>
+        <section className="h-full" hidden={mobileTab !== "info"}>
+          {rightInspector}
+        </section>
       </main>
 
       <MiniPlayerBar onTap={() => onPlayerSheetChange(true)} />
@@ -214,12 +220,6 @@ export function IDEFrame({
       openFile(currentTrackId);
     }
   }, [activeFileId, currentTrackId, openFile]);
-
-  useEffect(() => {
-    if (activeFileId && isPortrait) {
-      setMobileTab("lyrics");
-    }
-  }, [activeFileId, isPortrait]);
 
   useEffect(
     () => () => {
