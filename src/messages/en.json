@@ -27,7 +27,11 @@
     "trackComment": "// track: midnight-refactor",
     "artistComment": "// artist: sonic-ide",
     "welcome": "Welcome to Sonic IDE",
-    "emptyStateDescription": "Select a file from the explorer to start viewing its content.",
+    "emptyStateDescription": "A personal music portfolio inside a familiar editor. Start with one of these tracks, then explore the library and queue at your own pace.",
+    "featuredTitle": "Featured tracks",
+    "loadingFeatured": "Loading featured tracks",
+    "noLyricsTitle": "Instrumental / no lyrics",
+    "noLyricsDescription": "Playback is available, but this track does not include lyrics.",
     "transitioning": "Syncing lyrics",
     "shortcutsTitle": "Shortcuts:",
     "shortcutOpen": "Click files in the explorer to open",
@@ -129,8 +133,8 @@
     "playTrack": "Play {title}",
     "removeTrackFromQueue": "Remove {title} from queue",
     "addTrackToQueue": "Add {title} to queue",
-    "openTrack": "Open {title}",
-    "openTrackWithHint": "Open {title}. Double click to add to queue.",
+    "openTrack": "Play {title}",
+    "openTrackWithHint": "Play {title}. Use the context menu to add it to the queue.",
     "goToTime": "Go to time {time}",
     "seekWaveform": "Waveform - click to seek"
   },
@@ -141,7 +145,9 @@
     "openPlayer": "Open player",
     "closePlayer": "Close player",
     "volumeControl": "Volume",
-    "progressControl": "Playback progress"
+    "progressControl": "Playback progress",
+    "buffering": "Buffering audio",
+    "playbackError": "Audio could not be played"
   },
   "admin": {
     "tabs": {

@@ -4,14 +4,12 @@ import {
   closestCenter,
   DndContext,
   type DragEndEvent,
-  KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
 import {
   SortableContext,
-  sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
@@ -40,14 +38,8 @@ function QueueItem({ songId, isActive, isTouchDevice }: QueueItemProps) {
     [files, songId],
   );
 
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: songId });
+  const { listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: songId });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -91,15 +83,18 @@ function QueueItem({ songId, isActive, isTouchDevice }: QueueItemProps) {
         layout: { duration: 0.3, type: "spring", bounce: 0.2 },
       }}
       className={cn(
-        "flex items-center gap-1.5 px-2 py-1 text-[11px] text-muted-foreground hover:bg-accent cursor-pointer transition-colors group",
+        "group flex min-h-10 items-center text-[11px] text-muted-foreground transition-colors hover:bg-accent md:min-h-0",
         isActive && "bg-accent text-foreground",
       )}
-      {...attributes}
       {...listeners}
-      onClick={handleClick}
-      aria-label={tControls("playTrack", { title: song.title })}
     >
-      <div className="flex items-center gap-1.5 flex-1 min-w-0">
+      <button
+        type="button"
+        onClick={handleClick}
+        className="flex min-h-10 min-w-0 flex-1 items-center gap-1.5 px-2 py-1 text-left md:min-h-0"
+        aria-label={tControls("playTrack", { title: song.title })}
+        aria-current={isActive ? "true" : undefined}
+      >
         {isActive ? (
           <Circle
             className="h-3 w-3 shrink-0 text-primary fill-primary"
@@ -111,15 +106,15 @@ function QueueItem({ songId, isActive, isTouchDevice }: QueueItemProps) {
         <span className="truncate" title={song.title}>
           {song.title}
         </span>
-      </div>
+      </button>
       <button
         type="button"
         onClick={handleRemove}
         className={cn(
-          "p-0.5 hover:bg-accent rounded transition-opacity",
+          "flex size-10 shrink-0 items-center justify-center rounded transition-opacity hover:bg-accent md:size-4",
           isTouchDevice
             ? "opacity-100 text-muted-foreground/60 active:bg-accent"
-            : "opacity-0 group-hover:opacity-100",
+            : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100",
         )}
         aria-label={tControls("removeTrackFromQueue", { title: song.title })}
       >
@@ -141,9 +136,6 @@ export function RuntimeQueue() {
       activationConstraint: {
         distance: 5,
       },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
     }),
   );
 

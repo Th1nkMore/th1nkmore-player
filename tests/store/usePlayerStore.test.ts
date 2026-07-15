@@ -11,13 +11,24 @@ describe("usePlayerStore", () => {
     resetStore();
   });
 
-  it("adds a song to the queue and starts playback", () => {
+  it("starts playback without implicitly changing the queue", () => {
     usePlayerStore.getState().play(songOne);
 
     expect(usePlayerStore.getState()).toMatchObject({
       currentTrackId: songOne.id,
       isPlaying: true,
-      queue: [songOne],
+      playbackStatus: "loading",
+      queue: [],
+    });
+  });
+
+  it("does not enter a playing state without a current track", () => {
+    usePlayerStore.getState().play();
+
+    expect(usePlayerStore.getState()).toMatchObject({
+      currentTrackId: null,
+      isPlaying: false,
+      playbackStatus: "idle",
     });
   });
 
@@ -56,6 +67,7 @@ describe("usePlayerStore", () => {
     expect(usePlayerStore.getState()).toMatchObject({
       currentTrackId: songOne.id,
       isPlaying: false,
+      playbackStatus: "idle",
       currentTime: 0,
       duration: 0,
     });
@@ -128,6 +140,18 @@ describe("usePlayerStore", () => {
 
     usePlayerStore.getState().playNext();
     expect(usePlayerStore.getState().currentTrackId).toBeNull();
+  });
+
+  it("starts with the first queued track when the current song is outside the queue", () => {
+    usePlayerStore.setState({
+      currentTrackId: songThree.id,
+      queue: [songOne, songTwo],
+      playOrder: "sequential",
+    });
+
+    usePlayerStore.getState().playNext();
+
+    expect(usePlayerStore.getState().currentTrackId).toBe(songOne.id);
   });
 
   it("wraps in repeat mode and stays on the same track in repeat-one mode", () => {

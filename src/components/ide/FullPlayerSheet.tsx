@@ -36,6 +36,7 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
     currentTime,
     volume,
     playOrder,
+    playbackStatus,
     currentTrackId,
     setVolume,
     cyclePlayOrder,
@@ -86,6 +87,21 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
                 ? `${currentTrack.artist} · ${currentTrack.album}`
                 : tPlayer("selectTrack")}
             </DrawerDescription>
+            {(playbackStatus === "loading" || playbackStatus === "error") && (
+              <p
+                className={cn(
+                  "mt-2 text-[12px]",
+                  playbackStatus === "error"
+                    ? "text-destructive"
+                    : "text-muted-foreground",
+                )}
+                aria-live="polite"
+              >
+                {tPlayer(
+                  playbackStatus === "error" ? "playbackError" : "buffering",
+                )}
+              </p>
+            )}
           </div>
 
           {/* Progress */}

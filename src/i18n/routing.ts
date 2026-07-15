@@ -5,8 +5,11 @@ export const routing = defineRouting({
   // A list of all locales that are supported
   locales: ["en", "zh", "ja", "de"],
 
-  // Used when no locale matches
-  defaultLocale: "en",
+  // Personal-first default: the Chinese site is served at `/` without an
+  // extra redirect; other languages keep explicit prefixes.
+  defaultLocale: "zh",
+  localePrefix: "as-needed",
+  localeDetection: false,
 });
 
 // Lightweight wrappers around Next.js' navigation APIs

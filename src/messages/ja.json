@@ -27,7 +27,11 @@
     "trackComment": "// track: midnight-refactor",
     "artistComment": "// artist: sonic-ide",
     "welcome": "Sonic IDE へようこそ",
-    "emptyStateDescription": "エクスプローラーからファイルを選択してコンテンツを表示します。",
+    "emptyStateDescription": "使い慣れたエディタの中にある個人音楽ポートフォリオです。まずはおすすめの曲を再生し、ライブラリやキューを自由に探索してください。",
+    "featuredTitle": "おすすめの曲",
+    "loadingFeatured": "おすすめの曲を読み込み中",
+    "noLyricsTitle": "インストゥルメンタル / 歌詞なし",
+    "noLyricsDescription": "この曲は再生できますが、表示できる歌詞はありません。",
     "transitioning": "歌詞を同期中",
     "shortcutsTitle": "ショートカット：",
     "shortcutOpen": "エクスプローラーのファイルをクリックして開く",
@@ -129,8 +133,8 @@
     "playTrack": "{title} を再生",
     "removeTrackFromQueue": "{title} をキューから削除",
     "addTrackToQueue": "{title} をキューに追加",
-    "openTrack": "{title} を開く",
-    "openTrackWithHint": "{title} を開く。ダブルクリックでキューに追加。",
+    "openTrack": "{title} を再生",
+    "openTrackWithHint": "{title} を再生。コンテキストメニューからキューに追加できます。",
     "goToTime": "{time} に移動",
     "seekWaveform": "波形をクリックして再生位置へ移動"
   },
@@ -141,7 +145,9 @@
     "openPlayer": "プレーヤーを開く",
     "closePlayer": "プレーヤーを閉じる",
     "volumeControl": "音量",
-    "progressControl": "再生進捗"
+    "progressControl": "再生進捗",
+    "buffering": "音声をバッファリング中",
+    "playbackError": "音声を再生できませんでした"
   },
   "admin": {
     "tabs": {

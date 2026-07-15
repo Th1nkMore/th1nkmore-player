@@ -1,6 +1,6 @@
 # Sonic IDE
 
-Sonic IDE is an IDE-inspired personal music portfolio and personal player. It presents songs as files, lyrics as editable text, and playback controls as a terminal-like runtime panel.
+Sonic IDE is an IDE-inspired personal music portfolio and single-owner player. It presents songs as files, lyrics as editor content, and playback controls as a terminal-like runtime panel. The current product is intentionally optimized for one owner rather than positioned as a general-purpose music-source platform.
 
 The product has two roles at the same time:
 
@@ -82,6 +82,8 @@ Notes:
 - `R2_PUBLIC_URL` is used to build public audio asset URLs after upload.
 - `PLAYLIST_PUBLIC_URL` is optional. If omitted, the app falls back to `R2_PUBLIC_URL`.
 - `NEXT_PUBLIC_ASSET_BASE_URL` is used by the client to normalize legacy audio URLs.
+- The public pages are pre-rendered and refreshed with ISR, so playlist/R2 variables must be present during `pnpm build`, not only at runtime.
+- `visibility: private` and `visibility: unlisted` currently remove tracks from the public app and public playlist API. They are not storage-level access control when the R2 manifest and audio objects use public URLs. Use a private bucket plus authenticated or signed delivery before treating those assets as confidential.
 
 ## Useful Commands
 
@@ -123,6 +125,7 @@ Detailed process: [`docs/process/branching-release.md`](docs/process/branching-r
 
 ## Current Gaps
 
+- Public R2 object URLs bypass application-level visibility filtering; true private playback still requires private storage and authenticated delivery.
 - The app still uses a playlist-shaped library model rather than a richer media catalog.
 - Recording and MP3 export exist, but the workflow is still narrow: export currently targets newly recorded client-side audio rather than all managed tracks.
 - The recording spec still needs a final decision on draft vs publish behavior and whether recording/export states should be unified more explicitly in the UI model.
