@@ -166,7 +166,7 @@ export function LyricTeleprompter({
                 key={`${line.time}-${index}`}
                 data-lyric-index={index}
                 className={cn(
-                  "rounded-3xl px-6 py-4 text-center transition-all duration-300",
+                  "rounded-3xl px-6 py-4 text-center transition-[scale,background-color,box-shadow] duration-300 ease-out",
                   isActive
                     ? "scale-[1.02] bg-white/[0.08] shadow-[0_0_40px_rgba(16,185,129,0.14)]"
                     : isUpcoming
@@ -179,7 +179,7 @@ export function LyricTeleprompter({
                 </div>
                 <div
                   className={cn(
-                    "text-balance leading-[1.35] transition-all duration-300",
+                    "text-balance leading-[1.35] transition-[font-size,color,font-weight] duration-300 ease-out",
                     isActive
                       ? "text-4xl font-semibold text-white sm:text-5xl"
                       : isUpcoming

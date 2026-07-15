@@ -121,7 +121,7 @@ export function TagInput({
               <button
                 type="button"
                 onClick={() => handleRemove(tag)}
-                className="rounded-full text-sky-100/75 transition hover:text-white"
+                className="rounded-full text-sky-100/75 transition-colors duration-150 ease-out hover:text-white"
                 aria-label={`${removeLabelPrefix} ${tag}`}
               >
                 <X className="h-3 w-3" />
@@ -177,7 +177,7 @@ export function TagInput({
                 type="button"
                 onClick={() => handleToggleSuggestion(tag)}
                 className={cn(
-                  "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors",
+                  "inline-flex min-h-10 items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-[scale,color,background-color,border-color] duration-150 ease-out active:scale-[0.96]",
                   isSelected
                     ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-100"
                     : "border-[var(--border)] bg-white/3 text-gray-400 hover:border-sky-500/30 hover:text-gray-200",

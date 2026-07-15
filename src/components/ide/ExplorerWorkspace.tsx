@@ -53,7 +53,7 @@ export function ExplorerWorkspace({
             aria-label={label}
             aria-pressed={explorerView === id}
             className={cn(
-              "flex h-9 w-9 items-center justify-center rounded-lg border transition-colors",
+              "flex size-10 items-center justify-center rounded-lg border transition-[scale,color,background-color,border-color] duration-150 ease-out active:scale-[0.96]",
               explorerView === id
                 ? "border-sky-400/50 bg-sky-400/10 text-sky-200"
                 : "border-transparent text-muted-foreground hover:border-border hover:bg-accent hover:text-foreground",
@@ -72,7 +72,7 @@ export function ExplorerWorkspace({
               type="button"
               onClick={() => handleViewChange(id)}
               className={cn(
-                "rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors",
+                "min-h-10 rounded-full border px-3 py-1.5 text-[11px] font-medium transition-[scale,color,background-color,border-color] duration-150 ease-out active:scale-[0.96]",
                 explorerView === id
                   ? "border-sky-400/50 bg-sky-400/10 text-sky-200"
                   : "border-border bg-background text-muted-foreground hover:text-foreground",

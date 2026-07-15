@@ -76,7 +76,7 @@ export function MiniPlayerBar({
         <button
           type="button"
           onClick={handlePrevious}
-          className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
+          className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
           aria-label={tControls("previous")}
         >
           <SkipBack className="h-3.5 w-3.5" />
@@ -84,19 +84,19 @@ export function MiniPlayerBar({
         <button
           type="button"
           onClick={handlePlayPause}
-          className="p-2 text-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
+          className="flex size-10 items-center justify-center rounded text-foreground transition-[scale,background-color,color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
           aria-label={isPlaying ? tControls("pause") : tControls("play")}
         >
           {isPlaying ? (
             <Pause className="h-4 w-4" />
           ) : (
-            <Play className="h-4 w-4" />
+            <Play className="ml-0.5 h-4 w-4" />
           )}
         </button>
         <button
           type="button"
           onClick={handleNext}
-          className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
+          className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
           aria-label={tControls("next")}
         >
           <SkipForward className="h-3.5 w-3.5" />
@@ -110,7 +110,7 @@ export function MiniPlayerBar({
             {currentTrack?.title || tPlayer("noTrack")}
           </span>
           <div className="flex items-center gap-2">
-            <span className="text-[9px] text-muted-foreground/80 w-8 shrink-0">
+            <span className="w-8 shrink-0 text-[9px] text-muted-foreground/80 tabular-nums">
               {formatDuration(currentTime)}
             </span>
             <div className="flex-1 h-1 bg-border rounded-full overflow-hidden">
@@ -119,7 +119,7 @@ export function MiniPlayerBar({
                 style={{ width: `${percentage}%` }}
               />
             </div>
-            <span className="text-[9px] text-muted-foreground/80 w-8 shrink-0 text-right">
+            <span className="w-8 shrink-0 text-right text-[9px] text-muted-foreground/80 tabular-nums">
               {formatDuration(duration)}
             </span>
           </div>
@@ -128,14 +128,14 @@ export function MiniPlayerBar({
         <button
           type="button"
           onClick={onTap}
-          className="flex-1 min-w-0 flex flex-col gap-0.5 text-left"
+          className="flex min-h-10 min-w-0 flex-1 flex-col justify-center gap-0.5 text-left"
           aria-label={tPlayer("openPlayer")}
         >
           <span className="text-[10px] text-muted-foreground truncate">
             {currentTrack?.title || tPlayer("noTrack")}
           </span>
           <div className="flex items-center gap-2">
-            <span className="text-[9px] text-muted-foreground/80 w-8 shrink-0">
+            <span className="w-8 shrink-0 text-[9px] text-muted-foreground/80 tabular-nums">
               {formatDuration(currentTime)}
             </span>
             <div className="flex-1 h-1 bg-border rounded-full overflow-hidden">
@@ -144,7 +144,7 @@ export function MiniPlayerBar({
                 style={{ width: `${percentage}%` }}
               />
             </div>
-            <span className="text-[9px] text-muted-foreground/80 w-8 shrink-0 text-right">
+            <span className="w-8 shrink-0 text-right text-[9px] text-muted-foreground/80 tabular-nums">
               {formatDuration(duration)}
             </span>
           </div>
@@ -157,7 +157,7 @@ export function MiniPlayerBar({
           <button
             type="button"
             onClick={cyclePlayOrder}
-            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
+            className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
             aria-label={tControls("playOrder")}
           >
             <PlayOrderIcon className="h-3.5 w-3.5" />
@@ -169,7 +169,7 @@ export function MiniPlayerBar({
             <button
               type="button"
               onClick={handleVolumeDown}
-              className="p-1 text-muted-foreground hover:text-foreground rounded transition-colors"
+              className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
               aria-label={tControls("decreaseVolume")}
             >
               <Minus className="h-3 w-3" />
@@ -184,7 +184,7 @@ export function MiniPlayerBar({
             <button
               type="button"
               onClick={handleVolumeUp}
-              className="p-1 text-muted-foreground hover:text-foreground rounded transition-colors"
+              className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
               aria-label={tControls("increaseVolume")}
             >
               <Plus className="h-3 w-3" />

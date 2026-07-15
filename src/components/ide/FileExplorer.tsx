@@ -14,9 +14,9 @@ import { RuntimeQueue } from "./RuntimeQueue";
 import { SongItem } from "./SongItem";
 
 // Minimum height for each section (header + some content space)
-const MIN_SECTION_HEIGHT = 80;
+const MIN_SECTION_HEIGHT = 96;
 // Header height for collapsed sections
-const HEADER_HEIGHT = 26;
+const HEADER_HEIGHT = 40;
 
 type FileExplorerProps = {
   className?: string;
@@ -282,8 +282,8 @@ export function FileExplorer({ className, onFileClick }: FileExplorerProps) {
             type="button"
             aria-label={t("resizeSections")}
             className={cn(
-              "h-1 shrink-0 cursor-ns-resize group relative",
-              "hover:bg-primary/30 transition-colors",
+              "group relative h-10 shrink-0 cursor-ns-resize",
+              "transition-colors duration-150 ease-out hover:bg-primary/30",
               isResizing && "bg-primary/50",
             )}
             onMouseDown={handleResizeStart}
@@ -321,7 +321,7 @@ export function FileExplorer({ className, onFileClick }: FileExplorerProps) {
                 isOpen={openAlbums.has(album)}
                 onToggle={() => toggleAlbum(album)}
               >
-                <AnimatePresence mode="popLayout">
+                <AnimatePresence initial={false} mode="popLayout">
                   {songs.map((song) => (
                     <SongItem
                       key={song.id}

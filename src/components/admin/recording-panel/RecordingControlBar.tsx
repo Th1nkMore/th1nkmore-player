@@ -73,7 +73,7 @@ function AccompanimentTransport({
           )}
           {accompaniment.isPlaying ? "Pause BGM" : "Play BGM"}
         </Button>
-        <div className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[10px] uppercase tracking-[0.28em] text-slate-300/70">
+        <div className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[10px] uppercase tracking-[0.28em] text-slate-300/70 tabular-nums">
           {session.uiState === "countdown"
             ? `Starts in ${session.countdownValue ?? 0}`
             : accompaniment.file?.name || "No accompaniment"}
@@ -82,7 +82,7 @@ function AccompanimentTransport({
 
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_160px]">
         <div>
-          <div className="mb-1 flex items-center justify-between text-[11px] text-slate-400/75">
+          <div className="mb-1 flex items-center justify-between text-[11px] text-slate-400/75 tabular-nums">
             <span>{formatDuration(accompaniment.currentTime)}</span>
             <span>{formatDuration(accompaniment.duration)}</span>
           </div>
@@ -165,7 +165,7 @@ export function RecordingControlBar({
               <div className="text-[10px] uppercase tracking-[0.3em] text-slate-400/65">
                 Session
               </div>
-              <div className="mt-1 text-xl font-semibold text-white/92">
+              <div className="mt-1 text-xl font-semibold text-white/92 tabular-nums">
                 {session.uiState === "countdown"
                   ? `Starting in ${session.countdownValue ?? 0}`
                   : getSessionLabel(session.uiState)}
@@ -176,7 +176,7 @@ export function RecordingControlBar({
             <div className="text-[10px] uppercase tracking-[0.28em] text-slate-400/65">
               Capture Time
             </div>
-            <div className="mt-1 text-2xl font-semibold text-emerald-100">
+            <div className="mt-1 text-2xl font-semibold text-emerald-100 tabular-nums">
               {formatDuration(recording.elapsedSeconds)}
             </div>
           </div>

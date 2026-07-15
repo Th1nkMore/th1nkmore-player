@@ -95,7 +95,7 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
               onChange={handleProgressChange}
               ariaLabel={tPlayer("progressControl")}
             />
-            <div className="flex justify-between mt-1.5 text-[11px] text-muted-foreground/80 font-mono">
+            <div className="mt-1.5 flex justify-between font-mono text-[11px] text-muted-foreground/80 tabular-nums">
               <span>{formatDuration(currentTime)}</span>
               <span>{formatDuration(duration)}</span>
             </div>
@@ -106,7 +106,7 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
             <button
               type="button"
               onClick={handlePrevious}
-              className="p-2.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-colors"
+              className="flex size-12 items-center justify-center rounded-full text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
               aria-label={tControls("previous")}
             >
               <SkipBack className="h-5 w-5" />
@@ -114,7 +114,7 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
             <button
               type="button"
               onClick={handlePlayPause}
-              className="p-4 bg-foreground text-background rounded-full hover:bg-foreground/90 transition-colors"
+              className="flex size-14 items-center justify-center rounded-full bg-foreground text-background transition-[scale,background-color,color] duration-150 ease-out hover:bg-foreground/90 active:scale-[0.96]"
               aria-label={isPlaying ? tControls("pause") : tControls("play")}
             >
               {isPlaying ? (
@@ -126,7 +126,7 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
             <button
               type="button"
               onClick={handleNext}
-              className="p-2.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded-full transition-colors"
+              className="flex size-12 items-center justify-center rounded-full text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
               aria-label={tControls("next")}
             >
               <SkipForward className="h-5 w-5" />
@@ -139,7 +139,7 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
             <button
               type="button"
               onClick={cyclePlayOrder}
-              className="flex items-center justify-center gap-2 rounded-md px-3 py-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:justify-start"
+              className="flex min-h-10 items-center justify-center gap-2 rounded-md px-3 py-1.5 text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96] sm:justify-start"
               aria-label={playOrderText}
             >
               <PlayOrderIcon className="h-4 w-4" />
@@ -152,7 +152,7 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
                 type="button"
                 onClick={() => setVolume(Math.max(0, volume - 0.1))}
                 className={cn(
-                  "p-1 text-muted-foreground hover:text-foreground rounded transition-colors",
+                  "flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]",
                 )}
                 aria-label={tControls("decreaseVolume")}
               >
@@ -172,12 +172,12 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
               <button
                 type="button"
                 onClick={() => setVolume(Math.min(1, volume + 0.1))}
-                className="p-1 text-muted-foreground hover:text-foreground rounded transition-colors"
+                className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
                 aria-label={tControls("increaseVolume")}
               >
                 <Plus className="h-3 w-3" />
               </button>
-              <span className="text-[10px] text-muted-foreground/80 w-8 text-right font-mono">
+              <span className="w-8 text-right font-mono text-[10px] text-muted-foreground/80 tabular-nums">
                 {Math.round(volume * 100)}%
               </span>
             </div>

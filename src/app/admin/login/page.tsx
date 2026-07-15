@@ -1,8 +1,12 @@
 import { AdminLoginScreen } from "@/components/admin/AdminLoginScreen";
 
+type AdminLoginPageProps = {
+  searchParams: Promise<{ next?: string | string[] }>;
+};
+
 export default async function AdminLoginPage({
   searchParams,
-}: PageProps<"/admin/login">) {
+}: AdminLoginPageProps) {
   const resolvedSearchParams = await searchParams;
   const nextPath = resolvedSearchParams?.next;
 
