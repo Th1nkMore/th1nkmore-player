@@ -1,9 +1,18 @@
+import "../globals.css";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages, setRequestLocale } from "next-intl/server";
+import {
+  getMessages,
+  getTranslations,
+  setRequestLocale,
+} from "next-intl/server";
+import { rootFontClassName, siteMetadata, siteViewport } from "@/app/site";
+import { ThemeProvider } from "@/components/theme-provider";
 import { routing } from "@/i18n/routing";
 
 export const revalidate = 300;
+export const viewport = siteViewport;
 
 type RootLayoutProps = {
   children: React.ReactNode;
@@ -12,6 +21,39 @@ type RootLayoutProps = {
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
+}
+
+export async function generateMetadata({
+  params,
+}: Pick<RootLayoutProps, "params">): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "common" });
+  const description = t("appDescription");
+  const localePath = locale === routing.defaultLocale ? "/" : `/${locale}`;
+
+  return {
+    ...siteMetadata,
+    description,
+    openGraph: {
+      ...siteMetadata.openGraph,
+      description,
+    },
+    twitter: {
+      ...siteMetadata.twitter,
+      description,
+    },
+    alternates: {
+      canonical: localePath,
+      languages: Object.fromEntries(
+        routing.locales.map((alternateLocale) => [
+          alternateLocale,
+          alternateLocale === routing.defaultLocale
+            ? "/"
+            : `/${alternateLocale}`,
+        ]),
+      ),
+    },
+  };
 }
 
 export default async function RootLayout(props: RootLayoutProps) {
@@ -25,11 +67,29 @@ export default async function RootLayout(props: RootLayoutProps) {
   }
 
   setRequestLocale(locale);
-  const messages = await getMessages({ locale });
+  const {
+    admin: _adminMessages,
+    loading: _loadingMessages,
+    ...messages
+  } = await getMessages({ locale });
 
   return (
-    <NextIntlClientProvider key={locale} locale={locale} messages={messages}>
-      {children}
-    </NextIntlClientProvider>
+    <html lang={locale} className="antialiased" suppressHydrationWarning>
+      <body className={rootFontClassName} suppressHydrationWarning>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+        >
+          <NextIntlClientProvider
+            key={locale}
+            locale={locale}
+            messages={messages}
+          >
+            {children}
+          </NextIntlClientProvider>
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }

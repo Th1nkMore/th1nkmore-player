@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  AlertCircle,
+  LoaderCircle,
   Minus,
   Pause,
   Play,
@@ -16,7 +18,7 @@ import { usePlaybackControls } from "@/lib/hooks/usePlaybackControls";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/utils/audio";
 import { useIDEStore } from "@/store/useIDEStore";
-import { usePlayerStore } from "@/store/usePlayerStore";
+import { type PlaybackStatus, usePlayerStore } from "@/store/usePlayerStore";
 
 type MiniPlayerBarProps = {
   className?: string;
@@ -25,6 +27,38 @@ type MiniPlayerBarProps = {
   /** Callback when the bar area is tapped — used to open FullPlayerSheet (default variant only) */
   onTap?: () => void;
 };
+
+function PlaybackStatusMessage({
+  status,
+  loadingLabel,
+  errorLabel,
+}: {
+  status: PlaybackStatus;
+  loadingLabel: string;
+  errorLabel: string;
+}) {
+  const label =
+    status === "loading"
+      ? loadingLabel
+      : status === "error"
+        ? errorLabel
+        : null;
+
+  if (!label) return null;
+
+  return (
+    <output
+      aria-live="polite"
+      aria-atomic="true"
+      className={cn(
+        "shrink-0 text-[11px]",
+        status === "error" && "text-destructive",
+      )}
+    >
+      {label}
+    </output>
+  );
+}
 
 export function MiniPlayerBar({
   className,
@@ -39,6 +73,7 @@ export function MiniPlayerBar({
     currentTrackId,
     volume,
     playOrder,
+    playbackStatus,
     setVolume,
     cyclePlayOrder,
   } = usePlayerStore();
@@ -53,7 +88,6 @@ export function MiniPlayerBar({
 
   const percentage = duration > 0 ? (currentTime / duration) * 100 : 0;
   const isLandscape = variant === "landscape";
-
   const PlayOrderIcon = playOrderIcons[playOrder];
 
   const handleVolumeDown = useCallback(() => {
@@ -106,11 +140,30 @@ export function MiniPlayerBar({
       {/* Track Info & Progress */}
       {isLandscape ? (
         <div className="flex-1 min-w-0 flex flex-col gap-0.5">
-          <span className="text-[10px] text-muted-foreground truncate">
-            {currentTrack?.title || tPlayer("noTrack")}
+          <span className="flex min-w-0 items-center gap-1.5 text-xs leading-none text-muted-foreground">
+            {playbackStatus === "loading" && (
+              <LoaderCircle
+                className="size-3.5 shrink-0 animate-spin"
+                aria-hidden="true"
+              />
+            )}
+            {playbackStatus === "error" && (
+              <AlertCircle
+                className="size-3.5 shrink-0 text-destructive"
+                aria-hidden="true"
+              />
+            )}
+            <span className="truncate">
+              {currentTrack?.title || tPlayer("noTrack")}
+            </span>
+            <PlaybackStatusMessage
+              status={playbackStatus}
+              loadingLabel={tPlayer("buffering")}
+              errorLabel={tPlayer("playbackError")}
+            />
           </span>
           <div className="flex items-center gap-2">
-            <span className="w-8 shrink-0 text-[9px] text-muted-foreground/80 tabular-nums">
+            <span className="w-10 shrink-0 text-xs leading-none text-muted-foreground tabular-nums">
               {formatDuration(currentTime)}
             </span>
             <div className="flex-1 h-1 bg-border rounded-full overflow-hidden">
@@ -119,7 +172,7 @@ export function MiniPlayerBar({
                 style={{ width: `${percentage}%` }}
               />
             </div>
-            <span className="w-8 shrink-0 text-right text-[9px] text-muted-foreground/80 tabular-nums">
+            <span className="w-10 shrink-0 text-right text-xs leading-none text-muted-foreground tabular-nums">
               {formatDuration(duration)}
             </span>
           </div>
@@ -129,13 +182,31 @@ export function MiniPlayerBar({
           type="button"
           onClick={onTap}
           className="flex min-h-10 min-w-0 flex-1 flex-col justify-center gap-0.5 text-left"
-          aria-label={tPlayer("openPlayer")}
         >
-          <span className="text-[10px] text-muted-foreground truncate">
-            {currentTrack?.title || tPlayer("noTrack")}
+          <span className="flex min-w-0 items-center gap-1.5 text-xs leading-none text-muted-foreground">
+            {playbackStatus === "loading" && (
+              <LoaderCircle
+                className="size-3.5 shrink-0 animate-spin"
+                aria-hidden="true"
+              />
+            )}
+            {playbackStatus === "error" && (
+              <AlertCircle
+                className="size-3.5 shrink-0 text-destructive"
+                aria-hidden="true"
+              />
+            )}
+            <span className="truncate">
+              {currentTrack?.title || tPlayer("noTrack")}
+            </span>
+            <PlaybackStatusMessage
+              status={playbackStatus}
+              loadingLabel={tPlayer("buffering")}
+              errorLabel={tPlayer("playbackError")}
+            />
           </span>
           <div className="flex items-center gap-2">
-            <span className="w-8 shrink-0 text-[9px] text-muted-foreground/80 tabular-nums">
+            <span className="w-10 shrink-0 text-xs leading-none text-muted-foreground tabular-nums">
               {formatDuration(currentTime)}
             </span>
             <div className="flex-1 h-1 bg-border rounded-full overflow-hidden">
@@ -144,10 +215,11 @@ export function MiniPlayerBar({
                 style={{ width: `${percentage}%` }}
               />
             </div>
-            <span className="w-8 shrink-0 text-right text-[9px] text-muted-foreground/80 tabular-nums">
+            <span className="w-10 shrink-0 text-right text-xs leading-none text-muted-foreground tabular-nums">
               {formatDuration(duration)}
             </span>
           </div>
+          <span className="sr-only">{tPlayer("openPlayer")}</span>
         </button>
       )}
 
@@ -178,7 +250,7 @@ export function MiniPlayerBar({
               className="h-3 w-3 text-muted-foreground/80 shrink-0"
               aria-hidden="true"
             />
-            <span className="text-[9px] text-muted-foreground/80 w-7 text-center tabular-nums">
+            <span className="w-8 text-center text-xs leading-none text-muted-foreground tabular-nums">
               {Math.round(volume * 100)}%
             </span>
             <button

@@ -27,7 +27,11 @@
     "trackComment": "// track: midnight-refactor",
     "artistComment": "// artist: sonic-ide",
     "welcome": "Willkommen bei Sonic IDE",
-    "emptyStateDescription": "Wählen Sie eine Datei im Explorer aus, um deren Inhalt anzuzeigen.",
+    "emptyStateDescription": "Ein persönliches Musik-Portfolio in einer vertrauten Editor-Umgebung. Starten Sie mit einem dieser Titel und erkunden Sie anschließend Bibliothek und Warteschlange.",
+    "featuredTitle": "Empfohlene Titel",
+    "loadingFeatured": "Empfohlene Titel werden geladen",
+    "noLyricsTitle": "Instrumental / kein Songtext",
+    "noLyricsDescription": "Dieser Titel kann abgespielt werden, enthält aber keinen anzeigbaren Songtext.",
     "transitioning": "Songtext wird synchronisiert",
     "shortcutsTitle": "Tastenkombinationen:",
     "shortcutOpen": "Klicken Sie auf Dateien im Explorer, um sie zu öffnen",
@@ -129,8 +133,8 @@
     "playTrack": "{title} abspielen",
     "removeTrackFromQueue": "{title} aus der Warteschlange entfernen",
     "addTrackToQueue": "{title} zur Warteschlange hinzufügen",
-    "openTrack": "{title} öffnen",
-    "openTrackWithHint": "{title} öffnen. Doppelklicken zum Hinzufügen zur Warteschlange.",
+    "openTrack": "{title} abspielen",
+    "openTrackWithHint": "{title} abspielen. Über das Kontextmenü zur Warteschlange hinzufügen.",
     "goToTime": "Zu Zeit {time} springen",
     "seekWaveform": "Wellenform, klicken zum Springen"
   },
@@ -141,7 +145,9 @@
     "openPlayer": "Player öffnen",
     "closePlayer": "Player schließen",
     "volumeControl": "Lautstärke",
-    "progressControl": "Wiedergabefortschritt"
+    "progressControl": "Wiedergabefortschritt",
+    "buffering": "Audio wird gepuffert",
+    "playbackError": "Audio konnte nicht abgespielt werden"
   },
   "admin": {
     "tabs": {

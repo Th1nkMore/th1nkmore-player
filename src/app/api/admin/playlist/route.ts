@@ -1,5 +1,7 @@
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { revalidateTag } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
+import { PUBLIC_PLAYLIST_CACHE_TAG } from "@/lib/public-playlist";
 import { R2_BUCKET_NAME, r2Client } from "@/lib/r2";
 import { normalizeSong } from "@/lib/song";
 import type { Song } from "@/types/music";
@@ -188,6 +190,13 @@ export async function PUT(request: NextRequest) {
     });
 
     await r2Client.send(command);
+    try {
+      revalidateTag(PUBLIC_PLAYLIST_CACHE_TAG, { expire: 0 });
+    } catch (error) {
+      // The playlist is already durable at this point. Report cache failures
+      // without telling the client that the save itself failed.
+      console.warn("Playlist saved, but cache invalidation failed:", error);
+    }
 
     return NextResponse.json({ success: true, count: playlist.length });
   } catch (error) {

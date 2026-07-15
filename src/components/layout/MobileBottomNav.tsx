@@ -38,18 +38,17 @@ export function MobileBottomNav({
         <button
           key={id}
           type="button"
-          role="tab"
-          aria-selected={activeTab === id}
+          aria-current={activeTab === id ? "page" : undefined}
           onClick={() => onTabChange(id)}
           className={cn(
-            "flex min-w-0 flex-1 flex-col items-center gap-1 px-2 py-2 transition-colors sm:px-3",
+            "flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 px-2 py-2 transition-colors sm:px-3",
             activeTab === id
               ? "text-primary bg-accent/30"
               : "text-muted-foreground hover:text-foreground hover:bg-accent/20",
           )}
         >
           <Icon className="h-5 w-5" aria-hidden="true" />
-          <span className="truncate text-[10px] font-medium">{label}</span>
+          <span className="truncate text-[11px] font-medium">{label}</span>
         </button>
       ))}
     </nav>

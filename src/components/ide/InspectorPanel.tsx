@@ -44,7 +44,7 @@ export function InspectorPanel({ className }: InspectorPanelProps) {
           {t("title").toUpperCase()}
         </div>
         <div className="flex flex-1 items-center justify-center p-4">
-          <p className="text-[11px] text-muted-foreground/60 text-center">
+          <p className="text-center text-[12px] text-muted-foreground">
             {t("noFileSelected")}
           </p>
         </div>

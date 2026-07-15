@@ -96,10 +96,16 @@ export function GlobalAudioPlayer() {
     pause: pauseAction,
     setDuration,
     setCurrentTime,
+    setPlaybackStatus,
     playNext,
   } = usePlayerStore();
 
-  const { files } = useIDEStore();
+  const currentTrackAudioUrl = useIDEStore((state) =>
+    currentTrackId
+      ? (state.files.find((song) => song.id === currentTrackId)?.audioUrl ??
+        null)
+      : null,
+  );
 
   const howlRef = useRef<Howl | null>(null);
   const animationFrameRef = useRef<number | null>(null);
@@ -113,11 +119,13 @@ export function GlobalAudioPlayer() {
     lastPlayRequestAtRef.current = Date.now();
     const state = howlRef.current.state();
     if (state === "loaded" || state === "unloaded") {
+      setPlaybackStatus(state === "loaded" ? "ready" : "loading");
       howlRef.current.play();
     } else if (state === "loading") {
+      setPlaybackStatus("loading");
       shouldAutoPlayRef.current = true;
     }
-  }, []);
+  }, [setPlaybackStatus]);
 
   // Handle pause logic
   const handlePause = useCallback(() => {
@@ -126,7 +134,12 @@ export function GlobalAudioPlayer() {
       howlRef.current.pause();
     }
     shouldAutoPlayRef.current = false;
-  }, []);
+    if (usePlayerStore.getState().playbackStatus !== "error") {
+      setPlaybackStatus(
+        howlRef.current?.state() === "loaded" ? "ready" : "idle",
+      );
+    }
+  }, [setPlaybackStatus]);
 
   // Initialize or update Howl instance when track changes
   useEffect(() => {
@@ -138,11 +151,17 @@ export function GlobalAudioPlayer() {
       }
       setDuration(0);
       setCurrentTime(0);
+      setPlaybackStatus("idle");
       return;
     }
 
-    const track = files.find((f) => f.id === currentTrackId);
-    if (!track) return;
+    if (!currentTrackAudioUrl) {
+      setDuration(0);
+      setCurrentTime(0);
+      setPlaybackStatus("error");
+      pauseAction();
+      return;
+    }
 
     // Cleanup previous Howl instance
     if (howlRef.current) {
@@ -155,7 +174,8 @@ export function GlobalAudioPlayer() {
 
     // Create new Howl instance
     // Fix URL: correct domain and ensure filename is properly encoded
-    const audioUrl = fixAudioUrl(track.audioUrl);
+    const audioUrl = fixAudioUrl(currentTrackAudioUrl);
+    setPlaybackStatus("loading");
     // Get current volume from store (don't use volume from dependency to avoid recreating Howl)
     const currentVolume = usePlayerStore.getState().volume;
     const howl = new Howl({
@@ -166,6 +186,7 @@ export function GlobalAudioPlayer() {
         if (howlRef.current !== howl) return;
         const duration = howl.duration();
         setDuration(duration);
+        setPlaybackStatus("ready");
         // Auto-play if requested while loading
         if (shouldAutoPlayRef.current && howl.state() === "loaded") {
           howl.play();
@@ -192,6 +213,7 @@ export function GlobalAudioPlayer() {
       },
       onplay: () => {
         if (howlRef.current !== howl) return;
+        setPlaybackStatus("ready");
         playAction();
       },
       onpause: () => {
@@ -207,11 +229,13 @@ export function GlobalAudioPlayer() {
         if (howlRef.current !== howl) return;
         // If playback fails (autoplay restriction, device issue, etc.), ensure UI doesn't
         // remain stuck in a "playing" state.
+        setPlaybackStatus("error");
         pauseAction();
       },
       onloaderror: (_id, _error) => {
         if (howlRef.current !== howl) return;
         // Error handling - could log to console or error tracking service
+        setPlaybackStatus("error");
         pauseAction();
       },
     });
@@ -227,11 +251,12 @@ export function GlobalAudioPlayer() {
     };
   }, [
     currentTrackId,
-    files,
+    currentTrackAudioUrl,
     playAction,
     pauseAction,
     setDuration,
     setCurrentTime,
+    setPlaybackStatus,
     playNext,
     // Note: volume is intentionally excluded - it's handled by a separate useEffect
     // to avoid recreating the Howl instance on every volume change
