@@ -78,8 +78,14 @@ export function MiniPlayerBar({
     cyclePlayOrder,
   } = usePlayerStore();
   const { getFileById } = useIDEStore();
-  const { isPlaying, handlePlayPause, handlePrevious, handleNext } =
-    usePlaybackControls();
+  const {
+    canGoNext,
+    canGoPrevious,
+    isPlaying,
+    handlePlayPause,
+    handlePrevious,
+    handleNext,
+  } = usePlaybackControls();
 
   const currentTrack = useMemo(
     () => (currentTrackId ? getFileById(currentTrackId) : null),
@@ -110,7 +116,8 @@ export function MiniPlayerBar({
         <button
           type="button"
           onClick={handlePrevious}
-          className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
+          disabled={!canGoPrevious}
+          className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96] disabled:pointer-events-none disabled:opacity-35"
           aria-label={tControls("previous")}
         >
           <SkipBack className="h-3.5 w-3.5" />
@@ -130,7 +137,8 @@ export function MiniPlayerBar({
         <button
           type="button"
           onClick={handleNext}
-          className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
+          disabled={!canGoNext}
+          className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96] disabled:pointer-events-none disabled:opacity-35"
           aria-label={tControls("next")}
         >
           <SkipForward className="h-3.5 w-3.5" />

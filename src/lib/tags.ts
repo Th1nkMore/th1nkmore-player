@@ -1,6 +1,7 @@
 import type { Song } from "@/types/music";
 
 export const DEFAULT_TAG_SUGGESTIONS = ["Rap", "R&B", "Soul", "Rock"] as const;
+export const UNTAGGED_TAG = "__untagged__";
 
 export type TagStat = {
   tag: string;

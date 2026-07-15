@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { songOne, songThree, songTwo } from "@/../tests/fixtures/songs";
-import { usePlayerStore } from "@/store/usePlayerStore";
+import {
+  getPlaybackNavigationState,
+  usePlayerStore,
+} from "@/store/usePlayerStore";
 
 function resetStore() {
   usePlayerStore.setState(usePlayerStore.getInitialState());
@@ -19,7 +22,78 @@ describe("usePlayerStore", () => {
       isPlaying: true,
       playbackStatus: "loading",
       queue: [],
+      playbackContext: [],
     });
+  });
+
+  it("plays from a visible collection without mutating the manual queue", () => {
+    usePlayerStore
+      .getState()
+      .playFromCollection(songTwo, [songOne, songTwo, songThree]);
+
+    expect(usePlayerStore.getState()).toMatchObject({
+      currentTrackId: songTwo.id,
+      isPlaying: true,
+      queue: [],
+      playbackContext: [songOne, songTwo, songThree],
+    });
+
+    usePlayerStore.getState().playNext();
+    expect(usePlayerStore.getState().currentTrackId).toBe(songThree.id);
+
+    usePlayerStore.getState().playPrevious();
+    expect(usePlayerStore.getState().currentTrackId).toBe(songTwo.id);
+  });
+
+  it("resumes the current collection track without returning to loading", () => {
+    usePlayerStore.setState({
+      currentTrackId: songOne.id,
+      isPlaying: false,
+      playbackContext: [songOne, songTwo],
+      playbackStatus: "ready",
+    });
+
+    usePlayerStore
+      .getState()
+      .playFromCollection(songOne, [songOne, songTwo, songThree]);
+
+    expect(usePlayerStore.getState()).toMatchObject({
+      isPlaying: true,
+      playbackContext: [songOne, songTwo, songThree],
+      playbackStatus: "ready",
+    });
+  });
+
+  it("prioritizes manual up-next songs over the collection context", () => {
+    usePlayerStore.setState({
+      currentTrackId: songOne.id,
+      playbackContext: [songOne, songTwo],
+      queue: [songThree],
+    });
+
+    usePlayerStore.getState().playNext();
+
+    expect(usePlayerStore.getState().currentTrackId).toBe(songThree.id);
+  });
+
+  it("reports when previous and next controls have a valid target", () => {
+    expect(
+      getPlaybackNavigationState({
+        currentTrackId: songTwo.id,
+        playbackContext: [songOne, songTwo, songThree],
+        playOrder: "sequential",
+        queue: [],
+      }),
+    ).toEqual({ canGoNext: true, canGoPrevious: true });
+
+    expect(
+      getPlaybackNavigationState({
+        currentTrackId: songOne.id,
+        playbackContext: [songOne],
+        playOrder: "sequential",
+        queue: [],
+      }),
+    ).toEqual({ canGoNext: false, canGoPrevious: false });
   });
 
   it("does not enter a playing state without a current track", () => {

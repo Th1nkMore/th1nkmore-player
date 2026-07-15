@@ -2,7 +2,10 @@
 
 import { useCallback } from "react";
 import { useIDEStore } from "@/store/useIDEStore";
-import { usePlayerStore } from "@/store/usePlayerStore";
+import {
+  getPlaybackNavigationState,
+  usePlayerStore,
+} from "@/store/usePlayerStore";
 
 /**
  * Shared hook that provides unified playback control handlers
@@ -12,14 +15,23 @@ export function usePlaybackControls() {
   const {
     isPlaying,
     currentTrackId,
+    playbackContext,
+    playOrder,
     play,
     pause,
     seek,
     playNext,
     playPrevious,
+    queue,
   } = usePlayerStore();
 
   const { files, activeFileId } = useIDEStore();
+  const { canGoNext, canGoPrevious } = getPlaybackNavigationState({
+    currentTrackId,
+    playbackContext,
+    playOrder,
+    queue,
+  });
 
   const handlePlayPause = useCallback(() => {
     if (isPlaying) {
@@ -59,6 +71,8 @@ export function usePlaybackControls() {
   return {
     isPlaying,
     currentTrackId,
+    canGoNext,
+    canGoPrevious,
     handlePlayPause,
     handlePrevious,
     handleNext,

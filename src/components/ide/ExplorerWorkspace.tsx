@@ -1,11 +1,8 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
 import { Files, LayoutGrid } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
 import { FileExplorer } from "@/components/ide/FileExplorer";
-import { PanelTransitionOverlay } from "@/components/ide/PanelTransitionOverlay";
 import { TagGridExplorer } from "@/components/ide/TagGridExplorer";
 import { cn } from "@/lib/utils";
 import { useIDEStore } from "@/store/useIDEStore";
@@ -19,16 +16,9 @@ export function ExplorerWorkspace({
 }) {
   const t = useTranslations("explorerNav");
   const { explorerView, setExplorerView } = useIDEStore();
-  const [isSwitching, setIsSwitching] = useState(false);
 
   const handleViewChange = (view: "files" | "grid") => {
-    if (view === explorerView) {
-      return;
-    }
-    setIsSwitching(true);
-    const timeoutId = window.setTimeout(() => setIsSwitching(false), 180);
-    setExplorerView(view);
-    window.setTimeout(() => window.clearTimeout(timeoutId), 200);
+    if (view !== explorerView) setExplorerView(view);
   };
 
   const views = [
@@ -71,6 +61,7 @@ export function ExplorerWorkspace({
               key={id}
               type="button"
               onClick={() => handleViewChange(id)}
+              aria-pressed={explorerView === id}
               className={cn(
                 "min-h-10 rounded-full border px-3 py-1.5 text-[11px] font-medium transition-[scale,color,background-color,border-color] duration-150 ease-out active:scale-[0.96]",
                 explorerView === id
@@ -84,26 +75,12 @@ export function ExplorerWorkspace({
         </div>
 
         <div className="relative min-h-0 flex-1 overflow-hidden">
-          <PanelTransitionOverlay
-            visible={isSwitching}
-            label={t("switchingPanels")}
-          />
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={explorerView}
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.18, ease: "easeOut" }}
-              className="h-full"
-            >
-              {explorerView === "files" ? (
-                <FileExplorer className="h-full" onFileClick={onFileClick} />
-              ) : (
-                <TagGridExplorer className="h-full" />
-              )}
-            </motion.div>
-          </AnimatePresence>
+          <div className="h-full" hidden={explorerView !== "files"}>
+            <FileExplorer className="h-full" onFileClick={onFileClick} />
+          </div>
+          <div className="h-full" hidden={explorerView !== "grid"}>
+            <TagGridExplorer className="h-full" />
+          </div>
         </div>
       </div>
     </div>

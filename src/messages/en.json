@@ -20,7 +20,19 @@
     "copyLink": "Copy Link",
     "properties": "Properties",
     "noSongsInQueue": "No songs in queue",
-    "resizeSections": "Resize sections"
+    "resizeSections": "Resize sections",
+    "library": "Library",
+    "songCount": "{count} songs",
+    "queue": "Up next",
+    "openQueue": "Open up next, {count} songs",
+    "queueDescription": "{count} songs ready to play",
+    "closeQueue": "Close up next",
+    "searchPlaceholder": "Search songs, artists, albums, or tags",
+    "allSongs": "All",
+    "clearTag": "Clear {tag} filter",
+    "addedToQueue": "Added {title}",
+    "loadingSongs": "Loading songs…",
+    "noMatchingSongs": "No songs match these filters"
   },
   "codeEditor": {
     "filePath": "lyrics/midnight-refactor.lyr",
@@ -97,17 +109,14 @@
     "mobileNavigation": "Mobile navigation"
   },
   "explorerNav": {
-    "files": "Files",
-    "grid": "Grid",
-    "switchingPanels": "Switching view"
+    "files": "Library",
+    "grid": "Tags"
   },
   "tagGrid": {
-    "title": "Tag Grid",
-    "allTags": "All tags",
-    "clear": "Clear",
-    "empty": "All tag songs are already in the queue",
-    "all": "All",
-    "availableCount": "{count} available",
+    "title": "Browse by tag",
+    "subtitle": "Choose a tag to filter the library without changing playback or the queue.",
+    "allTags": "All songs",
+    "untagged": "Untagged",
     "totalCount": "{count} total"
   },
   "mobileNav": {
@@ -131,6 +140,8 @@
     "playTrack": "Play {title}",
     "removeTrackFromQueue": "Remove {title} from queue",
     "addTrackToQueue": "Add {title} to queue",
+    "trackQueued": "{title} is in the queue",
+    "trackActions": "More actions for {title}",
     "openTrack": "Play {title}",
     "openTrackWithHint": "Play {title}. Use the context menu to add it to the queue.",
     "goToTime": "Go to time {time}",
