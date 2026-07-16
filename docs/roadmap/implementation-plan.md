@@ -28,6 +28,8 @@ Acceptance:
 
 ## Phase 1: Mobile Swipe Pager
 
+Status: Implemented on `codex/mobile-swipe-pager`; physical touch-device acceptance remains.
+
 Suggested branch:
 
 - `feat/mobile-swipe-pager`
@@ -205,8 +207,8 @@ Do not schedule these without new evidence:
 
 ## Recommended Immediate Order
 
-1. Accept the documentation alignment
-2. Implement the mobile swipe pager as a contained interaction improvement
+1. Documentation alignment completed
+2. Mobile swipe pager implemented; complete physical touch-device acceptance
 3. Implement Creator Note data and admin authoring
 4. Replace the information surface and remove the waveform
 5. Add track share pages

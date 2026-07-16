@@ -4,7 +4,7 @@
 
 Sonic IDE is a Next.js App Router application combining a public listening experience with an authenticated single-owner media workspace.
 
-The current codebase is a usable player and publishing baseline. The newly agreed product direction—Creator Notes, track share pages, mobile swipe paging, and per-track themes—is not implemented yet and should be treated as roadmap work.
+The current codebase is a usable player and publishing baseline. Mobile swipe paging is implemented on its feature branch; Creator Notes, track share pages, and per-track themes remain roadmap work.
 
 ## Current Public Capabilities
 
@@ -13,7 +13,7 @@ The current codebase is a usable player and publishing baseline. The newly agree
 - Global Howler-based audio playback
 - LRC lyrics with active-line synchronization and seeking
 - Responsive desktop, mobile portrait, and mobile landscape layouts
-- Bottom navigation for mobile Lyrics, Songs, and Info surfaces
+- Gesture-aware mobile portrait paging between Lyrics, Songs, and Info, synchronized with bottom navigation
 - Localized public routes for English, Chinese, Japanese, and German
 - Public playlist delivery from Cloudflare R2 with ISR and a public fallback
 
@@ -47,7 +47,6 @@ The current codebase is a usable player and publishing baseline. The newly agree
 - No Creator Note data, authoring workflow, spoken-note player, or transcript support
 - No track-level route, server-rendered share page, or per-track social metadata
 - The existing copy-link action copies a raw audio URL instead of a work page
-- Mobile portrait uses bottom-navigation switching without gesture-aware horizontal paging
 - The information surface still prioritizes a generated waveform and generic properties over personal narrative
 - Playback session state is not restored across visits, and Media Session integration is absent
 - Portfolio/personal classification exists in data and admin but has little public presentation impact

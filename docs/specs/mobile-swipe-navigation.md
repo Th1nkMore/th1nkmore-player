@@ -2,7 +2,7 @@
 
 ## Status
 
-Product semantics accepted; implementation not started.
+Implemented on `codex/mobile-swipe-pager`; automated and responsive-browser checks complete, with physical touch-device acceptance pending.
 
 ## Goal
 
@@ -69,13 +69,13 @@ Use axis locking:
 
 ## Acceptance Checklist
 
-- [ ] Horizontal swipes switch Lyrics, Songs, and Info in the expected direction
-- [ ] Vertical lyrics and library scrolling remain reliable
-- [ ] Playback sequence and filter-chip scrolling do not change pages
-- [ ] Sliders and media controls retain their gestures
-- [ ] The bottom navigation and pager never disagree
-- [ ] Page-local state survives round trips
-- [ ] Edge gestures do not wrap or overscroll into blank content
-- [ ] Reduced-motion behavior is available
-- [ ] Mobile portrait works at narrow widths and with safe-area insets
-- [ ] Landscape behavior is explicitly accepted rather than changed accidentally
+- [x] Horizontal swipes resolve to Lyrics, Songs, and Info in the expected direction
+- [ ] Vertical lyrics and library scrolling remain reliable on a physical touch device
+- [ ] Playback sequence and filter-chip scrolling retain native touch scrolling on a physical touch device
+- [x] Sliders and media controls are excluded from pager gesture capture
+- [x] The bottom navigation and pager share one active-tab state
+- [x] Page-local state survives round trips because all pages remain mounted
+- [x] Edge gestures use resistance and cannot wrap into blank content
+- [x] Reduced-motion switches page transitions to immediate settling
+- [ ] Mobile portrait is accepted at narrow widths and with safe-area insets on a physical touch device
+- [x] Mobile landscape retains its existing specialized layout

@@ -89,7 +89,10 @@ export function LibraryToolbar({
         />
       </div>
 
-      <div className="mt-2 flex gap-2 overflow-x-auto pb-0.5 scrollbar-none">
+      <div
+        className="mt-2 flex touch-pan-x touch-pinch-zoom gap-2 overflow-x-auto pb-0.5 scrollbar-none"
+        data-mobile-swipe-lock
+      >
         <button
           type="button"
           onClick={() => onAlbumChange(null)}
