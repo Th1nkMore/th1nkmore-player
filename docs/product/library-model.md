@@ -1,59 +1,81 @@
-# Library Model
+# Library And Story Model
 
 ## Goal
 
-Keep Sonic IDE as one player with one library, while still distinguishing why a track exists in the system.
+Keep one compatible song library while evolving a public track from a flat playlist row into a shareable cover story.
 
-The app should not split into a "portfolio product" and a separate "music player product". Instead, the library should support different track categories inside a unified listening experience.
+The current `Song` model remains the playback contract. New story fields should be optional and backward-compatible so existing tracks continue to load without migration blockers.
 
-## Track Categories
+## Existing Classification
 
-The first version of the library model should recognize two primary categories:
-
-1. Portfolio tracks
-2. Personal listening tracks
-
-Portfolio tracks are songs that represent the owner's own work and should be easier to feature, curate, and present as part of the public-facing identity of the project.
-
-Personal listening tracks are songs the owner uploads for personal playback inside the same interface. They still behave like playable library items, but they do not need the same portfolio emphasis.
-
-## Product Behavior
-
-Both categories should:
-
-- Appear in the same core player experience
-- Support playback, queueing, lyrics, and metadata
-- Reuse the same library browsing patterns
-
-The distinction should mainly affect:
-
-- Filtering and browsing
-- Default visibility and curation
-- Admin workflows
-- Future analytics or reporting
-
-## Minimum Metadata Direction
-
-The current codebase models a track with a simple `Song` type. That is acceptable for the current phase, but future iterations should add explicit metadata that answers these questions:
-
-- What category does this track belong to
-- Where did this track come from
-- Is this track intended for public portfolio presentation
-- Was this track uploaded directly, recorded in-app, or generated from export
-
-## Implemented Fields
-
-The current codebase already includes the first-pass classification fields below:
+The current model already includes:
 
 - `trackType`: `portfolio` or `personal`
 - `sourceType`: `upload`, `recording`, or `external-upload`
 - `visibility`: `public`, `private`, or `unlisted`
-- `assetStatus`: `draft`, `ready`, `archived`
+- `assetStatus`: `draft`, `ready`, or `archived`
 
-These fields are now part of the practical baseline rather than a purely future direction.
+These fields answer why an item exists, where its primary audio came from, and whether it should be discoverable. They do not describe authorship or the story attached to the cover.
 
-## Current Constraint
+## Planned Cover Semantics
 
-The app still stores flat song records rather than a richer media catalog. The implemented classification fields improve semantics and admin control, but the underlying library shape is still playlist-oriented. Future work should continue extending the model carefully without breaking existing playback and admin flows.
+The primary `audioUrl` is the complete song recording used by the global player, queue, lyrics, and playback sequence.
 
-Visibility is currently enforced when the public app and playlist API select tracks. Because the backing R2 manifest and audio objects are publicly addressable, `private` and `unlisted` are discovery controls rather than access-control guarantees. Confidential assets require private object storage and authenticated or signed delivery.
+Planned fields should clarify cover credits and sharing:
+
+- `performanceType`: initially `cover`, with room for `original` or `listening`
+- `originalArtist`: the credited original performer or author label shown to listeners
+- `shareSlug`: a stable human-readable share identifier when one is available
+
+These fields should not overload `trackType`. Portfolio-versus-personal and cover-versus-original answer different questions.
+
+## Creator Note
+
+A track may contain a Creator Note displayed as “翻唱者说” for covers.
+
+```ts
+type CreatorNote = {
+  body?: string;
+  language?: LegacyLanguage;
+  audioUrl?: string;
+  audioDuration?: number;
+  audioTranscript?: string;
+};
+```
+
+Rules:
+
+- Text and spoken audio are independently optional, but an empty object is not meaningful
+- `body` is the personal essay, not necessarily a transcript
+- `audioTranscript` is an optional accurate transcript for accessibility and search
+- Creator Note audio is never a queue item and never appears in the playback sequence
+- Playing Creator Note audio pauses the cover and preserves the cover position
+- Ending the spoken note does not automatically resume the cover
+- Leaving the information or share context pauses the spoken note
+
+## Information And Share Surfaces
+
+The mobile information page and the standalone share page should render the same story data through a shared content component.
+
+The IDE information surface may be narrower and more contextual. The share page should be a focused reading and listening experience with server-rendered metadata, social previews, and an action to open the work inside Sonic IDE.
+
+## Future Visual Theme
+
+After the story and sharing model is stable, a track may opt into a curated visual preset:
+
+```ts
+type VisualTheme = {
+  preset: "terminal" | "memory" | "night-drive" | "paper";
+  accent?: string;
+  backgroundImageUrl?: string;
+  motion?: "none" | "subtle" | "immersive";
+};
+```
+
+The first version should not accept arbitrary CSS or JavaScript. Every preset needs a reduced-motion fallback and a mobile performance budget.
+
+## Storage Boundary
+
+The flat R2 `playlist.json` remains adequate for the current catalog size. A database should only be introduced when editing, querying, or asset lifecycle requirements clearly exceed the manifest model.
+
+Deleting a playlist entry and deleting its R2 audio objects are separate operations and should remain explicit. Creator Note audio must eventually participate in backup, replacement, orphan detection, and deletion workflows.
