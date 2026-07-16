@@ -1,38 +1,71 @@
 # Feature Roadmap
 
-## 1. Player And Library
+## Product Outcome
 
-- Preserve the current player-first experience
-- Expand the library model to support both portfolio works and personal listening tracks
-- Add metadata fields that help segment and curate these track types without splitting the product
-- Keep both track categories available inside one unified playback surface
+Sonic IDE should let the owner publish a complete cover recording, explain the personal meaning of the song through writing and optional spoken audio, and share the resulting work as part of a coherent personal portfolio.
 
-## 2. Lyrics
+## Priority 1: Mobile Navigation
 
-- Improve lyrics display quality and resilience
-- Expand lyrics crawling and import options
-- Provide clearer admin workflows for fixing, replacing, and storing lyrics
+Status: Implemented; physical touch-device acceptance remains.
 
-## 3. Recording
+- [x] Add horizontal swipe paging between Lyrics, Songs, and Info
+- [x] Keep bottom navigation visible and synchronized
+- [x] Preserve state across page switches
+- [x] Resolve conflicts with horizontal scrollers and playback controls in the gesture model
+- [x] Respect reduced-motion preferences
 
-- Add in-browser recording
-- Support preview, discard, retry, and save flows
-- Connect recording output to library management and metadata editing
-- Keep the recording path admin-only in the initial phase
+## Priority 2: Creator Note Authoring
 
-## 4. Export
+- Add personal writing to a track
+- Upload or record an optional spoken note
+- Preview, replace, and remove spoken-note audio
+- Keep spoken-note recording separate from full cover recording
+- Support an optional accurate transcript without requiring one for publication
 
-- Support MP3 export as the first explicit output target
-- Extend export support to additional formats later
-- Define export entry points in admin workflows
-- Decide whether export is on-demand download, stored asset generation, or both
+## Priority 3: Information Story Experience
 
-## 5. Backend Updates
+- Remove the generated waveform from the information hierarchy
+- Present cover credits, personal writing, and spoken-note audio
+- Guarantee one audio focus across song and spoken note
+- Use a full reading surface on mobile and a scrollable narrative surface on desktop
+- Provide a useful metadata fallback for tracks without a Creator Note
 
-- Strengthen media-oriented backend responsibilities
-- Prepare for track processing, conversion, and richer metadata workflows
-- Separate concerns more clearly between public playback APIs and admin media-management APIs
+## Priority 4: Track Sharing
 
-## Acceptance Strategy
+- Add localized, stable track URLs
+- Render shareable story pages with social metadata
+- Reuse Creator Note presentation across the IDE and share page
+- Copy track-page links rather than object-storage URLs
+- Open a shared work inside the full Sonic IDE player
 
-Each feature area should be split into independently acceptable `feat/*` branches and merged into `dev` only after local acceptance.
+## Priority 5: Playback Continuity
+
+- Restore safe session state across visits
+- Add Media Session integration
+- Evaluate installable web behavior based on actual owner usage
+
+## Priority 6: Curated Visual Expression
+
+- Add a small set of per-track theme presets
+- Share visual tokens between the player and track page
+- Support accents, background assets, and constrained motion
+- Guarantee readable, reduced-motion, and mobile fallbacks
+
+## Continuous: Publishing Safety
+
+- Back up and restore the manifest
+- Improve song and spoken-note asset replacement and deletion
+- Detect orphaned objects
+- Strengthen remote release gates
+- Monitor playback and publishing failures
+
+## Explicitly Parked
+
+- Multi-user behavior
+- Public uploads
+- Music-source plugin ecosystem
+- Generic embed SDK
+- More export formats
+- Full media-processing backend
+- Desktop wrappers
+- More locales

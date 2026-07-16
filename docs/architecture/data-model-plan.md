@@ -2,59 +2,83 @@
 
 ## Current State
 
-The current `Song` type is intentionally lightweight:
+The current `Song` interface already supports playback, lyrics, tags, and first-pass classification:
 
-- `id`
-- `title`
-- `artist`
-- `album`
-- `duration`
-- `lyrics`
-- `audioUrl`
-- `metadata`
-- `language`
+- Identity: `id`, `title`, `artist`, `album`, `language`
+- Playback: `duration`, `audioUrl`, `lyrics`
+- Discovery: `tags`, `metadata`
+- Classification: `trackType`, `sourceType`, `visibility`, `assetStatus`
 
-This is enough for the current player and admin upload flow, but it does not yet represent the product distinctions that now matter.
+The model is stored as a flat R2 playlist manifest and normalized for backward compatibility.
 
-## Why The Model Needs To Evolve
+## Next Product Questions
 
-The project now has a broader product direction:
+The agreed direction requires the model to represent four additional facts:
 
-- It is both a portfolio and a personal player
-- It will support admin recording
-- It will support export flows
-- It will likely need stronger backend support around media processing
+1. The primary audio is the owner's complete cover recording
+2. The original work needs separate credit from the performer field
+3. A cover may include personal writing and an optional spoken Creator Note
+4. The work needs a stable share identity and, later, an optional visual preset
 
-Those directions introduce state that should not be hidden indefinitely inside a generic `metadata` bag.
+## Proposed Optional Fields
 
-## Proposed Evolution
+```ts
+type PerformanceType = "cover" | "original" | "listening";
 
-The next iterations should move toward a richer media entity while preserving backward compatibility with the current player.
+type CreatorNote = {
+  body?: string;
+  language?: LegacyLanguage;
+  audioUrl?: string;
+  audioDuration?: number;
+  audioTranscript?: string;
+};
 
-Suggested additions:
+type VisualTheme = {
+  preset: "terminal" | "memory" | "night-drive" | "paper";
+  accent?: string;
+  backgroundImageUrl?: string;
+  motion?: "none" | "subtle" | "immersive";
+};
 
-- `trackType`
-  - Distinguishes portfolio tracks from personal listening tracks
-- `sourceType`
-  - Distinguishes normal uploads from in-app recordings and later import paths
-- `visibility`
-  - Leaves room for portfolio curation and private-only listening
-- `assetStatus`
-  - Separates drafts, ready assets, and archived entries
-- `coverImageUrl`
-  - Prepares for richer presentation later
-- `lyricsStatus`
-  - Distinguishes missing, imported, edited, and verified lyrics
-- `exportFormats`
-  - Tracks available or generated export outputs
+type SongStoryFields = {
+  performanceType?: PerformanceType;
+  originalArtist?: string;
+  shareSlug?: string;
+  creatorNote?: CreatorNote;
+  visualTheme?: VisualTheme;
+};
+```
+
+`visualTheme` is intentionally later-phase work. The first migration should focus on credits, sharing identity, and Creator Note content.
+
+## Audio Roles
+
+The model must preserve two separate audio roles:
+
+- `audioUrl`: complete cover recording controlled by the global song player
+- `creatorNote.audioUrl`: spoken editorial audio controlled by an inline note player
+
+Creator Note audio must not be converted into a `Song`, queued, shuffled, repeated, or included in song navigation. A shared audio-focus coordinator should pause one role before starting the other.
 
 ## Transition Strategy
 
-1. Keep existing `Song` fields stable for playback compatibility
-2. Add new optional fields behind non-breaking feature branches
-3. Update admin forms before tightening any validation rules
-4. Document migration expectations before introducing backend processing steps
+1. Add new fields as optional and preserve existing normalization defaults
+2. Update the admin form and API validation before public rendering depends on the fields
+3. Add Creator Note text authoring before spoken recording
+4. Reuse low-level microphone capture for spoken notes, not the full accompaniment/teleprompter UI
+5. Add the information page and audio-focus behavior
+6. Add track routes and share metadata
+7. Migrate selected published tracks gradually rather than blocking on a catalog-wide conversion
+8. Add visual themes only after content and sharing acceptance
 
-## Short-Term Recommendation
+## Validation Direction
 
-The immediate next document-driven implementation branch should likely add explicit classification fields first, because that change affects both product semantics and future admin workflows.
+- Reject a Creator Note with no text, no spoken audio, and no transcript
+- Clamp durations and normalize URLs through the same storage boundary as song assets
+- Treat transcripts as optional content, not a substitute for the personal essay
+- Keep raw R2 URLs out of public share actions
+- Keep playlist deletion and object deletion separate and auditable
+
+## Database Decision
+
+Do not introduce a database solely for Creator Notes. Revisit storage only when concurrent editing, querying, revision history, or asset relationships become painful in the manifest model.

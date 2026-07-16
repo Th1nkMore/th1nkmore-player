@@ -1,39 +1,61 @@
 # Engineering And Performance Roadmap
 
-## CI/CD
+## Current Baseline
 
-- Add automated install, lint, type-check, test, and build validation
-- Define promotion gates for `feat/*`, `dev`, `main`, and `live`
-- Make deployment synchronization to `live` explicit and repeatable
+- Local staged-file formatting, file-length checks, and full TypeScript checking
+- Vitest coverage across stores, APIs, lyrics, recording state, tags, library behavior, and playback sequence
+- Production build and SSH deployment triggered from `live`
+- Next.js ISR and R2-backed public playlist loading
 
-## Quality Gates
+## Release Quality
 
-- Keep type-check required for merge readiness
-- Reduce existing lint debt so lint can become a reliable merge gate
-- Expand test coverage around audio state, admin APIs, and lyrics workflows
+Priority improvements:
+
+- Use a frozen lockfile in CI and deployment
+- Run lint, type-check, full tests, and build before deployment
+- Separate validation failure from SSH/deployment failure in workflow reporting
+- Add a post-deploy health check for localized routes and the public playlist
+
+## Audio Architecture
+
+Creator Note work introduces a second audio role. Add one audio-focus coordinator that owns these rules:
+
+- The cover and spoken note never play simultaneously
+- Starting one pauses or stops the other as specified
+- Cover progress is preserved while a spoken note plays
+- Spoken audio never participates in song navigation or queue state
+- Leaving the note context pauses the spoken note
+- No automatic cover resume occurs after a spoken note ends
+
+Avoid duplicating a second global song store for spoken-note audio. The note player should have a smaller state surface and use the shared focus boundary.
+
+## Mobile Interaction
+
+- Use axis-locked gesture handling for page swipes
+- Preserve native vertical scrolling and child horizontal controls
+- Keep transformations interruptible and limited to compositor-friendly properties
+- Avoid permanent `will-change`; enable it only when an observed frame issue justifies it
+- Provide reduced-motion behavior and bottom-navigation equivalence
 
 ## Performance
 
-- Improve first-screen rendering performance
-- Reduce unnecessary client work during initial load
-- Review audio asset loading strategy, caching, and metadata fetch behavior
-- Measure and optimize lyrics rendering and heavy player UI interactions
+- Measure real first-play latency and playback failures before architectural optimization
+- Keep share pages server-rendered and usable before full player hydration
+- Lazy-load spoken-note audio and future theme assets
+- Prevent visual themes from delaying primary text, cover controls, or lyrics
+- Review bundle cost when gesture or theme libraries are introduced
 
-## Backend Evolution
+## Storage And Asset Safety
 
-- Formalize media-processing responsibilities
-- Prepare for export and recording pipelines
-- Strengthen storage and asset URL management
+- Add manifest backup and restore
+- Track primary cover and spoken-note assets separately
+- Make replacement and deletion idempotent where possible
+- Add orphan detection before automatic cleanup
+- Treat public visibility and storage privacy as separate concerns
 
 ## Observability
 
-- Add clearer operational logs for admin actions and failed media workflows
-- Prepare for runtime monitoring and error reporting once deployment flow is stabilized
-
-## Delivery Order
-
-1. Branching and release process baseline
-2. CI validation basics
-3. Lint debt reduction where it blocks automation
-4. Performance measurement and top bottleneck fixes
-5. Media-processing improvements for recording and export
+- Record playback load failures without logging sensitive asset credentials
+- Track publish, upload, and manifest-save failures
+- Add lightweight product events for first play, track share, Creator Note play, and successful publish
+- Prefer evidence from real owner and listener usage over speculative performance work

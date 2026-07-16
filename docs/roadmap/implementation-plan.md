@@ -2,202 +2,216 @@
 
 ## Goal
 
-Turn the current product and roadmap documents into a concrete sequence of `feat/*` branches that can be developed from `dev`, accepted independently, and merged back without mixing concerns.
+Evolve Sonic IDE from a polished single-owner player into a personal cover portfolio and audio journal without reopening the abandoned general-purpose platform direction.
 
-## Status Note
+Each implementation branch should start from `dev`, remain independently acceptable, and preserve existing songs that do not yet contain story fields.
 
-The codebase has already moved ahead of the original sequencing in a few areas. In particular, the library classification fields, the admin recording shell, and a first browser-side MP3 export flow already exist in the current implementation. This document therefore distinguishes between work that is already effectively present, work that still needs acceptance and documentation cleanup, and work that remains genuinely future-facing.
+## Phase 0: Product And Documentation Alignment
 
-## Working Rule
+Suggested branch:
 
-Every branch below is intended to start from `dev` and merge back into `dev` only after its own local acceptance is complete.
-
-## Phase 1: Documentation Baseline
-
-Branch:
-
-- `feat/docs-foundation`
+- `feat/creator-note-roadmap`
 
 Scope:
 
-- Define product positioning
-- Define branching and release workflow
-- Define current architecture baseline
-- Define first-pass roadmap for admin, features, and engineering
-- Define the first draft of the library model and recording/export direction
+- Define a public track as a full cover recording plus optional lyrics and Creator Note
+- Define Creator Note text and spoken audio as supporting editorial content
+- Fix the one-audio-focus policy
+- Reprioritize recording, sharing, playback continuity, themes, and backend work
+- Mark multi-user, arbitrary music sources, marketplace, and generic embed work as non-goals
 
 Acceptance:
 
-- `README.md` reflects the current product identity
-- `docs/` provides a navigable planning baseline
-- Product direction, branch policy, and next implementation steps are documented clearly enough to guide later feature branches
+- Product, architecture, data model, specs, and roadmap documents agree
+- Implemented capabilities are separated clearly from planned capabilities
+- No document describes spoken-note audio as a song or queue item
 
-Current status:
+## Phase 1: Mobile Swipe Pager
 
-- Mostly complete once documentation is synchronized with the current codebase
+Status: Implemented on `codex/mobile-swipe-pager`; physical touch-device acceptance remains.
 
-## Phase 2: Library Classification
+Suggested branch:
 
-Branch:
-
-- `feat/library-classification`
+- `feat/mobile-swipe-pager`
 
 Scope:
 
-- Extend the track model with explicit classification fields such as portfolio vs personal
-- Update admin forms and storage handling to capture those fields
-- Ensure the player can still render older entries safely
-- Add minimal UI treatment or filtering hooks if needed, without redesigning the full player
-
-Dependencies:
-
-- `feat/docs-foundation`
+- Replace mobile portrait's hidden-section switching with a gesture-aware horizontal pager
+- Keep the page order Lyrics, Songs, Info
+- Synchronize gestures with the existing bottom navigation state
+- Preserve page-local scroll, search, filter, and reading state
+- Prevent conflicts with horizontal scrollers, playback sequence, sliders, and media controls
 
 Acceptance:
 
-- A track can be classified during admin creation or editing
-- Existing tracks still load without breaking playback
-- New fields are documented and handled in a backward-compatible way
-- Type-check passes for the updated model
+- A deliberate horizontal swipe changes exactly one page
+- Vertical scrolling does not trigger page changes
+- Child horizontal controls keep their native gestures
+- First and last pages use edge resistance and do not wrap
+- Bottom navigation remains a complete non-gesture fallback
+- Reduced-motion users receive a restrained transition
+- Portrait and landscape layout behavior remains stable
 
-Current status:
+## Phase 2: Creator Note Model And Authoring
 
-- Largely implemented in code
-- Remaining work is mainly documentation alignment and any later player-side filtering or curation behavior
+Suggested branch:
 
-## Phase 3: Admin Recording Shell
-
-Branch:
-
-- `feat/admin-recording-shell`
+- `feat/creator-note-authoring`
 
 Scope:
 
-- Add an admin-only recording UI shell
-- Support recording start, stop, preview, discard, and retry
-- Keep the captured result in memory or temporary client state before persistence
-- Define the handoff from recorded audio to normal track creation flow
-
-Dependencies:
-
-- `feat/docs-foundation`
-- Preferably after `feat/library-classification`, so recordings can carry source metadata cleanly
+- Add optional `performanceType`, `originalArtist`, `shareSlug`, and `creatorNote` fields
+- Normalize older songs without requiring a full catalog migration
+- Add Creator Note text editing in admin
+- Support spoken-note upload, preview, replacement, and removal
+- Add a lightweight spoken-note recorder using existing low-level microphone primitives
+- Keep full cover recording and spoken-note recording as separate admin workflows
 
 Acceptance:
 
-- Admin can record audio in the browser
-- Admin can preview the recorded result before saving
-- Failed or denied recording states are handled without breaking the page
-- No public route exposes recording controls
+- Existing songs still build, load, and play without new fields
+- Text-only, spoken-only, and combined Creator Notes can be saved
+- Empty Creator Note objects are removed or rejected
+- A spoken note can be recorded or uploaded, previewed, replaced, and removed
+- The full recording workspace does not become the UI for a short spoken note
+- Admin publishing does not expose raw object-management complexity to the normal authoring flow
 
-Current status:
+## Phase 3: Information Story Surface
 
-- Implemented as an admin-only recording workspace
-- Ready for acceptance if the project adopts the narrower current-phase recording spec
-- Draft vs publish behavior remains a deferred product decision rather than a blocker for this phase
+Suggested branch:
 
-## Phase 4: MP3 Export Foundation
-
-Branch:
-
-- `feat/export-mp3-foundation`
+- `feat/creator-note-info-surface`
 
 Scope:
 
-- Add the first MP3 export path for recorded or managed tracks
-- Define where export is triggered in the admin workflow
-- Handle conversion status, failure states, and result delivery
-- Keep the implementation narrow to one format and one coherent flow
-
-Dependencies:
-
-- `feat/admin-recording-shell` if export starts with recordings
-- Potential backend support, depending on whether export is browser-side or server-side
+- Remove `WaveformMinimap` from the information surface
+- Make Creator Note content the primary information hierarchy
+- Add an inline spoken-note player with progress and duration
+- Add a shared audio-focus coordinator for the cover and spoken note
+- Preserve song position when the spoken note pauses the cover
+- Pause spoken audio when leaving the information context
+- Add a clear action to continue the cover; do not auto-resume after the note ends
 
 Acceptance:
 
-- An admin can complete one full MP3 export flow
-- Export failure states surface useful feedback
-- Export logic is narrow and documented rather than trying to solve all formats at once
+- The song and spoken note never play at the same time
+- Spoken audio never appears in the queue, playback sequence, shuffle, repeat, or song transport
+- Starting the cover stops spoken audio
+- Leaving the Info page pauses spoken audio
+- Mobile provides a readable full-width story surface
+- Desktop provides a scrollable story layout without forcing long prose into metadata rows
+- Tracks without a Creator Note fall back to concise credits and metadata
 
-Current status:
+## Phase 4: Track Share Pages
 
-- Partially implemented
-- The current flow supports browser-side MP3 export for newly recorded audio
-- This is enough to accept a narrow first export phase
-- Generalized export for existing managed tracks is still future work
+Suggested branch:
 
-## Phase 5: Lyrics Workflow Expansion
-
-Branch:
-
-- `feat/lyrics-workflow`
+- `feat/track-story-sharing`
 
 Scope:
 
-- Improve lyric import resilience
-- Clarify lyric editing and replacement behavior
-- Separate lyric states such as missing, imported, or manually edited if needed
-
-Dependencies:
-
-- `feat/library-classification` is optional
-- Can proceed independently if it does not touch the richer track model
+- Add localized track routes based on ID or stable `shareSlug`
+- Server-render title, credits, Creator Note summary, and social metadata
+- Reuse the information-story component in a share-focused layout
+- Present both the full cover and optional spoken note with one-audio-focus behavior
+- Add an action to open the work inside Sonic IDE
+- Change public copy-link actions from raw audio URLs to track pages
+- Include published track routes in the sitemap
 
 Acceptance:
 
-- Admin can import or edit lyrics with clearer outcomes
-- Public lyric rendering remains stable
-- The lyric workflow is documented and locally verifiable
+- A direct track URL resolves the correct published work
+- The page does not require the full IDE shell to be understandable
+- Social previews identify the track and personal story
+- The share page and IDE information page do not duplicate content logic
+- Raw R2 audio URLs are not used as normal public share links
+- Missing, private, draft, or archived entries do not produce public share pages
 
-## Phase 6: Backend Media Foundation
+## Phase 5: Playback Continuity
 
-Branch:
+Suggested branches:
 
-- `feat/backend-media-foundation`
+- `feat/player-session-persistence`
+- `feat/media-session`
 
 Scope:
 
-- Prepare backend APIs and storage behavior for recording and export flows
-- Clarify asset persistence responsibilities
-- Reduce coupling between public playback APIs and admin media management
-
-Dependencies:
-
-- Should follow whichever branch first proves the recording/export path
+- Restore current track, safe playback position, queue, volume, and play order
+- Keep restored state compatible with changed or removed library entries
+- Add Media Session metadata and hardware transport actions
+- Decide later whether installable web behavior is valuable enough for a dedicated PWA phase
 
 Acceptance:
 
-- Media-oriented backend responsibilities are clearer and more modular
-- New flows no longer rely on ad hoc handling in unrelated endpoints
-- Storage and URL handling are documented and testable
+- Returning to the app restores useful state without unexpected autoplay
+- Removed or private songs do not break restoration
+- Hardware and lock-screen controls match in-app playback behavior
 
-## Phase 7: CI/CD And Quality Gates
+## Phase 6: Curated Track Themes
 
-Branch:
+Suggested branch:
 
-- `feat/cicd-foundation`
+- `feat/curated-track-themes`
 
 Scope:
 
-- Add automated validation for install, lint, type-check, test, and build
-- Define merge-readiness expectations for `feat/*`, `dev`, `main`, and `live`
-- Make release synchronization more repeatable
-
-Dependencies:
-
-- Can start early, but works best after the first few feature branches expose real project pain points
+- Add a small set of reviewed visual presets
+- Share theme tokens between the IDE story surface and share page
+- Allow a controlled accent, background asset, and motion intensity
+- Keep arbitrary CSS and JavaScript out of stored content
 
 Acceptance:
 
-- Core validation runs automatically
-- The workflow reinforces the branch model instead of bypassing it
-- Release movement from `dev` to `main` to `live` becomes easier to repeat safely
+- Every preset has light/dark, mobile, and reduced-motion behavior
+- Theme loading does not delay the usable player or block reading
+- Lyrics and controls retain sufficient contrast
+- A missing or invalid theme falls back to the normal Sonic IDE appearance
+
+## Phase 7: Asset And Delivery Hardening
+
+Suggested branches:
+
+- `feat/library-backup-restore`
+- `feat/media-asset-lifecycle`
+- `feat/release-quality-gates`
+
+Scope:
+
+- Back up and restore the playlist manifest and Creator Note fields
+- Replace and delete song and spoken-note assets explicitly
+- Detect orphaned R2 objects
+- Add frozen-lockfile install, lint, type-check, tests, and build to remote release validation
+- Add playback-error and publish-failure monitoring
+- Implement signed delivery only if non-public personal content becomes a real use case
+
+Acceptance:
+
+- Manifest rollback is documented and tested
+- Removing a playlist entry cannot silently destroy the wrong object
+- Creator Note audio participates in replacement, deletion, and orphan checks
+- A failed quality gate prevents deployment
+
+## Parked Work
+
+Do not schedule these without new evidence:
+
+- Multi-user accounts and public uploads
+- Third-party music-source adapters or source plugins
+- Public marketplace behavior
+- Generic embed SDK
+- Additional export formats
+- Generalized backend media-processing platform
+- Desktop application wrapper
+- More public locales
+- Arbitrary theme code
 
 ## Recommended Immediate Order
 
-1. Finish and accept `feat/docs-foundation` by aligning the documentation with the current implementation state
-2. Accept `feat/admin-recording-shell` and the narrow first version of `feat/export-mp3-foundation` against the current-phase recording/export spec
-3. Decide whether `feat/lyrics-workflow` or `feat/backend-media-foundation` comes next based on actual blockers
-4. Add `feat/cicd-foundation` once the feature path is clearer
-5. Revisit player-side filtering and curation only after the media workflow stabilizes
+1. Documentation alignment completed
+2. Mobile swipe pager implemented; complete physical touch-device acceptance
+3. Implement Creator Note data and admin authoring
+4. Replace the information surface and remove the waveform
+5. Add track share pages
+6. Add playback continuity
+7. Add curated visual themes
+8. Harden asset lifecycle and remote release gates continuously where risk requires it

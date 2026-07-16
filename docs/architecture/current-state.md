@@ -2,56 +2,61 @@
 
 ## Summary
 
-Sonic IDE is currently a Next.js App Router application that behaves as a music player with an authenticated admin media workspace.
+Sonic IDE is a Next.js App Router application combining a public listening experience with an authenticated single-owner media workspace.
 
-The codebase combines a public listening experience and an authenticated admin experience in one project.
+The current codebase is a usable player and publishing baseline. Mobile swipe paging is implemented on its feature branch; Creator Notes, track share pages, and per-track themes remain roadmap work.
 
-## Current Frontend Capabilities
+## Current Public Capabilities
 
-- IDE-like browsing layout for songs, albums, metadata, queue, and playback
-- Files/Grid explorer switching for per-track browsing and tag-based bulk queueing
-- Global audio playback behavior
-- Lyrics display with LRC parsing and active-line syncing
-- Responsive UI for desktop and mobile
-- Localized routing and message bundles
+- IDE-like library browsing, tag exploration, metadata, queue, and playback
+- A playback sequence strip with explicit song-player semantics
+- Global Howler-based audio playback
+- LRC lyrics with active-line synchronization and seeking
+- Responsive desktop, mobile portrait, and mobile landscape layouts
+- Gesture-aware mobile portrait paging between Lyrics, Songs, and Info, synchronized with bottom navigation
+- Localized public routes for English, Chinese, Japanese, and German
+- Public playlist delivery from Cloudflare R2 with ISR and a public fallback
 
 ## Current Admin Capabilities
 
-- Password-based admin access with cookie-backed session state
-- Audio upload flow using signed URLs
-- Playlist loading and editing
-- Workspace-card upload editing and master-detail playlist management
-- NetEase lyric fetching
-- Shared LRC normalization for imported and fetched lyrics
-- Metadata extraction from selected audio files
-- Track classification fields for track type, source type, visibility, and asset status
-- Song-level tags managed in admin and consumed in the public listener explorer
-- In-browser recording with preview and retry
-- Save recorded audio into the managed library
-- Browser-side MP3 export for recorded audio
-- Recording teleprompter with stabilized lyric auto-follow
+- Password-based admin access with a cookie-backed session
+- Direct signed uploads to R2
+- Playlist loading, editing, ordering, and removal from the manifest
+- Lyric fetching, normalization, and editing
+- Track classification, tags, and visibility fields
+- In-browser full recording with preview, retry, and upload handoff
+- Browser-side MP3 export for newly recorded audio
 
-## Current Technical Shape
+## Current Delivery And Quality
 
-- Framework: Next.js 16 with React 19
-- State management: Zustand
-- Styling: Tailwind CSS 4 and component primitives
-- Playback engine: Howler
-- Storage integration: Cloudflare R2 via AWS SDK
-- Internationalization: next-intl
+- Local pre-commit guards run staged Biome checks, file-length validation, and a full TypeScript check
+- Vitest covers player state, APIs, library behavior, lyrics, recording sessions, tags, and playback sequence logic
+- Pushing `live` triggers a GitHub Actions production build and SSH deployment to the personal server
+- The remote deployment gate currently builds the application but does not independently run lint and the full test suite
 
 ## Main Code Areas
 
-- `src/app`: routes, layouts, and API endpoints
-- `src/components/ide`: public player-facing IDE interface
-- `src/components/admin`: admin upload and playlist tooling
-- `src/lib`: auth, storage, utility, lyrics, and hooks
-- `src/store`: player and IDE state
+- `src/app`: routes, layouts, metadata, and API endpoints
+- `src/components/ide`: public player and IDE interface
+- `src/components/admin`: owner publishing, recording, and playlist tools
+- `src/lib`: auth, storage, media, lyrics, and shared behavior
+- `src/store`: IDE and player state
 
-## Known Gaps
+## Known Product Gaps
 
-- The library model is still implemented primarily as a playlist, not yet as a richer media catalog
-- Recording exists, but the state model is still lightweight and does not yet formalize draft vs publish behavior
-- MP3 export exists for newly recorded audio, but export is not yet generalized across all managed tracks or formats
-- Backend responsibilities are still relatively lightweight and will need expansion for future media workflows
-- CI/CD and performance optimization are not yet formalized as project infrastructure
+- No Creator Note data, authoring workflow, spoken-note player, or transcript support
+- No track-level route, server-rendered share page, or per-track social metadata
+- The existing copy-link action copies a raw audio URL instead of a work page
+- The information surface still prioritizes a generated waveform and generic properties over personal narrative
+- Playback session state is not restored across visits, and Media Session integration is absent
+- Portfolio/personal classification exists in data and admin but has little public presentation impact
+- Per-track visual themes are not implemented
+
+## Known Technical Gaps
+
+- Song audio and future spoken-note audio need a shared audio-focus coordinator
+- The library remains a flat manifest rather than a rich media catalog
+- Playlist removal does not automatically remove backing R2 assets
+- Public R2 URLs do not provide storage-level privacy
+- Remote deployment should add frozen-lockfile install, lint, type-check, and tests before build and deploy
+- Runtime product analytics and playback-error monitoring are not formalized

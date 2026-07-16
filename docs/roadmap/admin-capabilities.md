@@ -2,46 +2,57 @@
 
 ## Goal
 
-Evolve the admin area from a basic upload panel into a single-owner audio management workspace.
+Evolve the admin area into a safe single-owner publishing workspace for full cover recordings and their personal story content.
 
-## Phase 1: Baseline Management
+## Current Baseline
 
-- Upload songs into the managed library
-- Edit metadata and playlist ordering
-- Import or paste lyrics
-- Distinguish portfolio tracks from personal listening tracks in metadata
-- Clarify whether a track is owner-created work or a personal listening upload
+- Upload song audio to R2
+- Edit playlist entries and ordering
+- Manage lyrics, tags, classification, visibility, and asset status
+- Record full performances with accompaniment and lyric support
+- Preview, retry, and hand recorded audio into the normal upload flow
+- Export newly recorded audio to MP3 in the browser
 
-## Phase 2: Recording
+## Next: Creator Note Authoring
 
-- Record audio directly in the browser
-- Preview recordings before saving
-- Save recordings into the managed library
-- Export recordings as MP3
-- Reuse the normal metadata editing flow after recording
+- Edit Creator Note text as readable paragraphs
+- Set the language of the personal writing
+- Upload an existing spoken note
+- Record a short spoken note through a lightweight microphone UI
+- Preview, pause, retry, replace, and remove spoken-note audio
+- Store duration and an optional transcript
+- Preview the complete information/share presentation before publishing
 
-Current phase status:
+The spoken-note recorder should reuse low-level microphone capture but not the full accompaniment, teleprompter, or performance-recording workspace.
 
-- The baseline recording workspace and first MP3 export flow already exist
-- Remaining open work is mainly around draft versus publish semantics and broader export scope
+## Next: Cover Credits And Sharing
 
-## Phase 3: Export Expansion
+- Distinguish the owner-performed cover from the original artist credit
+- Assign or generate a stable share slug
+- Preview localized track metadata and social sharing text
+- Make public copy-link behavior point to the track page
 
-- Support export to additional formats
-- Define conversion options and quality presets
-- Clarify whether export applies to recordings only or to all managed tracks
+## Next: Asset Lifecycle
 
-## Phase 4: Library Operations
+- Back up and restore the manifest
+- Replace primary cover audio safely
+- Replace or remove spoken-note audio safely
+- Distinguish manifest removal from R2 object deletion
+- Detect orphaned song and spoken-note assets
+- Surface publish and storage failures clearly
 
-- Search and filter by source, album, artist, and track type
-- Improve bulk editing workflows
-- Add safer asset replacement and deletion flows
-- Add clearer audit or activity logging for admin actions
+## Deferred
 
-## Open Product Decisions
+- Additional export formats
+- Batch conversion and quality presets
+- Generalized processing for every managed asset
+- Multi-user approvals or audit roles
+- Public authoring and uploads
 
-- How to label portfolio tracks versus personal listening tracks
-- Whether recordings create draft entries before publication
-- Whether exports are stored permanently or generated on demand
-- Whether lyrics management belongs directly in the upload flow or in a separate editing workspace
-- Whether personal listening tracks should have different default visibility from portfolio tracks
+## Open Decisions To Revisit Later
+
+- Whether every public cover requires a Creator Note
+- Whether an accurate spoken-note transcript should become required for accessibility
+- Whether Creator Note revisions need history beyond manifest backups
+- Whether visual themes are selected during authoring or in a separate presentation step
+- Whether private personal listening content justifies signed media delivery
