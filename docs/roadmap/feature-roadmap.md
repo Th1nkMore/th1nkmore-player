@@ -6,11 +6,13 @@ Sonic IDE should let the owner publish a complete cover recording, explain the p
 
 ## Priority 1: Mobile Navigation
 
-- Add horizontal swipe paging between Lyrics, Songs, and Info
-- Keep bottom navigation visible and synchronized
-- Preserve state across page switches
-- Resolve conflicts with horizontal scrollers and playback controls
-- Respect reduced-motion preferences
+Status: Implemented; physical touch-device acceptance remains.
+
+- [x] Add horizontal swipe paging between Lyrics, Songs, and Info
+- [x] Keep bottom navigation visible and synchronized
+- [x] Preserve state across page switches
+- [x] Resolve conflicts with horizontal scrollers and playback controls in the gesture model
+- [x] Respect reduced-motion preferences
 
 ## Priority 2: Creator Note Authoring
 

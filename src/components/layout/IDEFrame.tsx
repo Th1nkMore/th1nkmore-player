@@ -15,6 +15,7 @@ import {
 } from "@/components/layout/IDEFrameHeader";
 import type { MobileTab } from "@/components/layout/MobileBottomNav";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
+import { MobileSwipePager } from "@/components/layout/MobileSwipePager";
 import { useScreenMode } from "@/lib/hooks/useScreenMode";
 import { cn } from "@/lib/utils";
 import { useIDEStore } from "@/store/useIDEStore";
@@ -49,17 +50,13 @@ function MobilePortraitLayout({
 }) {
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
-      <main className="flex-1 min-h-0 overflow-hidden bg-background">
-        <section className="h-full" hidden={mobileTab !== "lyrics"}>
-          {centerEditor}
-        </section>
-        <section className="h-full" hidden={mobileTab !== "songs"}>
-          {leftSidebar}
-        </section>
-        <section className="h-full" hidden={mobileTab !== "info"}>
-          {rightInspector}
-        </section>
-      </main>
+      <MobileSwipePager
+        activeTab={mobileTab}
+        lyrics={centerEditor}
+        songs={leftSidebar}
+        info={rightInspector}
+        onTabChange={onTabChange}
+      />
 
       <MiniPlayerBar onTap={() => onPlayerSheetChange(true)} />
 

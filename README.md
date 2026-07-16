@@ -29,7 +29,7 @@ Current planning highlights:
 
 - IDE-style music browsing with album folders, queue management, inspector metadata, and terminal-like playback controls
 - LRC lyric parsing with active-line highlighting, seeking by line number, and auto-scroll during playback
-- Responsive layouts for desktop, mobile portrait, and mobile landscape
+- Responsive layouts for desktop, mobile portrait, and mobile landscape, including swipe paging synchronized with mobile bottom navigation
 - Localized routes with `en`, `zh`, `ja`, and `de`
 - Admin upload flow with signed R2 uploads, playlist editing, and NetEase lyric import
 - Track classification metadata for portfolio vs personal, source type, visibility, and asset status
@@ -128,7 +128,6 @@ Detailed process: [`docs/process/branching-release.md`](docs/process/branching-r
 - The app still uses a playlist-shaped library model rather than a richer media catalog.
 - Recording and MP3 export exist, but the workflow is still narrow: export currently targets newly recorded client-side audio rather than all managed tracks.
 - Creator Notes, spoken-note recording, track-level share routes, and social metadata are planned but not yet implemented.
-- Mobile portrait still relies on bottom navigation rather than a gesture-aware horizontal pager.
 - Playback session state is not yet restored across visits, and Media Session integration is not implemented.
 - The deployment workflow builds before release, but lint, tests, and frozen-lockfile validation are not yet full remote gates.
 - Public R2 URLs still make visibility a discovery control rather than storage-level privacy.
