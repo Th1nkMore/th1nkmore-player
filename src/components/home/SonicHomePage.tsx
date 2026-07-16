@@ -1,7 +1,7 @@
 import { CodeEditor } from "@/components/ide/CodeEditor";
-import { EditorTabs } from "@/components/ide/EditorTabs";
 import { ExplorerWorkspace } from "@/components/ide/ExplorerWorkspace";
 import { InspectorPanel } from "@/components/ide/InspectorPanel";
+import { PlaybackSequenceStrip } from "@/components/ide/PlaybackSequenceStrip";
 import { TerminalPanel } from "@/components/ide/TerminalPanel";
 import { IDEFrame } from "@/components/layout/IDEFrame";
 import { getPublicPlaylist } from "@/lib/public-playlist.server";
@@ -24,7 +24,7 @@ export async function SonicHomePage() {
         mobileLeftSidebar={<ExplorerWorkspace />}
         centerEditor={
           <div className="flex h-full flex-col overflow-hidden">
-            <EditorTabs />
+            <PlaybackSequenceStrip />
             <div className="flex-1 min-h-0">
               <CodeEditor className="h-full" />
             </div>
@@ -32,6 +32,7 @@ export async function SonicHomePage() {
         }
         compactCenterEditor={
           <div className="flex h-full flex-col overflow-hidden">
+            <PlaybackSequenceStrip />
             <CodeEditor className="h-full" />
           </div>
         }
