@@ -152,6 +152,53 @@
 
 /* Custom scrollbar utilities */
 @layer utilities {
+  .playback-sequence-index,
+  .playback-sequence-play {
+    transition-property: opacity, scale, filter;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .playback-sequence-index {
+    opacity: 0;
+    scale: 0.25;
+    filter: blur(4px);
+  }
+
+  .playback-sequence-play {
+    opacity: 1;
+    scale: 1;
+    filter: blur(0);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .playback-sequence-index {
+      opacity: 1;
+      scale: 1;
+      filter: blur(0);
+    }
+
+    .playback-sequence-play {
+      opacity: 0;
+      scale: 0.25;
+      filter: blur(4px);
+    }
+
+    .playback-sequence-track:hover .playback-sequence-index,
+    .playback-sequence-track:focus-visible .playback-sequence-index {
+      opacity: 0;
+      scale: 0.25;
+      filter: blur(4px);
+    }
+
+    .playback-sequence-track:hover .playback-sequence-play,
+    .playback-sequence-track:focus-visible .playback-sequence-play {
+      opacity: 1;
+      scale: 1;
+      filter: blur(0);
+    }
+  }
+
   /* Hide scrollbar completely */
   .scrollbar-none {
     -ms-overflow-style: none; /* IE and Edge */
