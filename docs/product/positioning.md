@@ -2,48 +2,70 @@
 
 ## Product Summary
 
-Sonic IDE is a personal music portfolio and personal player wrapped in an IDE-like interface.
+Sonic IDE is a personal cover portfolio and audio journal wrapped in an IDE-like listening interface.
 
-It is not only a showcase site for original work. It is also a daily-use listening product for the owner. The IDE metaphor is the interaction language, while the real product category remains a music player.
+The owner publishes full cover recordings, synchronized lyrics, and personal context about each song. Public listeners can browse, play, read, listen to an optional spoken Creator Note, and share an individual work. The IDE metaphor is the interaction language; the product category remains a personal music portfolio and player.
 
-## Core Identity
+## Core Content Unit
 
-- A portfolio for self-created songs and audio works
-- A personal player for other songs the owner uploads for personal listening
-- A stylized interface where songs behave like files, lyrics behave like editor content, and playback behaves like a runtime terminal
+The core public unit is a track entry containing some or all of the following:
 
-## Library Model
+1. The owner's full cover recording
+2. Lyrics and synchronized playback data
+3. Song credits and source metadata
+4. A Creator Note made from personal writing and an optional spoken recording
+5. A future curated visual theme
 
-The music library contains two broad content sources:
+The full cover is the song audio used by the global player, queue, and playback sequence. The spoken Creator Note is editorial audio attached to the story. It never enters the song queue and must not play at the same time as the cover.
 
-1. Portfolio tracks uploaded and managed by the owner
-2. Other songs the owner wants to hear inside the same player
+## Users And Jobs
 
-From a product perspective, both are first-class library items. The distinction matters for metadata, permissions, sourcing, future filtering, and management workflows.
+### Owner
 
-## Admin Role
+- Publish and manage full cover recordings
+- Attach lyrics, credits, tags, and personal writing
+- Record or upload a short spoken Creator Note
+- Preview the complete work before publishing
+- Share a stable track page rather than a raw audio-object URL
 
-The owner acts as an administrator with elevated capabilities. Over time, the admin area should support:
+### Public listener
 
-- Uploading songs and maintaining the library
-- Editing metadata and playlists
-- Fetching and managing lyrics
-- Recording audio directly in the product
-- Exporting recordings or managed tracks to MP3
-- Exporting to additional formats later
+- Discover a song through the library or a shared track link
+- Listen to the full cover and follow the lyrics
+- Read or listen to why the song matters to the owner
+- Continue into the broader Sonic IDE library
 
-## Non-Goals For Now
+## Product Shape
 
-- Multi-user collaboration
-- Public marketplace behavior
-- Fine-grained copyright workflow design
-- A full DAW-style music production environment
+The public product has two complementary surfaces:
 
-"Personal" describes the single-owner workflow, not guaranteed asset secrecy. With the current public R2 URLs, application visibility settings control discovery in the public UI/API but do not prevent direct object access. Storage-level privacy is a separate future backend capability.
+- The IDE player is the immersive browsing and listening environment
+- The track share page is a focused, server-rendered presentation of one work
+
+The admin product is a single-owner publishing workspace, not a collaborative CMS or public upload portal.
+
+## Non-Goals
+
+- Multi-user accounts or public uploads
+- A public marketplace or source-plugin ecosystem
+- Arbitrary third-party music-source adapters
+- A general-purpose embeddable player SDK
+- A desktop wrapper before installable web behavior proves insufficient
+- A full DAW or generalized media-conversion platform
+- Arbitrary user-authored CSS or JavaScript themes
 
 ## Product Principles
 
-- Player first: every new feature should reinforce listening and audio management
-- Portfolio aware: original works should remain easy to highlight and curate
-- Single owner workflow: admin operations should optimize for one trusted operator
-- IDE language, not IDE burden: the interface can feel like a development environment without becoming confusing or overly technical
+- Personal voice first: writing and spoken context should make the cover more meaningful
+- Player first: audio behavior must remain predictable and resilient
+- One audio focus: the song and spoken Creator Note never play simultaneously
+- Share the work, not the asset: public actions should copy a track page rather than the R2 URL
+- IDE language, not IDE burden: visual metaphor must not override music-player semantics
+- Single-owner workflow: publishing should be safe and efficient for one trusted operator
+- Curated expression: later visual themes should be opinionated presets with accessible fallbacks
+
+## Current Boundary
+
+The current implementation already provides the player, lyrics, responsive navigation, admin uploads, editing, recording, and deployment. Creator Notes, mobile swipe paging, track share pages, playback persistence, and per-track visual themes remain roadmap work.
+
+Visibility settings currently filter discovery in the public UI and API. Public R2 URLs are not storage-level access control; confidential assets require private storage and signed or authenticated delivery.
