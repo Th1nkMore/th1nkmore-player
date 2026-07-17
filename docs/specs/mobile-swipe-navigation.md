@@ -2,7 +2,7 @@
 
 ## Status
 
-Implemented on `codex/mobile-swipe-pager`; automated and responsive-browser checks complete, with physical touch-device acceptance pending.
+Implemented on `codex/mobile-swipe-pager` and refined on `codex/bottom-nav-swipe`; automated and responsive-browser checks complete, with physical touch-device acceptance pending.
 
 ## Goal
 
@@ -20,7 +20,8 @@ The current mobile tab state remains the source of truth. Tapping a bottom-navig
 
 - Render the three pages in one horizontal pager
 - Keep pages mounted so lyrics position, library search, filters, queue state, and story reading position survive navigation
-- Let the page follow the pointer during a valid horizontal drag
+- Begin swipe navigation only when a drag starts inside the persistent bottom navigation
+- Let the page follow the pointer while the accepted bottom-navigation drag is active
 - Resolve to the adjacent page based on deliberate distance or velocity
 - Move at most one page per gesture
 - Add restrained edge resistance at Lyrics and Info; do not wrap
@@ -28,14 +29,9 @@ The current mobile tab state remains the source of truth. Tapping a bottom-navig
 
 ## Gesture Arbitration
 
-Do not begin a page swipe when the gesture originates from:
+The content area never begins page navigation. Lyrics, library lists, playback controls, horizontal playback sequence, filter chips, drawers, sheets, and information content keep their native gestures without pager arbitration.
 
-- Playback progress or volume controls
-- The horizontal playback-sequence strip
-- Album or tag chip scrollers
-- Other intentional horizontal scrolling regions
-- A drawer, sheet, or open modal
-- Interactive media controls that already own the gesture
+The bottom navigation is the sole swipe trigger. It continues to support direct taps and suppresses the button click only after a horizontal drag has been accepted.
 
 Use axis locking:
 
@@ -70,9 +66,9 @@ Use axis locking:
 ## Acceptance Checklist
 
 - [x] Horizontal swipes resolve to Lyrics, Songs, and Info in the expected direction
-- [ ] Vertical lyrics and library scrolling remain reliable on a physical touch device
-- [ ] Playback sequence and filter-chip scrolling retain native touch scrolling on a physical touch device
-- [x] Sliders and media controls are excluded from pager gesture capture
+- [x] Content-area gestures cannot start page navigation
+- [x] Playback sequence, filter chips, sliders, and media controls are outside pager gesture capture
+- [ ] Bottom-navigation swiping is accepted on a physical touch device
 - [x] The bottom navigation and pager share one active-tab state
 - [x] Page-local state survives round trips because all pages remain mounted
 - [x] Edge gestures use resistance and cannot wrap into blank content

@@ -48,19 +48,32 @@ function MobilePortraitLayout({
   playerSheetOpen: boolean;
   onPlayerSheetChange: (open: boolean) => void;
 }) {
+  const [pagerDragOffset, setPagerDragOffset] = useState(0);
+  const [pagerDragging, setPagerDragging] = useState(false);
+
+  const handleSwipeStateChange = (dragOffset: number, isDragging: boolean) => {
+    setPagerDragOffset(dragOffset);
+    setPagerDragging(isDragging);
+  };
+
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
       <MobileSwipePager
         activeTab={mobileTab}
+        dragOffset={pagerDragOffset}
+        isDragging={pagerDragging}
         lyrics={centerEditor}
         songs={leftSidebar}
         info={rightInspector}
-        onTabChange={onTabChange}
       />
 
       <MiniPlayerBar onTap={() => onPlayerSheetChange(true)} />
 
-      <MobileBottomNav activeTab={mobileTab} onTabChange={onTabChange} />
+      <MobileBottomNav
+        activeTab={mobileTab}
+        onSwipeStateChange={handleSwipeStateChange}
+        onTabChange={onTabChange}
+      />
 
       <FullPlayerSheet
         open={playerSheetOpen}
