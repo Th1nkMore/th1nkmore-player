@@ -46,6 +46,7 @@ type EditPlaylistProps = {
   handleSavePlaylist: () => void;
   handleConvertEditedLyricsToLrc: () => void;
   handleNormalizeEditedLyrics: () => void;
+  handleUploadCreatorNoteAudio: (file: File) => Promise<string>;
   updateEditedSong: (field: keyof Song, value: Song[keyof Song]) => void;
   neteaseUrlEdit: string;
   setNeteaseUrlEdit: (url: string) => void;
@@ -61,20 +62,24 @@ function SongListRow({
   isActive,
   isDirty,
   dirtyLabel,
+  disabled,
   onSelect,
 }: {
   song: Song;
   isActive: boolean;
   isDirty: boolean;
   dirtyLabel: string;
+  disabled: boolean;
   onSelect: () => void;
 }) {
   return (
     <button
       type="button"
       onClick={onSelect}
+      disabled={disabled}
       className={cn(
         "w-full rounded-2xl border p-3 text-left transition-[background-color,border-color,box-shadow] duration-150 ease-out",
+        disabled && "cursor-wait opacity-60",
         isActive
           ? "border-sky-400/50 bg-sky-400/10"
           : "border-[var(--border)] bg-[rgba(11,15,22,0.88)] hover:border-sky-400/30 hover:bg-[rgba(18,22,30,0.96)]",
@@ -141,6 +146,7 @@ export function EditPlaylist({
   handleSavePlaylist,
   handleConvertEditedLyricsToLrc,
   handleNormalizeEditedLyrics,
+  handleUploadCreatorNoteAudio,
   updateEditedSong,
   neteaseUrlEdit,
   setNeteaseUrlEdit,
@@ -158,6 +164,7 @@ export function EditPlaylist({
   const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false);
   const [songIdToDelete, setSongIdToDelete] = useState<string | null>(null);
   const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
+  const [isCreatorNoteUploading, setIsCreatorNoteUploading] = useState(false);
 
   const selectedSong = useMemo(
     () => playlist.find((song) => song.id === editingSongId) ?? null,
@@ -189,6 +196,7 @@ export function EditPlaylist({
   }, [editingSongId, filteredPlaylist, handleEditSong, isMobile]);
 
   const selectSong = (song: Song) => {
+    if (isCreatorNoteUploading) return;
     if (editedSong && isDirty && song.id !== editedSong.id) {
       setPendingSongId(song.id);
       setConfirmDiscardOpen(true);
@@ -228,6 +236,8 @@ export function EditPlaylist({
         lyricLineCount={editedLyricLineCount}
         onConvertLyricsToLrc={handleConvertEditedLyricsToLrc}
         onNormalizeLyrics={handleNormalizeEditedLyrics}
+        onUploadCreatorNoteAudio={handleUploadCreatorNoteAudio}
+        onCreatorNoteUploadingChange={setIsCreatorNoteUploading}
         mode="edit"
       />
 
@@ -261,16 +271,26 @@ export function EditPlaylist({
           {isDirty ? t("playlist.detail.unsaved") : t("playlist.detail.synced")}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" variant="outline" onClick={handleCancelEdit}>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isCreatorNoteUploading}
+            onClick={handleCancelEdit}
+          >
             {t("actions.reset")}
           </Button>
-          <Button type="button" onClick={handleSaveEdit}>
+          <Button
+            type="button"
+            disabled={isCreatorNoteUploading}
+            onClick={handleSaveEdit}
+          >
             <Save className="h-3.5 w-3.5" />
             {t("actions.stageChanges")}
           </Button>
           <Button
             type="button"
             variant="destructive"
+            disabled={isCreatorNoteUploading}
             onClick={() => setSongIdToDelete(editedSong.id)}
           >
             <Trash2 className="h-3.5 w-3.5" />
@@ -302,7 +322,7 @@ export function EditPlaylist({
             <Button
               type="button"
               onClick={handleSavePlaylist}
-              disabled={isSavingPlaylist}
+              disabled={isSavingPlaylist || isCreatorNoteUploading}
             >
               <Save className="h-3.5 w-3.5" />
               {isSavingPlaylist
@@ -369,6 +389,7 @@ export function EditPlaylist({
                           hasSongChanges(song, editedSong),
                       )}
                       dirtyLabel={t("playlist.badges.dirty")}
+                      disabled={isCreatorNoteUploading}
                       onSelect={() => selectSong(song)}
                     />
                   ))}

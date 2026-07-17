@@ -184,6 +184,14 @@
       "savePlaylist": "Save Playlist"
     },
     "sections": {
+      "story": {
+        "title": "Work & Credits",
+        "description": "Describe this performance and reserve its stable sharing identity."
+      },
+      "creatorNote": {
+        "title": "Creator Note",
+        "description": "Add a personal reflection, an optional spoken note, or both."
+      },
       "track": {
         "title": "Track Info",
         "description": "Core track identity and timeline metadata."
@@ -198,6 +206,32 @@
       }
     },
     "fields": {
+      "performanceType": {
+        "label": "Performance Type"
+      },
+      "originalArtist": {
+        "label": "Original Artist",
+        "description": "Credit the original work separately from this performance.",
+        "placeholder": "Original performer or author"
+      },
+      "shareSlug": {
+        "label": "Share Slug",
+        "description": "Optional stable name for the future track page.",
+        "placeholder": "my-song-memory"
+      },
+      "creatorNoteLanguage": {
+        "label": "Writing Language"
+      },
+      "creatorNoteBody": {
+        "label": "Personal Writing",
+        "description": "Share what the song means to you; this does not need to match the recording word for word.",
+        "placeholder": "Why I chose this song, and what I remember about it..."
+      },
+      "creatorNoteTranscript": {
+        "label": "Spoken-note transcript (optional)",
+        "description": "Add an accurate transcript for accessibility. It is separate from the personal writing.",
+        "placeholder": "Transcript of the spoken note..."
+      },
       "title": {
         "label": "Title",
         "placeholder": "Song title"
@@ -246,6 +280,28 @@
         "label": "Lyrics",
         "placeholder": "[00:00.00]Line 1\n[00:05.00]Line 2"
       }
+    },
+    "creatorNote": {
+      "spokenTitle": "Spoken note",
+      "spokenDescription": "Upload an existing recording or capture a short note here. It stays separate from the full cover recording workflow.",
+      "uploadAudio": "Upload audio",
+      "replaceAudio": "Replace audio",
+      "uploading": "Uploading...",
+      "uploadFailed": "The spoken note could not be uploaded.",
+      "currentAudio": "Attached spoken note",
+      "removeAudio": "Remove audio",
+      "noAudio": "No spoken note attached. Written content can still be published on its own.",
+      "unsupported": "Microphone recording is unavailable in this browser. You can still upload an audio file.",
+      "startRecording": "Start recording",
+      "pauseRecording": "Pause",
+      "resumeRecording": "Resume",
+      "stopRecording": "Stop",
+      "retryRecording": "Record again",
+      "useRecording": "Use recording",
+      "recordedPreview": "Recording preview"
+    },
+    "loading": {
+      "loadingPlaylist": "Loading playlist"
     },
     "lyricsStatus": {
       "lrc": {

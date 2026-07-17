@@ -184,6 +184,14 @@
       "savePlaylist": "保存歌单"
     },
     "sections": {
+      "story": {
+        "title": "作品与署名",
+        "description": "说明这次演绎的性质，并预留稳定的分享标识。"
+      },
+      "creatorNote": {
+        "title": "翻唱者说",
+        "description": "可以写下个人感受、附上一段口述，或同时使用两者。"
+      },
       "track": {
         "title": "歌曲信息",
         "description": "歌曲基础身份信息与时间元数据。"
@@ -198,6 +206,32 @@
       }
     },
     "fields": {
+      "performanceType": {
+        "label": "演绎类型"
+      },
+      "originalArtist": {
+        "label": "原唱 / 原作者",
+        "description": "将原作署名与当前演绎者分开记录。",
+        "placeholder": "原唱或原作者"
+      },
+      "shareSlug": {
+        "label": "分享标识",
+        "description": "可选，用作后续单曲分享页的稳定名称。",
+        "placeholder": "my-song-memory"
+      },
+      "creatorNoteLanguage": {
+        "label": "文字语言"
+      },
+      "creatorNoteBody": {
+        "label": "个人文字",
+        "description": "写下这首歌对你的意义；内容不必与口述逐字一致。",
+        "placeholder": "我为什么选择这首歌，以及关于它的记忆……"
+      },
+      "creatorNoteTranscript": {
+        "label": "口述转写（可选）",
+        "description": "为无障碍阅读补充准确转写，它与个人文字是两种内容。",
+        "placeholder": "口述内容的准确转写……"
+      },
       "title": {
         "label": "标题",
         "placeholder": "歌曲标题"
@@ -246,6 +280,28 @@
         "label": "歌词",
         "placeholder": "[00:00.00]第一行\n[00:05.00]第二行"
       }
+    },
+    "creatorNote": {
+      "spokenTitle": "口述录音",
+      "spokenDescription": "上传已有录音，或在这里录一段简短口述。它不会进入完整翻唱录音工作区。",
+      "uploadAudio": "上传录音",
+      "replaceAudio": "替换录音",
+      "uploading": "正在上传……",
+      "uploadFailed": "口述录音上传失败。",
+      "currentAudio": "已附加的口述",
+      "removeAudio": "移除录音",
+      "noAudio": "尚未附加口述录音；个人文字仍可单独发布。",
+      "unsupported": "当前浏览器无法使用麦克风录音，你仍可上传音频文件。",
+      "startRecording": "开始录音",
+      "pauseRecording": "暂停",
+      "resumeRecording": "继续",
+      "stopRecording": "停止",
+      "retryRecording": "重新录制",
+      "useRecording": "使用这段录音",
+      "recordedPreview": "录音预览"
+    },
+    "loading": {
+      "loadingPlaylist": "正在加载歌单"
     },
     "lyricsStatus": {
       "lrc": {

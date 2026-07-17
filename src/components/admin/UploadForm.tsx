@@ -43,6 +43,7 @@ type UploadFormProps = {
   handleFetchLyrics: () => void;
   handleDeploy: () => void;
   handleNormalizeLyrics: () => void;
+  handleUploadCreatorNoteAudio: (file: File) => Promise<string>;
 };
 
 function formatBytes(bytes: number) {
@@ -69,9 +70,11 @@ export function UploadForm({
   handleFetchLyrics,
   handleDeploy,
   handleNormalizeLyrics,
+  handleUploadCreatorNoteAudio,
 }: UploadFormProps) {
   const t = useTranslations("admin");
   const [isDragging, setIsDragging] = useState(false);
+  const [isCreatorNoteUploading, setIsCreatorNoteUploading] = useState(false);
 
   const previewUrl = useMemo(
     () => (audioFile ? URL.createObjectURL(audioFile) : null),
@@ -264,6 +267,8 @@ export function UploadForm({
               lyricLineCount={lyricLineCount}
               onConvertLyricsToLrc={handleConvertLyricsToLrc}
               onNormalizeLyrics={handleNormalizeLyrics}
+              onUploadCreatorNoteAudio={handleUploadCreatorNoteAudio}
+              onCreatorNoteUploadingChange={setIsCreatorNoteUploading}
               mode="upload"
             />
           </div>
@@ -350,14 +355,20 @@ export function UploadForm({
             <div className="hidden xl:block">
               <AdminActionBar className="justify-between">
                 <div className="text-xs text-gray-500">
-                  {readiness.canDeploy
-                    ? t("upload.readiness.deployReady")
-                    : t("upload.readiness.deployBlocked")}
+                  {isCreatorNoteUploading
+                    ? t("creatorNote.uploading")
+                    : readiness.canDeploy
+                      ? t("upload.readiness.deployReady")
+                      : t("upload.readiness.deployBlocked")}
                 </div>
                 <Button
                   type="button"
                   onClick={handleDeploy}
-                  disabled={!readiness.canDeploy || isDeploying}
+                  disabled={
+                    !readiness.canDeploy ||
+                    isDeploying ||
+                    isCreatorNoteUploading
+                  }
                 >
                   {isDeploying ? (
                     <>
@@ -380,14 +391,18 @@ export function UploadForm({
       <div className="border-t border-[var(--border)] bg-[rgba(10,14,20,0.94)] p-3 xl:hidden">
         <AdminActionBar className="justify-between">
           <div className="text-xs text-gray-500">
-            {readiness.canDeploy
-              ? t("upload.readiness.deployReady")
-              : t("upload.readiness.deployBlocked")}
+            {isCreatorNoteUploading
+              ? t("creatorNote.uploading")
+              : readiness.canDeploy
+                ? t("upload.readiness.deployReady")
+                : t("upload.readiness.deployBlocked")}
           </div>
           <Button
             type="button"
             onClick={handleDeploy}
-            disabled={!readiness.canDeploy || isDeploying}
+            disabled={
+              !readiness.canDeploy || isDeploying || isCreatorNoteUploading
+            }
           >
             {isDeploying ? (
               <>

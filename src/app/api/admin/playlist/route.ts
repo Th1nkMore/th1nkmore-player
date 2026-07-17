@@ -3,7 +3,7 @@ import { revalidateTag } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
 import { PUBLIC_PLAYLIST_CACHE_TAG } from "@/lib/public-playlist";
 import { R2_BUCKET_NAME, r2Client } from "@/lib/r2";
-import { normalizeSong } from "@/lib/song";
+import { isSupportedMediaUrl, normalizeSong } from "@/lib/song";
 import type { Song } from "@/types/music";
 
 /**
@@ -80,25 +80,27 @@ async function streamToString(body: unknown): Promise<string> {
 }
 
 function normalizePlaylist(playlist: Song[]): Song[] {
-  return playlist.map((song) => {
-    let audioUrl = song.audioUrl;
-    if (audioUrl) {
-      try {
-        const url = new URL(audioUrl);
-        if (url.hostname.endsWith(".space.com")) {
-          url.hostname = url.hostname.replace(/\.space\.com$/, ".space");
-          audioUrl = url.toString();
-        }
-      } catch {
-        // ignore invalid urls
-      }
+  return playlist.map(normalizeSong);
+}
+
+function validatePlaylistStoryFields(playlist: Song[]): string | null {
+  const shareSlugs = new Set<string>();
+
+  for (const song of playlist) {
+    const spokenAudioUrl = song.creatorNote?.audioUrl;
+    if (spokenAudioUrl && !isSupportedMediaUrl(spokenAudioUrl)) {
+      return `Invalid Creator Note audio URL for ${song.id || "unknown song"}`;
     }
 
-    return normalizeSong({
-      ...song,
-      audioUrl,
-    });
-  });
+    if (song.shareSlug) {
+      if (shareSlugs.has(song.shareSlug)) {
+        return `Duplicate share slug: ${song.shareSlug}`;
+      }
+      shareSlugs.add(song.shareSlug);
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -180,6 +182,14 @@ export async function PUT(request: NextRequest) {
           { status: 400 },
         );
       }
+    }
+
+    const storyValidationError = validatePlaylistStoryFields(playlist);
+    if (storyValidationError) {
+      return NextResponse.json(
+        { error: storyValidationError },
+        { status: 400 },
+      );
     }
 
     const command = new PutObjectCommand({
