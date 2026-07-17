@@ -33,6 +33,7 @@ function resolveMimeType(): string {
 }
 
 export function useAudioRecorder() {
+  const [isClient, setIsClient] = useState(false);
   const [recordingState, setRecordingState] = useState<RecordingState>("idle");
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -51,11 +52,16 @@ export function useAudioRecorder() {
   );
 
   const isSupported =
+    isClient &&
     typeof window !== "undefined" &&
     typeof navigator !== "undefined" &&
     "mediaDevices" in navigator &&
     typeof navigator.mediaDevices?.getUserMedia === "function" &&
     typeof MediaRecorder !== "undefined";
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const cleanupStream = useCallback(() => {
     streamRef.current?.getTracks().forEach((track) => {
@@ -253,6 +259,7 @@ export function useAudioRecorder() {
     elapsedSeconds,
     error,
     isSupported,
+    isSupportResolved: isClient,
     mimeType,
     previewUrl,
     recordedBlob,

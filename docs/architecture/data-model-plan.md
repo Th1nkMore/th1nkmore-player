@@ -1,5 +1,9 @@
 # Data Model Plan
 
+## Implementation Status
+
+The optional cover-credit, sharing-identity, and Creator Note fields are implemented locally on `codex/creator-note-authoring`. Legacy normalization remains compatible, while public story presentation and audio focus are intentionally deferred to the next phases.
+
 ## Current State
 
 The current `Song` interface already supports playback, lyrics, tags, and first-pass classification:

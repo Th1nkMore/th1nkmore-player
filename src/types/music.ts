@@ -4,6 +4,15 @@ export type TrackType = "portfolio" | "personal";
 export type SourceType = "upload" | "recording" | "external-upload";
 export type Visibility = "public" | "private" | "unlisted";
 export type AssetStatus = "draft" | "ready" | "archived";
+export type PerformanceType = "cover" | "original" | "listening";
+
+export type CreatorNote = {
+  body?: string;
+  language?: LegacyLanguage;
+  audioUrl?: string;
+  audioDuration?: number;
+  audioTranscript?: string;
+};
 
 export type SongMetadata = {
   [key: string]: string | number;
@@ -24,4 +33,8 @@ export interface Song {
   sourceType: SourceType;
   visibility: Visibility;
   assetStatus: AssetStatus;
+  performanceType?: PerformanceType;
+  originalArtist?: string;
+  shareSlug?: string;
+  creatorNote?: CreatorNote;
 }

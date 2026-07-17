@@ -6,6 +6,7 @@ import {
   fetchLyricsFromAdmin,
   mergeFetchedSongInfo,
   saveAdminPlaylist,
+  uploadAudioFileToR2,
 } from "@/lib/admin-utils";
 import type { AdminNotice } from "@/lib/admin-workspace";
 import {
@@ -259,6 +260,11 @@ export function useAdminPlaylistFlow({
     addLog("> Edited plain lyrics converted to estimated LRC");
   }, [addLog, editedSong, t]);
 
+  const handleUploadCreatorNoteAudio = useCallback(
+    (file: File) => uploadAudioFileToR2(file, () => undefined, "creator-note"),
+    [],
+  );
+
   return {
     editedLyricsDescriptor: describeLyrics(editedSong?.lyrics || ""),
     editedSong,
@@ -271,6 +277,7 @@ export function useAdminPlaylistFlow({
     handleNormalizeEditedLyrics,
     handleSaveEdit,
     handleSavePlaylist,
+    handleUploadCreatorNoteAudio,
     isFetchingLyricsEdit,
     isLoadingPlaylist,
     isSavingPlaylist,
