@@ -6,7 +6,7 @@ Sonic IDE should let the owner publish a complete cover recording, explain the p
 
 ## Priority 1: Mobile Navigation
 
-Status: Implemented; physical touch-device acceptance remains.
+Status: Deployed; physical touch-device acceptance remains.
 
 - [x] Add horizontal swipe paging between Lyrics, Songs, and Info
 - [x] Keep bottom navigation visible and synchronized
@@ -16,7 +16,7 @@ Status: Implemented; physical touch-device acceptance remains.
 
 ## Priority 2: Creator Note Authoring
 
-Status: Implemented locally on `codex/creator-note-authoring`; not deployed.
+Status: Deployed.
 
 - [x] Add personal writing to a track
 - [x] Upload or record an optional spoken note
@@ -26,11 +26,13 @@ Status: Implemented locally on `codex/creator-note-authoring`; not deployed.
 
 ## Priority 3: Information Story Experience
 
-- Remove the generated waveform from the information hierarchy
-- Present cover credits, personal writing, and spoken-note audio
-- Guarantee one audio focus across song and spoken note
-- Use a full reading surface on mobile and a scrollable narrative surface on desktop
-- Provide a useful metadata fallback for tracks without a Creator Note
+Status: Implemented locally on `codex/creator-note-info-surface`; release acceptance remains.
+
+- [x] Remove the generated waveform from the information hierarchy
+- [x] Present cover credits, personal writing, and spoken-note audio
+- [x] Guarantee one audio focus across song and spoken note
+- [x] Use a full reading surface on mobile and a scrollable narrative surface on desktop
+- [x] Provide a useful metadata fallback for tracks without a Creator Note
 
 ## Priority 4: Track Sharing
 

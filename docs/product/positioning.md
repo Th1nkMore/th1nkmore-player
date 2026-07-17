@@ -66,6 +66,6 @@ The admin product is a single-owner publishing workspace, not a collaborative CM
 
 ## Current Boundary
 
-The current implementation already provides the player, lyrics, gesture-aware responsive navigation, admin uploads, editing, recording, and deployment. Creator Notes, track share pages, playback persistence, and per-track visual themes remain roadmap work.
+The current implementation provides the player, lyrics, gesture-aware responsive navigation, admin uploads, editing, recording, Creator Note authoring, and deployment. The information story experience and one-audio-focus behavior are implemented locally; track share pages, playback persistence, and per-track visual themes remain roadmap work.
 
 Visibility settings currently filter discovery in the public UI and API. Public R2 URLs are not storage-level access control; confidential assets require private storage and signed or authenticated delivery.

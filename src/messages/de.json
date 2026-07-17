@@ -51,21 +51,35 @@
     "shortcutClose": "Schließen Sie Tabs mit der × Schaltfläche"
   },
   "inspector": {
-    "title": "Inspektor",
-    "track": "Titel",
-    "metadata": "Metadaten",
-    "waveform": "Wellenform",
-    "midnightRefactorFile": "midnight-refactor.mp3",
-    "bpmKey": "bpm: 92 • Tonart: D-Moll",
-    "linesSections": "Zeilen: 64 • Abschnitte: Intro, Strophe, Refrain, Bridge",
-    "properties": "Eigenschaften",
-    "info": "Info",
-    "titleLabel": "Titel:",
-    "artistLabel": "Künstler:",
-    "albumLabel": "Album:",
-    "languageLabel": "Sprache:",
+    "title": "Track-Geschichte",
+    "albumLabel": "Album",
+    "durationLabel": "Dauer",
+    "creatorNote": "Creator Note",
+    "details": "Track-Details",
+    "tags": "Tags",
+    "transcript": "Transkript der Sprachnotiz lesen",
+    "performedBy": "Gesungen und präsentiert von {artist}",
+    "originalBy": "Original von {artist}",
+    "performanceType": {
+      "cover": "Cover-Version",
+      "original": "Originalwerk",
+      "listening": "Hörnotiz"
+    },
+    "spokenNote": {
+      "title": "Gesprochene Notiz",
+      "play": "Sprachnotiz zu {title} abspielen",
+      "pause": "Sprachnotiz pausieren",
+      "progress": "Fortschritt der Sprachnotiz",
+      "playing": "Sprachnotiz wird abgespielt",
+      "finished": "Sprachnotiz beendet",
+      "ready": "Eine kurze Notiz des Sängers",
+      "error": "Die Sprachnotiz konnte nicht abgespielt werden",
+      "coverPaused": "Cover pausiert · Position wurde gespeichert",
+      "continueCover": "Cover weiter abspielen",
+      "playCover": "Vollständiges Cover abspielen"
+    },
     "noFileSelected": "Keine Datei ausgewählt",
-    "transitioning": "Inspektor wird synchronisiert"
+    "transitioning": "Track-Geschichte wird geöffnet"
   },
   "terminal": {
     "play": "Wiedergabe",
@@ -144,8 +158,7 @@
     "trackActions": "Weitere Aktionen für {title}",
     "openTrack": "{title} abspielen",
     "openTrackWithHint": "{title} abspielen. Über das Kontextmenü zur Warteschlange hinzufügen.",
-    "goToTime": "Zu Zeit {time} springen",
-    "seekWaveform": "Wellenform, klicken zum Springen"
+    "goToTime": "Zu Zeit {time} springen"
   },
   "player": {
     "nowPlaying": "Wird abgespielt",

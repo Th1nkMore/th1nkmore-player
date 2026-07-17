@@ -2,7 +2,7 @@
 
 ## Status
 
-Product semantics accepted. Creator Note data and admin authoring are implemented locally on `codex/creator-note-authoring`; the public information surface, audio focus, and track sharing remain later phases.
+Product semantics accepted. Creator Note data and admin authoring are deployed. The information story surface and shared audio-focus behavior are implemented locally on `codex/creator-note-info-surface`; track sharing remains the next phase.
 
 ## Purpose
 
@@ -130,12 +130,12 @@ The information surface and share page should share a `TrackStory` presentation 
 
 ## Acceptance Checklist
 
-- [ ] Existing songs work without Creator Note fields
-- [ ] Text-only, spoken-only, and combined notes render correctly
-- [ ] The song and spoken note never overlap
-- [ ] The song position survives a spoken-note session
-- [ ] Leaving Info pauses spoken audio
-- [ ] Spoken audio never appears in song navigation
+- [x] Existing songs work without Creator Note fields
+- [x] Text-only, spoken-only, and combined notes render correctly
+- [x] The song and spoken note never overlap
+- [x] The song position survives a spoken-note session
+- [x] Leaving Info pauses spoken audio
+- [x] Spoken audio never appears in song navigation
 - [ ] Share pages render without the full IDE shell
 - [ ] Copy link returns a track page URL
 - [ ] Private or draft story content is not exposed publicly
