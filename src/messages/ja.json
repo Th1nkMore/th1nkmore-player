@@ -184,6 +184,14 @@
       "savePlaylist": "プレイリストを保存"
     },
     "sections": {
+      "story": {
+        "title": "作品とクレジット",
+        "description": "この演奏の種類と、共有用の安定した識別名を設定します。"
+      },
+      "creatorNote": {
+        "title": "カバー作者のノート",
+        "description": "個人的な文章、任意の音声メモ、または両方を追加できます。"
+      },
       "track": {
         "title": "トラック情報",
         "description": "基本情報とタイムライン関連のメタデータ。"
@@ -198,6 +206,32 @@
       }
     },
     "fields": {
+      "performanceType": {
+        "label": "演奏タイプ"
+      },
+      "originalArtist": {
+        "label": "オリジナルアーティスト",
+        "description": "原作のクレジットを今回の演奏者とは別に記録します。",
+        "placeholder": "原曲の歌手または作者"
+      },
+      "shareSlug": {
+        "label": "共有スラッグ",
+        "description": "将来のトラック共有ページに使う任意の安定名です。",
+        "placeholder": "my-song-memory"
+      },
+      "creatorNoteLanguage": {
+        "label": "文章の言語"
+      },
+      "creatorNoteBody": {
+        "label": "個人的な文章",
+        "description": "この曲への思いを書きます。音声と一字一句同じである必要はありません。",
+        "placeholder": "この曲を選んだ理由や、曲にまつわる記憶……"
+      },
+      "creatorNoteTranscript": {
+        "label": "音声メモの文字起こし（任意）",
+        "description": "アクセシビリティのための正確な文字起こしです。個人的な文章とは別です。",
+        "placeholder": "音声メモの文字起こし……"
+      },
       "title": {
         "label": "タイトル",
         "placeholder": "曲名"
@@ -246,6 +280,28 @@
         "label": "歌詞",
         "placeholder": "[00:00.00]1行目\n[00:05.00]2行目"
       }
+    },
+    "creatorNote": {
+      "spokenTitle": "音声メモ",
+      "spokenDescription": "既存の録音をアップロードするか、ここで短いメモを録音します。フルカバー録音とは別の操作です。",
+      "uploadAudio": "音声をアップロード",
+      "replaceAudio": "音声を置き換え",
+      "uploading": "アップロード中……",
+      "uploadFailed": "音声メモをアップロードできませんでした。",
+      "currentAudio": "添付済みの音声メモ",
+      "removeAudio": "音声を削除",
+      "noAudio": "音声メモは未添付です。文章だけでも公開できます。",
+      "unsupported": "このブラウザではマイク録音を利用できません。音声ファイルはアップロードできます。",
+      "startRecording": "録音を開始",
+      "pauseRecording": "一時停止",
+      "resumeRecording": "再開",
+      "stopRecording": "停止",
+      "retryRecording": "録り直す",
+      "useRecording": "この録音を使う",
+      "recordedPreview": "録音プレビュー"
+    },
+    "loading": {
+      "loadingPlaylist": "プレイリストを読み込み中"
     },
     "lyricsStatus": {
       "lrc": {

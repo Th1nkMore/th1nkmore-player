@@ -137,6 +137,109 @@ describe("admin playlist route", () => {
     );
   });
 
+  it("normalizes and writes Creator Note authoring fields", async () => {
+    sendMock.mockResolvedValueOnce({});
+    const { PUT } = await importRoute();
+    const request = new Request("http://localhost/api/admin/playlist", {
+      method: "PUT",
+      body: JSON.stringify([
+        {
+          ...songOne,
+          performanceType: "cover",
+          originalArtist: " Original Artist ",
+          shareSlug: " My Memory ",
+          creatorNote: {
+            body: " A written note. ",
+            language: "jp",
+            audioUrl: "https://cdn.example.com/creator-note.webm",
+            audioDuration: 21.8,
+            audioTranscript: " Spoken words. ",
+          },
+        },
+      ]),
+      headers: { "content-type": "application/json" },
+    });
+
+    const response = await PUT(request as never);
+    const [command] = sendMock.mock.calls[0] ?? [];
+    const [savedSong] = JSON.parse(command.input.Body as string);
+
+    expect(response.status).toBe(200);
+    expect(savedSong).toMatchObject({
+      performanceType: "cover",
+      originalArtist: "Original Artist",
+      shareSlug: "my-memory",
+      creatorNote: {
+        body: "A written note.",
+        language: "ja",
+        audioUrl: "https://cdn.example.com/creator-note.webm",
+        audioDuration: 22,
+        audioTranscript: "Spoken words.",
+      },
+    });
+  });
+
+  it("removes empty Creator Note objects before saving", async () => {
+    sendMock.mockResolvedValueOnce({});
+    const { PUT } = await importRoute();
+    const request = new Request("http://localhost/api/admin/playlist", {
+      method: "PUT",
+      body: JSON.stringify([
+        { ...songOne, creatorNote: { language: "zh", audioDuration: 12 } },
+      ]),
+      headers: { "content-type": "application/json" },
+    });
+
+    const response = await PUT(request as never);
+    const [command] = sendMock.mock.calls[0] ?? [];
+    const [savedSong] = JSON.parse(command.input.Body as string);
+
+    expect(response.status).toBe(200);
+    expect(savedSong).not.toHaveProperty("creatorNote");
+  });
+
+  it("rejects unsafe Creator Note audio URLs", async () => {
+    const { PUT } = await importRoute();
+    const request = new Request("http://localhost/api/admin/playlist", {
+      method: "PUT",
+      body: JSON.stringify([
+        {
+          ...songOne,
+          creatorNote: { audioUrl: "javascript:alert(1)" },
+        },
+      ]),
+      headers: { "content-type": "application/json" },
+    });
+
+    const response = await PUT(request as never);
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "Invalid Creator Note audio URL for song-1",
+    });
+    expect(sendMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects duplicate normalized share slugs", async () => {
+    const { PUT } = await importRoute();
+    const request = new Request("http://localhost/api/admin/playlist", {
+      method: "PUT",
+      body: JSON.stringify([
+        { ...songOne, shareSlug: "My Memory" },
+        { ...songTwo, shareSlug: "my-memory" },
+      ]),
+      headers: { "content-type": "application/json" },
+    });
+
+    const response = await PUT(request as never);
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "Duplicate share slug: my-memory",
+    });
+    expect(sendMock).not.toHaveBeenCalled();
+  });
+
   it("reports a successful save when only cache invalidation fails", async () => {
     sendMock.mockResolvedValueOnce({});
     cacheMocks.revalidateTagMock.mockImplementationOnce(() => {

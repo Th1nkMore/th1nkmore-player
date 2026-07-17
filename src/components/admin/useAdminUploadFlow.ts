@@ -7,6 +7,7 @@ import {
   fetchLyricsFromAdmin,
   mergeFetchedSongInfo,
   persistSongAssetToLibrary,
+  uploadAudioFileToR2,
 } from "@/lib/admin-utils";
 import type { AdminNotice } from "@/lib/admin-workspace";
 import {
@@ -187,6 +188,11 @@ export function useAdminUploadFlow({
     addLog("> Plain lyrics converted to estimated LRC");
   }, [addLog, formData.duration, t]);
 
+  const handleUploadCreatorNoteAudio = useCallback(
+    (file: File) => uploadAudioFileToR2(file, () => undefined, "creator-note"),
+    [],
+  );
+
   const resetUploadForm = useCallback(() => {
     setFormData(createEmptySongDraft());
     setAudioFile(null);
@@ -291,6 +297,7 @@ export function useAdminUploadFlow({
     handleFetchLyrics,
     handleFileSelect,
     handleNormalizeLyrics,
+    handleUploadCreatorNoteAudio,
     handleUseRecordingAsUploadSource,
     isDeploying,
     isFetchingLyrics,

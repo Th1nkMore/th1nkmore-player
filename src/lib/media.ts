@@ -1,9 +1,15 @@
-export type MediaAssetKind = "accompaniment" | "audio" | "recording" | "export";
+export type MediaAssetKind =
+  | "accompaniment"
+  | "audio"
+  | "recording"
+  | "creator-note"
+  | "export";
 
 const MEDIA_PREFIX: Record<MediaAssetKind, string> = {
   accompaniment: "accompaniments",
   audio: "audio",
   recording: "recordings",
+  "creator-note": "creator-notes",
   export: "exports",
 };
 
@@ -12,6 +18,7 @@ export function isMediaAssetKind(value: string): value is MediaAssetKind {
     value === "accompaniment" ||
     value === "audio" ||
     value === "recording" ||
+    value === "creator-note" ||
     value === "export"
   );
 }

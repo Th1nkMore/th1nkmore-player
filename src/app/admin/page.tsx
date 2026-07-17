@@ -52,6 +52,9 @@ export default function AdminPage() {
             handleFetchLyrics={controller.upload.handleFetchLyrics}
             handleDeploy={controller.upload.handleDeploy}
             handleNormalizeLyrics={controller.upload.handleNormalizeLyrics}
+            handleUploadCreatorNoteAudio={
+              controller.upload.handleUploadCreatorNoteAudio
+            }
           />
         ) : controller.activeTab === "record" ? (
           <AdminRecordingWorkspace
@@ -80,6 +83,9 @@ export default function AdminPage() {
             }
             handleNormalizeEditedLyrics={
               controller.playlist.handleNormalizeEditedLyrics
+            }
+            handleUploadCreatorNoteAudio={
+              controller.playlist.handleUploadCreatorNoteAudio
             }
             updateEditedSong={controller.playlist.updateEditedSong}
             neteaseUrlEdit={controller.playlist.neteaseUrlEdit}
