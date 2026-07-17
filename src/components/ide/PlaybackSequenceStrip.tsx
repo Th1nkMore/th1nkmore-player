@@ -240,7 +240,6 @@ export function PlaybackSequenceStrip({
           onScroll={updateScrollIndicators}
           onWheel={handleWheel}
           className="flex h-full touch-pan-x touch-pinch-zoom items-stretch overflow-x-auto scrollbar-none"
-          data-mobile-swipe-lock
         >
           <AnimatePresence initial={false} mode="popLayout">
             {sequence.map((song, index) => (

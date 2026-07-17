@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "assetKind must be one of: accompaniment, audio, recording, export",
+            "assetKind must be one of: accompaniment, audio, recording, creator-note, export",
         },
         { status: 400 },
       );

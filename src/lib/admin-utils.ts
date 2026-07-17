@@ -4,6 +4,7 @@ import {
   DEFAULT_SOURCE_TYPE,
   DEFAULT_TRACK_TYPE,
   DEFAULT_VISIBILITY,
+  normalizeSong,
 } from "@/lib/song";
 import { normalizeSongTags } from "@/lib/tags";
 import { normalizeLanguage, slugifySegment } from "@/lib/utils";
@@ -37,7 +38,7 @@ export const createSongFromFormData = (
     suffix += 1;
   }
 
-  return {
+  return normalizeSong({
     id: candidateId,
     title: title || "",
     artist: artist || "",
@@ -52,7 +53,11 @@ export const createSongFromFormData = (
     sourceType: formData.sourceType || DEFAULT_SOURCE_TYPE,
     visibility: formData.visibility || DEFAULT_VISIBILITY,
     assetStatus: formData.assetStatus || DEFAULT_ASSET_STATUS,
-  };
+    performanceType: formData.performanceType,
+    originalArtist: formData.originalArtist,
+    shareSlug: formData.shareSlug,
+    creatorNote: formData.creatorNote,
+  });
 };
 
 export async function uploadAudioFileToR2(

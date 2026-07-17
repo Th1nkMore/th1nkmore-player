@@ -54,6 +54,8 @@ Acceptance:
 
 ## Phase 2: Creator Note Model And Authoring
 
+Status: Implemented locally on `codex/creator-note-authoring`; not deployed.
+
 Suggested branch:
 
 - `feat/creator-note-authoring`
@@ -66,6 +68,13 @@ Scope:
 - Support spoken-note upload, preview, replacement, and removal
 - Add a lightweight spoken-note recorder using existing low-level microphone primitives
 - Keep full cover recording and spoken-note recording as separate admin workflows
+
+Implementation notes:
+
+- Spoken-note binaries use the dedicated `creator-notes/` storage prefix
+- Uploading or recording replaces the manifest reference without exposing object keys in the normal form
+- Removing a spoken note removes its manifest reference; physical orphan cleanup remains Phase 7 work
+- Public playback, one-audio-focus behavior, and the information hierarchy remain Phase 3 work
 
 Acceptance:
 

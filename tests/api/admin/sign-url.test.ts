@@ -173,6 +173,39 @@ describe("admin sign-url route", () => {
     });
   });
 
+  it("supports Creator Note audio with a dedicated key prefix", async () => {
+    getSignedUrlMock.mockResolvedValueOnce(
+      "https://upload.example.com/presigned",
+    );
+    buildPublicAssetUrlMock.mockReturnValueOnce(
+      "https://cdn.example.com/creator-notes/1717171717171-uuid-123-note.webm",
+    );
+
+    const { POST } = await importRoute();
+    const request = new Request("http://localhost/api/admin/sign-url", {
+      method: "POST",
+      body: JSON.stringify({
+        assetKind: "creator-note",
+        filename: "note.webm",
+        contentType: "audio/webm",
+      }),
+      headers: {
+        "content-type": "application/json",
+      },
+    });
+
+    const response = await POST(request as never);
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      assetKind: "creator-note",
+      uploadUrl: "https://upload.example.com/presigned",
+      publicUrl:
+        "https://cdn.example.com/creator-notes/1717171717171-uuid-123-note.webm",
+      key: "creator-notes/1717171717171-uuid-123-note.webm",
+    });
+  });
+
   it("rejects non-audio content types", async () => {
     const { POST } = await importRoute();
     const request = new Request("http://localhost/api/admin/sign-url", {
@@ -213,7 +246,7 @@ describe("admin sign-url route", () => {
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toEqual({
       error:
-        "assetKind must be one of: accompaniment, audio, recording, export",
+        "assetKind must be one of: accompaniment, audio, recording, creator-note, export",
     });
   });
 

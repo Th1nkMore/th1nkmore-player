@@ -184,6 +184,14 @@
       "savePlaylist": "Playlist speichern"
     },
     "sections": {
+      "story": {
+        "title": "Werk & Credits",
+        "description": "Art der Darbietung und eine stabile Kennung zum Teilen festlegen."
+      },
+      "creatorNote": {
+        "title": "Creator Note",
+        "description": "Persönlichen Text, eine optionale Sprachnotiz oder beides hinzufügen."
+      },
       "track": {
         "title": "Track-Info",
         "description": "Grunddaten des Tracks und zeitbezogene Metadaten."
@@ -198,6 +206,32 @@
       }
     },
     "fields": {
+      "performanceType": {
+        "label": "Darbietungstyp"
+      },
+      "originalArtist": {
+        "label": "Originalinterpret",
+        "description": "Das Originalwerk getrennt von dieser Darbietung nennen.",
+        "placeholder": "Originalinterpret oder Autor"
+      },
+      "shareSlug": {
+        "label": "Freigabe-Slug",
+        "description": "Optionaler stabiler Name für die spätere Track-Seite.",
+        "placeholder": "my-song-memory"
+      },
+      "creatorNoteLanguage": {
+        "label": "Sprache des Textes"
+      },
+      "creatorNoteBody": {
+        "label": "Persönlicher Text",
+        "description": "Erzählen Sie, was der Song bedeutet; der Text muss nicht wortgleich mit der Aufnahme sein.",
+        "placeholder": "Warum ich diesen Song gewählt habe und woran er mich erinnert …"
+      },
+      "creatorNoteTranscript": {
+        "label": "Transkript der Sprachnotiz (optional)",
+        "description": "Ein genaues Transkript für Barrierefreiheit, getrennt vom persönlichen Text.",
+        "placeholder": "Transkript der Sprachnotiz …"
+      },
       "title": {
         "label": "Titel",
         "placeholder": "Songtitel"
@@ -246,6 +280,28 @@
         "label": "Songtext",
         "placeholder": "[00:00.00]Zeile 1\n[00:05.00]Zeile 2"
       }
+    },
+    "creatorNote": {
+      "spokenTitle": "Sprachnotiz",
+      "spokenDescription": "Vorhandene Aufnahme hochladen oder hier eine kurze Notiz aufnehmen. Dies bleibt vom vollständigen Cover-Recorder getrennt.",
+      "uploadAudio": "Audio hochladen",
+      "replaceAudio": "Audio ersetzen",
+      "uploading": "Wird hochgeladen …",
+      "uploadFailed": "Die Sprachnotiz konnte nicht hochgeladen werden.",
+      "currentAudio": "Angehängte Sprachnotiz",
+      "removeAudio": "Audio entfernen",
+      "noAudio": "Keine Sprachnotiz angehängt. Der Text kann allein veröffentlicht werden.",
+      "unsupported": "Mikrofonaufnahme ist in diesem Browser nicht verfügbar. Eine Audiodatei kann weiterhin hochgeladen werden.",
+      "startRecording": "Aufnahme starten",
+      "pauseRecording": "Pausieren",
+      "resumeRecording": "Fortsetzen",
+      "stopRecording": "Stoppen",
+      "retryRecording": "Neu aufnehmen",
+      "useRecording": "Aufnahme verwenden",
+      "recordedPreview": "Aufnahmevorschau"
+    },
+    "loading": {
+      "loadingPlaylist": "Playlist wird geladen"
     },
     "lyricsStatus": {
       "lrc": {

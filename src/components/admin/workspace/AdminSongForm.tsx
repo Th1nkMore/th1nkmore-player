@@ -4,6 +4,7 @@ import { Loader2, Music2, RefreshCcw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { LyricsTools } from "@/components/admin/LyricsTools";
 import { TagInput } from "@/components/admin/TagInput";
+import { AdminStoryFields } from "@/components/admin/workspace/AdminStoryFields";
 import {
   AdminField,
   AdminFieldGrid,
@@ -35,6 +36,8 @@ type AdminSongFormProps = {
   lyricLineCount: number;
   onConvertLyricsToLrc: () => void;
   onNormalizeLyrics: () => void;
+  onUploadCreatorNoteAudio: (file: File) => Promise<string>;
+  onCreatorNoteUploadingChange: (isUploading: boolean) => void;
   mode: "upload" | "edit";
 };
 
@@ -50,6 +53,8 @@ export function AdminSongForm({
   lyricLineCount,
   onConvertLyricsToLrc,
   onNormalizeLyrics,
+  onUploadCreatorNoteAudio,
+  onCreatorNoteUploadingChange,
   mode,
 }: AdminSongFormProps) {
   const t = useTranslations("admin");
@@ -112,6 +117,13 @@ export function AdminSongForm({
           </AdminField>
         </AdminFieldGrid>
       </AdminSectionCard>
+
+      <AdminStoryFields
+        draft={draft}
+        onChange={onChange}
+        onUploadCreatorNoteAudio={onUploadCreatorNoteAudio}
+        onCreatorNoteUploadingChange={onCreatorNoteUploadingChange}
+      />
 
       <AdminSectionCard
         title={t("sections.classification.title")}

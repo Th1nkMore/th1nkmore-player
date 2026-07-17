@@ -2,7 +2,7 @@
 
 ## Status
 
-Product semantics accepted; implementation not started.
+Product semantics accepted. Creator Note data and admin authoring are implemented locally on `codex/creator-note-authoring`; the public information surface, audio focus, and track sharing remain later phases.
 
 ## Purpose
 
@@ -88,6 +88,14 @@ The admin workflow supports:
 - Complete-work preview before publication
 
 Reuse low-level recorder primitives. Do not reuse the full accompaniment and teleprompter workspace as the spoken-note UI.
+
+Implementation boundary:
+
+- Text, language, optional transcript, and spoken-audio metadata are stored in the flat playlist manifest
+- New drafts default to `performanceType: "cover"`; legacy tracks remain valid without story fields
+- Spoken uploads use the dedicated `creator-notes/` asset prefix
+- Upload, browser recording, preview, retry, replacement, and manifest removal live inside the track form
+- Replacing or removing a manifest reference does not automatically delete the old object; asset cleanup remains explicit lifecycle work
 
 ## Share Page
 

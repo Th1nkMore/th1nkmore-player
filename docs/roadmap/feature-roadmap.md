@@ -16,11 +16,13 @@ Status: Implemented; physical touch-device acceptance remains.
 
 ## Priority 2: Creator Note Authoring
 
-- Add personal writing to a track
-- Upload or record an optional spoken note
-- Preview, replace, and remove spoken-note audio
-- Keep spoken-note recording separate from full cover recording
-- Support an optional accurate transcript without requiring one for publication
+Status: Implemented locally on `codex/creator-note-authoring`; not deployed.
+
+- [x] Add personal writing to a track
+- [x] Upload or record an optional spoken note
+- [x] Preview, replace, and remove spoken-note audio
+- [x] Keep spoken-note recording separate from full cover recording
+- [x] Support an optional accurate transcript without requiring one for publication
 
 ## Priority 3: Information Story Experience
 
