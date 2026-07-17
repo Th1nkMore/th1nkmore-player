@@ -51,21 +51,35 @@
     "shortcutClose": "× ボタンでタブを閉じる"
   },
   "inspector": {
-    "title": "インスペクター",
-    "track": "トラック",
-    "metadata": "メタデータ",
-    "waveform": "波形",
-    "midnightRefactorFile": "midnight-refactor.mp3",
-    "bpmKey": "bpm: 92 • キー: D マイナー",
-    "linesSections": "行数: 64 • セクション: イントロ, バース, コーラス, ブリッジ",
-    "properties": "プロパティ",
-    "info": "情報",
-    "titleLabel": "タイトル:",
-    "artistLabel": "アーティスト:",
-    "albumLabel": "アルバム:",
-    "languageLabel": "言語:",
+    "title": "作品ストーリー",
+    "albumLabel": "アルバム",
+    "durationLabel": "長さ",
+    "creatorNote": "歌い手ノート",
+    "details": "作品情報",
+    "tags": "タグ",
+    "transcript": "音声ノートの文字起こしを読む",
+    "performedBy": "歌唱・制作：{artist}",
+    "originalBy": "原曲：{artist}",
+    "performanceType": {
+      "cover": "カバー作品",
+      "original": "オリジナル作品",
+      "listening": "リスニングノート"
+    },
+    "spokenNote": {
+      "title": "歌い手ノート・音声",
+      "play": "「{title}」の音声ノートを再生",
+      "pause": "音声ノートを一時停止",
+      "progress": "音声ノートの再生位置",
+      "playing": "歌い手の音声ノートを再生中",
+      "finished": "音声ノートの再生が終了しました",
+      "ready": "この曲についての短い音声ノート",
+      "error": "音声ノートを再生できませんでした",
+      "coverPaused": "カバーを一時停止しました・再生位置は保存されています",
+      "continueCover": "カバーの続きを再生",
+      "playCover": "カバー全編を再生"
+    },
     "noFileSelected": "ファイルが選択されていません",
-    "transitioning": "インスペクターを同期中"
+    "transitioning": "作品ストーリーを開いています"
   },
   "terminal": {
     "play": "再生",
@@ -144,8 +158,7 @@
     "trackActions": "{title} のその他の操作",
     "openTrack": "{title} を再生",
     "openTrackWithHint": "{title} を再生。コンテキストメニューからキューに追加できます。",
-    "goToTime": "{time} に移動",
-    "seekWaveform": "波形をクリックして再生位置へ移動"
+    "goToTime": "{time} に移動"
   },
   "player": {
     "nowPlaying": "再生中",

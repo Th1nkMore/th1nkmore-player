@@ -2,7 +2,7 @@
 
 ## Implementation Status
 
-The optional cover-credit, sharing-identity, and Creator Note fields are implemented locally on `codex/creator-note-authoring`. Legacy normalization remains compatible, while public story presentation and audio focus are intentionally deferred to the next phases.
+The optional cover-credit, sharing-identity, and Creator Note fields are deployed. Legacy normalization remains compatible. Public story presentation and audio focus are implemented locally on `codex/creator-note-info-surface`; stable track routes remain the next data consumer.
 
 ## Current State
 
@@ -62,7 +62,7 @@ The model must preserve two separate audio roles:
 - `audioUrl`: complete cover recording controlled by the global song player
 - `creatorNote.audioUrl`: spoken editorial audio controlled by an inline note player
 
-Creator Note audio must not be converted into a `Song`, queued, shuffled, repeated, or included in song navigation. A shared audio-focus coordinator should pause one role before starting the other.
+Creator Note audio is not converted into a `Song`, queued, shuffled, repeated, or included in song navigation. The shared audio-focus coordinator pauses or stops the other role before playback begins.
 
 ## Transition Strategy
 

@@ -28,7 +28,7 @@ Acceptance:
 
 ## Phase 1: Mobile Swipe Pager
 
-Status: Implemented on `codex/mobile-swipe-pager`; physical touch-device acceptance remains.
+Status: Deployed. Swipe switching is limited to the bottom navigation gesture zone; physical touch-device acceptance remains.
 
 Suggested branch:
 
@@ -54,7 +54,7 @@ Acceptance:
 
 ## Phase 2: Creator Note Model And Authoring
 
-Status: Implemented locally on `codex/creator-note-authoring`; not deployed.
+Status: Deployed from `codex/creator-note-authoring`.
 
 Suggested branch:
 
@@ -86,6 +86,8 @@ Acceptance:
 - Admin publishing does not expose raw object-management complexity to the normal authoring flow
 
 ## Phase 3: Information Story Surface
+
+Status: Implemented locally on `codex/creator-note-info-surface`; release acceptance remains.
 
 Suggested branch:
 
