@@ -16,6 +16,7 @@ import {
 import type { MobileTab } from "@/components/layout/MobileBottomNav";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { MobileSwipePager } from "@/components/layout/MobileSwipePager";
+import { pauseAudioRole } from "@/lib/audio-focus";
 import { useScreenMode } from "@/lib/hooks/useScreenMode";
 import { cn } from "@/lib/utils";
 import { useIDEStore } from "@/store/useIDEStore";
@@ -220,6 +221,17 @@ export function IDEFrame({
   const isDesktop = screenMode === "desktop";
   const isLandscape = screenMode === "mobile-landscape";
   const isPortrait = screenMode === "mobile-portrait";
+
+  useEffect(() => {
+    const informationSurfaceIsActive =
+      isDesktop ||
+      (isPortrait && mobileTab === "info") ||
+      (isLandscape && mobileInspectorOpen);
+
+    if (!informationSurfaceIsActive) {
+      pauseAudioRole("creator-note");
+    }
+  }, [isDesktop, isLandscape, isPortrait, mobileInspectorOpen, mobileTab]);
 
   useEffect(() => {
     fetchSongs();

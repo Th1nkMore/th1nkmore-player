@@ -4,7 +4,7 @@
 
 Sonic IDE is a Next.js App Router application combining a public listening experience with an authenticated single-owner media workspace.
 
-The current codebase is a usable player and publishing baseline. Mobile swipe paging is implemented on its feature branch; Creator Notes, track share pages, and per-track themes remain roadmap work.
+The current codebase is a usable player and publishing baseline. Bottom-navigation swipe switching and Creator Note authoring are deployed. The information story surface is implemented locally; track share pages and per-track themes remain roadmap work.
 
 ## Current Public Capabilities
 
@@ -16,6 +16,8 @@ The current codebase is a usable player and publishing baseline. Mobile swipe pa
 - Gesture-aware mobile portrait paging between Lyrics, Songs, and Info, synchronized with bottom navigation
 - Localized public routes for English, Chinese, Japanese, and German
 - Public playlist delivery from Cloudflare R2 with ISR and a public fallback
+- Narrative track information with cover credits, personal writing, optional spoken audio, transcript, tags, and metadata fallback
+- Shared audio focus that keeps the cover and spoken Creator Note mutually exclusive
 
 ## Current Admin Capabilities
 
@@ -26,6 +28,7 @@ The current codebase is a usable player and publishing baseline. Mobile swipe pa
 - Track classification, tags, and visibility fields
 - In-browser full recording with preview, retry, and upload handoff
 - Browser-side MP3 export for newly recorded audio
+- Creator Note writing, language, spoken upload or recording, transcript, replacement, and removal
 
 ## Current Delivery And Quality
 
@@ -44,17 +47,14 @@ The current codebase is a usable player and publishing baseline. Mobile swipe pa
 
 ## Known Product Gaps
 
-- No Creator Note data, authoring workflow, spoken-note player, or transcript support
 - No track-level route, server-rendered share page, or per-track social metadata
 - The existing copy-link action copies a raw audio URL instead of a work page
-- The information surface still prioritizes a generated waveform and generic properties over personal narrative
 - Playback session state is not restored across visits, and Media Session integration is absent
 - Portfolio/personal classification exists in data and admin but has little public presentation impact
 - Per-track visual themes are not implemented
 
 ## Known Technical Gaps
 
-- Song audio and future spoken-note audio need a shared audio-focus coordinator
 - The library remains a flat manifest rather than a rich media catalog
 - Playlist removal does not automatically remove backing R2 assets
 - Public R2 URLs do not provide storage-level privacy
