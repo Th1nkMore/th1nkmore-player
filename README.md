@@ -35,6 +35,8 @@ Current planning highlights:
 - Track classification metadata for portfolio vs personal, source type, visibility, and asset status
 - Admin-only recording workspace with microphone capture, preview, retry, save-to-library, and upload handoff
 - Browser-side MP3 export for newly recorded audio
+- Creator Note authoring with personal writing, optional spoken recording, and transcript
+- Narrative track information surface with a dedicated spoken-note player and one-audio-focus behavior
 
 ## Stack
 
@@ -127,7 +129,7 @@ Detailed process: [`docs/process/branching-release.md`](docs/process/branching-r
 - Public R2 object URLs bypass application-level visibility filtering; true private playback still requires private storage and authenticated delivery.
 - The app still uses a playlist-shaped library model rather than a richer media catalog.
 - Recording and MP3 export exist, but the workflow is still narrow: export currently targets newly recorded client-side audio rather than all managed tracks.
-- Creator Notes, spoken-note recording, track-level share routes, and social metadata are planned but not yet implemented.
+- Track-level share routes, copy-link migration, and per-track social metadata are not yet implemented.
 - Playback session state is not yet restored across visits, and Media Session integration is not implemented.
 - The deployment workflow builds before release, but lint, tests, and frozen-lockfile validation are not yet full remote gates.
 - Public R2 URLs still make visibility a discovery control rather than storage-level privacy.

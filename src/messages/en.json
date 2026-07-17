@@ -51,21 +51,35 @@
     "shortcutClose": "Close tabs with the × button"
   },
   "inspector": {
-    "title": "Inspector",
-    "track": "Track",
-    "metadata": "Metadata",
-    "waveform": "Waveform",
-    "midnightRefactorFile": "midnight-refactor.mp3",
-    "bpmKey": "bpm: 92 • key: D minor",
-    "linesSections": "Lines: 64 • Sections: intro, verse, chorus, bridge",
-    "properties": "Properties",
-    "info": "Info",
-    "titleLabel": "Title:",
-    "artistLabel": "Artist:",
-    "albumLabel": "Album:",
-    "languageLabel": "Language:",
+    "title": "Track story",
+    "albumLabel": "Album",
+    "durationLabel": "Duration",
+    "creatorNote": "Creator Note",
+    "details": "Track details",
+    "tags": "Tags",
+    "transcript": "Read spoken-note transcript",
+    "performedBy": "Performed by {artist}",
+    "originalBy": "Original by {artist}",
+    "performanceType": {
+      "cover": "Cover performance",
+      "original": "Original work",
+      "listening": "Listening note"
+    },
+    "spokenNote": {
+      "title": "Spoken note",
+      "play": "Play the spoken note for {title}",
+      "pause": "Pause the spoken note",
+      "progress": "Spoken-note progress",
+      "playing": "Playing the creator's spoken note",
+      "finished": "Spoken note finished",
+      "ready": "A short note from the creator",
+      "error": "The spoken note could not be played",
+      "coverPaused": "Song paused · your place is saved",
+      "continueCover": "Continue playing the song",
+      "playCover": "Play the full performance"
+    },
     "noFileSelected": "No file selected",
-    "transitioning": "Syncing inspector"
+    "transitioning": "Opening track story"
   },
   "terminal": {
     "play": "Play",
@@ -144,8 +158,7 @@
     "trackActions": "More actions for {title}",
     "openTrack": "Play {title}",
     "openTrackWithHint": "Play {title}. Use the context menu to add it to the queue.",
-    "goToTime": "Go to time {time}",
-    "seekWaveform": "Waveform - click to seek"
+    "goToTime": "Go to time {time}"
   },
   "player": {
     "nowPlaying": "Now Playing",

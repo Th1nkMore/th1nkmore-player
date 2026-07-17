@@ -51,21 +51,35 @@
     "shortcutClose": "使用 × 按钮关闭标签页"
   },
   "inspector": {
-    "title": "检查器",
-    "track": "曲目",
-    "metadata": "元数据",
-    "waveform": "波形",
-    "midnightRefactorFile": "midnight-refactor.mp3",
-    "bpmKey": "bpm: 92 • 调: D 小调",
-    "linesSections": "行数: 64 • 段落: 前奏, 主歌, 副歌, 桥段",
-    "properties": "属性",
-    "info": "信息",
-    "titleLabel": "标题:",
-    "artistLabel": "艺术家:",
-    "albumLabel": "专辑:",
-    "languageLabel": "语言:",
+    "title": "作品信息",
+    "albumLabel": "专辑",
+    "durationLabel": "时长",
+    "creatorNote": "翻唱者说",
+    "details": "作品资料",
+    "tags": "标签",
+    "transcript": "展开录音文字稿",
+    "performedBy": "演唱 / 呈现：{artist}",
+    "originalBy": "原作：{artist}",
+    "performanceType": {
+      "cover": "完整翻唱",
+      "original": "原创作品",
+      "listening": "聆听手记"
+    },
+    "spokenNote": {
+      "title": "翻唱者说 · 录音",
+      "play": "播放《{title}》的翻唱者说录音",
+      "pause": "暂停翻唱者说录音",
+      "progress": "翻唱者说录音进度",
+      "playing": "正在播放翻唱者说",
+      "finished": "翻唱者说已播放完毕",
+      "ready": "听我说说这首歌",
+      "error": "暂时无法播放这段录音",
+      "coverPaused": "完整翻唱已暂停 · 播放位置已保留",
+      "continueCover": "继续播放完整翻唱",
+      "playCover": "播放完整翻唱"
+    },
     "noFileSelected": "未选择文件",
-    "transitioning": "检查器同步中"
+    "transitioning": "正在打开作品信息"
   },
   "terminal": {
     "play": "播放",
@@ -144,8 +158,7 @@
     "trackActions": "{title} 的更多操作",
     "openTrack": "播放 {title}",
     "openTrackWithHint": "播放 {title}。可通过右键菜单将它加入队列。",
-    "goToTime": "跳转到 {time}",
-    "seekWaveform": "波形图，点击后跳转播放位置"
+    "goToTime": "跳转到 {time}"
   },
   "player": {
     "nowPlaying": "正在播放",

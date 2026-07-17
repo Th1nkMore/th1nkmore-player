@@ -18,7 +18,9 @@ Priority improvements:
 
 ## Audio Architecture
 
-Creator Note work introduces a second audio role. Add one audio-focus coordinator that owns these rules:
+Status: Implemented locally on `codex/creator-note-info-surface`.
+
+Creator Note introduces a second audio role. One shared audio-focus coordinator owns these rules:
 
 - The cover and spoken note never play simultaneously
 - Starting one pauses or stops the other as specified

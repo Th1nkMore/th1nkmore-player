@@ -2,6 +2,10 @@
 
 import { Howl } from "howler";
 import { useCallback, useEffect, useRef } from "react";
+import {
+  registerAudioFocusController,
+  requestAudioFocus,
+} from "@/lib/audio-focus";
 import { useIDEStore } from "@/store/useIDEStore";
 import { usePlayerStore } from "@/store/usePlayerStore";
 
@@ -116,6 +120,7 @@ export function GlobalAudioPlayer() {
   // Handle play logic
   const handlePlay = useCallback(() => {
     if (!howlRef.current || howlRef.current.playing()) return;
+    requestAudioFocus("cover");
     lastPlayRequestAtRef.current = Date.now();
     const state = howlRef.current.state();
     if (state === "loaded" || state === "unloaded") {
@@ -140,6 +145,21 @@ export function GlobalAudioPlayer() {
       );
     }
   }, [setPlaybackStatus]);
+
+  useEffect(
+    () =>
+      registerAudioFocusController("cover", {
+        pause: () => {
+          usePlayerStore.getState().pause();
+          handlePause();
+        },
+        stop: () => {
+          usePlayerStore.getState().pause();
+          handlePause();
+        },
+      }),
+    [handlePause],
+  );
 
   // Initialize or update Howl instance when track changes
   useEffect(() => {

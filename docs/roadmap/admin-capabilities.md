@@ -12,16 +12,20 @@ Evolve the admin area into a safe single-owner publishing workspace for full cov
 - Record full performances with accompaniment and lyric support
 - Preview, retry, and hand recorded audio into the normal upload flow
 - Export newly recorded audio to MP3 in the browser
-
-## Next: Creator Note Authoring
-
-- Edit Creator Note text as readable paragraphs
-- Set the language of the personal writing
-- Upload an existing spoken note
-- Record a short spoken note through a lightweight microphone UI
+- Edit Creator Note writing and language
+- Upload or record a short spoken note through a lightweight recorder
 - Preview, pause, retry, replace, and remove spoken-note audio
-- Store duration and an optional transcript
-- Preview the complete information/share presentation before publishing
+- Store spoken-note duration and an optional transcript
+
+## Implemented: Creator Note Authoring
+
+- [x] Edit Creator Note text as readable paragraphs
+- [x] Set the language of the personal writing
+- [x] Upload an existing spoken note
+- [x] Record a short spoken note through a lightweight microphone UI
+- [x] Preview, pause, retry, replace, and remove spoken-note audio
+- [x] Store duration and an optional transcript
+- [ ] Preview the complete information/share presentation before publishing
 
 The spoken-note recorder should reuse low-level microphone capture but not the full accompaniment, teleprompter, or performance-recording workspace.
 
