@@ -6,6 +6,7 @@ import { LyricsTools } from "@/components/admin/LyricsTools";
 import { TagInput } from "@/components/admin/TagInput";
 import { AdminStoryFields } from "@/components/admin/workspace/AdminStoryFields";
 import {
+  AdminCollapsibleSectionCard,
   AdminField,
   AdminFieldGrid,
   AdminSectionCard,
@@ -58,6 +59,8 @@ export function AdminSongForm({
   mode,
 }: AdminSongFormProps) {
   const t = useTranslations("admin");
+  const OptionalSectionCard =
+    mode === "edit" ? AdminCollapsibleSectionCard : AdminSectionCard;
 
   return (
     <div className="space-y-4">
@@ -123,9 +126,10 @@ export function AdminSongForm({
         onChange={onChange}
         onUploadCreatorNoteAudio={onUploadCreatorNoteAudio}
         onCreatorNoteUploadingChange={onCreatorNoteUploadingChange}
+        collapsible={mode === "edit"}
       />
 
-      <AdminSectionCard
+      <OptionalSectionCard
         title={t("sections.classification.title")}
         description={t("sections.classification.description")}
         aside={
@@ -226,9 +230,9 @@ export function AdminSongForm({
             />
           </AdminField>
         </div>
-      </AdminSectionCard>
+      </OptionalSectionCard>
 
-      <AdminSectionCard
+      <OptionalSectionCard
         title={t("sections.lyrics.title")}
         description={t("sections.lyrics.description")}
       >
@@ -300,7 +304,7 @@ export function AdminSongForm({
             onNormalize={onNormalizeLyrics}
           />
         </div>
-      </AdminSectionCard>
+      </OptionalSectionCard>
     </div>
   );
 }

@@ -1,19 +1,22 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useAdminEditedLyrics } from "@/components/admin/useAdminEditedLyrics";
+import { useAdminPlaylistMedia } from "@/components/admin/useAdminPlaylistMedia";
 import {
-  fetchLyricsFromAdmin,
-  mergeFetchedSongInfo,
-  saveAdminPlaylist,
+  AdminPlaylistConflictError,
+  type AdminPlaylistHistoryItem,
+  type AdminPlaylistWriteResult,
+  fetchAdminPlaylistHistory,
+  fetchAdminPlaylistSnapshot,
+  patchAdminSongs,
+  reorderAdminSongs,
+  restoreAdminPlaylistHistory,
+  updateAdminSong,
   uploadAudioFileToR2,
 } from "@/lib/admin-utils";
 import type { AdminNotice } from "@/lib/admin-workspace";
-import {
-  convertPlainLyricsWorkflow,
-  describeLyrics,
-  normalizeLyricsWorkflow,
-} from "@/lib/lyrics";
 import { normalizePlaylistSongs, normalizeSong } from "@/lib/song";
 import type { Song } from "@/types/music";
 
@@ -30,28 +33,70 @@ export function useAdminPlaylistFlow({
 }) {
   const t = useTranslations("admin");
   const [playlist, setPlaylist] = useState<Song[]>([]);
+  const [playlistRevision, setPlaylistRevision] = useState<string | null>(null);
   const [editingSongId, setEditingSongId] = useState<string | null>(null);
   const [editedSong, setEditedSong] = useState<Song | null>(null);
   const [isLoadingPlaylist, setIsLoadingPlaylist] = useState(false);
   const [isSavingPlaylist, setIsSavingPlaylist] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [isRestoringHistory, setIsRestoringHistory] = useState(false);
+  const [playlistHistory, setPlaylistHistory] = useState<
+    AdminPlaylistHistoryItem[]
+  >([]);
   const [playlistError, setPlaylistError] = useState<string | null>(null);
   const [playlistNotice, setPlaylistNotice] = useState<AdminNotice | null>(
     null,
   );
-  const [neteaseUrlEdit, setNeteaseUrlEdit] = useState("");
-  const [isFetchingLyricsEdit, setIsFetchingLyricsEdit] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  const [archivedSongId, setArchivedSongId] = useState<string | null>(null);
+  const archivedSongRef = useRef<{
+    id: string;
+    previousStatus: Song["assetStatus"];
+  } | null>(null);
+  const archiveUndoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+
+  const applyWriteResult = useCallback((result: AdminPlaylistWriteResult) => {
+    setPlaylist(normalizePlaylistSongs(result.playlist));
+    setPlaylistRevision(result.revision);
+    setLastSavedAt(new Date());
+  }, []);
+
+  const reportSaveError = useCallback(
+    (error: unknown) => {
+      const conflict = error instanceof AdminPlaylistConflictError;
+      const message = conflict
+        ? t("notices.revisionConflict.message")
+        : error instanceof Error
+          ? error.message
+          : "Unknown error";
+      setPlaylistNotice({
+        tone: "error",
+        title: conflict
+          ? t("notices.revisionConflict.title")
+          : t("notices.saveFailed.title"),
+        message,
+      });
+      addLog(`> Error: ${message}`);
+      return false;
+    },
+    [addLog, t],
+  );
 
   const loadPlaylist = useCallback(async () => {
     setIsLoadingPlaylist(true);
     setPlaylistError(null);
-
     try {
-      const response = await fetch("/api/admin/playlist");
-      if (!response.ok) {
-        throw new Error("Failed to load playlist");
-      }
-      const data = await response.json();
-      setPlaylist(normalizePlaylistSongs(data as Song[]));
+      const snapshot = await fetchAdminPlaylistSnapshot();
+      const normalizedPlaylist = normalizePlaylistSongs(snapshot.playlist);
+      setPlaylist(normalizedPlaylist);
+      setPlaylistRevision(snapshot.revision);
+      setEditedSong((current) =>
+        current
+          ? normalizedPlaylist.find((song) => song.id === current.id) || null
+          : current,
+      );
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to load playlist";
@@ -62,203 +107,295 @@ export function useAdminPlaylistFlow({
     }
   }, [addLog]);
 
+  const loadPlaylistHistory = useCallback(async () => {
+    setIsLoadingHistory(true);
+    try {
+      setPlaylistHistory(await fetchAdminPlaylistHistory());
+    } catch (error) {
+      addLog(
+        `> Error: ${error instanceof Error ? error.message : "Failed to load history"}`,
+      );
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  }, [addLog]);
+
   useEffect(() => {
     if (shouldLoad) {
-      void loadPlaylist();
+      void Promise.all([loadPlaylist(), loadPlaylistHistory()]);
     }
-  }, [loadPlaylist, shouldLoad]);
+  }, [loadPlaylist, loadPlaylistHistory, shouldLoad]);
 
-  const handleEditSong = useCallback((song: Song) => {
-    setEditingSongId(song.id);
-    setEditedSong(normalizeSong(song));
-    setNeteaseUrlEdit("");
-  }, []);
-
-  const handleCancelEdit = useCallback(() => {
-    setEditingSongId(null);
-    setEditedSong(null);
-    setNeteaseUrlEdit("");
-  }, []);
-
-  const handleSaveEdit = useCallback(() => {
-    if (!editedSong) return;
-
-    const nextSong = normalizeSong(editedSong);
-    setPlaylist((currentPlaylist) =>
-      currentPlaylist.map((song) =>
-        song.id === nextSong.id ? nextSong : song,
-      ),
-    );
-    setEditingSongId(nextSong.id);
-    setEditedSong(nextSong);
-    setPlaylistNotice({
-      tone: "success",
-      title: t("notices.draftUpdated.title"),
-      message: t("notices.draftUpdated.message"),
-    });
-  }, [editedSong, t]);
-
-  const handleDeleteSong = useCallback(
-    (songId: string) => {
-      setPlaylist((currentPlaylist) =>
-        currentPlaylist.filter((song) => song.id !== songId),
-      );
-      setPlaylistNotice({
-        tone: "warning",
-        title: t("notices.trackRemoved.title"),
-        message: t("notices.trackRemoved.message"),
-      });
-      setEditingSongId((current) => (current === songId ? null : current));
-      setEditedSong((current) => (current?.id === songId ? null : current));
-    },
-    [t],
-  );
-
-  const handleSavePlaylist = useCallback(async () => {
-    setIsSavingPlaylist(true);
-    setPlaylistNotice({
-      tone: "neutral",
-      title: t("notices.playlistSaving.title"),
-      message: t("notices.playlistSaving.message"),
-    });
-    clearLogs();
-
-    try {
-      addLog("> Saving playlist...");
-      await saveAdminPlaylist(playlist);
-      addLog("> Playlist saved successfully!");
-      addLog(`> Updated ${playlist.length} song(s)`);
-      setPlaylistNotice({
-        tone: "success",
-        title: t("notices.playlistSaved.title"),
-        message: t("notices.playlistSaved.message", { count: playlist.length }),
-      });
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
-      addLog(`> Error: ${errorMessage}`);
-      addLog("> Failed to save playlist");
-      setPlaylistNotice({
-        tone: "error",
-        title: t("notices.saveFailed.title"),
-        message: errorMessage,
-      });
-    } finally {
-      setIsSavingPlaylist(false);
-    }
-  }, [addLog, clearLogs, playlist, t]);
-
-  const updateEditedSong = useCallback(
-    (field: keyof Song, value: Song[keyof Song]) => {
-      setEditedSong((current) =>
-        current ? { ...current, [field]: value } : current,
-      );
+  useEffect(
+    () => () => {
+      if (archiveUndoTimerRef.current) {
+        clearTimeout(archiveUndoTimerRef.current);
+      }
     },
     [],
   );
 
-  const handleFetchLyricsEdit = useCallback(async () => {
-    if (!(neteaseUrlEdit && editedSong)) {
-      const message = !neteaseUrlEdit
-        ? "Please enter a NetEase Music URL"
-        : "No song is being edited";
-      addLog(`> Error: ${message}`);
-      setPlaylistNotice({
-        tone: "error",
-        title: t("notices.lyricsFetchFailed.title"),
-        message,
-      });
-      return;
-    }
+  const lyrics = useAdminEditedLyrics({
+    addLog,
+    editedSong,
+    setEditedSong,
+    setPlaylistNotice,
+  });
 
-    setIsFetchingLyricsEdit(true);
-    addLog("> Fetching lyrics from NetEase Music...");
+  const media = useAdminPlaylistMedia({
+    addLog,
+    applyWriteResult,
+    editedSong,
+    loadPlaylistHistory,
+    playlist,
+    playlistRevision,
+    reportSaveError,
+    setEditedSong,
+    setPlaylistNotice,
+  });
 
+  const handleEditSong = useCallback(
+    (song: Song) => {
+      setEditingSongId(song.id);
+      setEditedSong(normalizeSong(song));
+      lyrics.resetLyricsSource();
+    },
+    [lyrics.resetLyricsSource],
+  );
+
+  const handleCancelEdit = useCallback(() => {
+    const savedSong = playlist.find((song) => song.id === editingSongId);
+    setEditedSong(savedSong ? normalizeSong(savedSong) : null);
+    lyrics.resetLyricsSource();
+  }, [editingSongId, lyrics.resetLyricsSource, playlist]);
+
+  const handleSaveEdit = useCallback(async (): Promise<boolean> => {
+    if (!(editedSong && playlistRevision)) return false;
+    const nextSong = normalizeSong(editedSong);
+    setIsSavingPlaylist(true);
+    setPlaylistNotice({
+      tone: "neutral",
+      title: t("notices.songSaving.title"),
+      message: t("notices.songSaving.message"),
+    });
+    clearLogs();
     try {
-      const data = await fetchLyricsFromAdmin(neteaseUrlEdit);
-      const updatedLyrics = normalizeLyricsWorkflow(data.lyrics);
-      const nextEditedSong = mergeFetchedSongInfo(
-        { ...editedSong, lyrics: updatedLyrics },
-        data.songInfo,
-      );
-      setEditedSong(nextEditedSong);
+      const result = await updateAdminSong(nextSong, playlistRevision);
+      applyWriteResult(result);
+      setEditedSong(nextSong);
       setPlaylistNotice({
         tone: "success",
-        title: t("notices.lyricsSynced.title"),
-        message: t("notices.lyricsSynced.selectedMessage", {
-          count: describeLyrics(updatedLyrics).lineCount,
-        }),
+        title: t("notices.songSaved.title"),
+        message: t("notices.songSaved.message", { title: nextSong.title }),
       });
-      addLog(
-        `> Successfully fetched lyrics and metadata for song ID: ${data.songId}`,
-      );
-      addLog(
-        `> Lyrics loaded (${describeLyrics(updatedLyrics).lineCount} lines)`,
-      );
-      setNeteaseUrlEdit("");
+      addLog(`> Track saved: ${nextSong.title}`);
+      void loadPlaylistHistory();
+      return true;
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown error";
-      addLog(`> Error: ${message}`);
-      setPlaylistNotice({
-        tone: "error",
-        title: t("notices.lyricsFetchFailed.title"),
-        message,
-      });
+      return reportSaveError(error);
     } finally {
-      setIsFetchingLyricsEdit(false);
+      setIsSavingPlaylist(false);
     }
-  }, [addLog, editedSong, neteaseUrlEdit, t]);
+  }, [
+    addLog,
+    applyWriteResult,
+    clearLogs,
+    editedSong,
+    loadPlaylistHistory,
+    playlistRevision,
+    reportSaveError,
+    t,
+  ]);
 
-  const handleNormalizeEditedLyrics = useCallback(() => {
-    if (!editedSong) return;
+  const persistArchiveStatus = useCallback(
+    async (
+      songId: string,
+      status: Song["assetStatus"],
+      notice: AdminNotice,
+    ) => {
+      if (!playlistRevision) return false;
+      setIsSavingPlaylist(true);
+      try {
+        const result = await patchAdminSongs(
+          [songId],
+          { assetStatus: status },
+          playlistRevision,
+        );
+        applyWriteResult(result);
+        setEditedSong((current) =>
+          current?.id === songId
+            ? normalizeSong({ ...current, assetStatus: status })
+            : current,
+        );
+        setPlaylistNotice(notice);
+        void loadPlaylistHistory();
+        return true;
+      } catch (error) {
+        return reportSaveError(error);
+      } finally {
+        setIsSavingPlaylist(false);
+      }
+    },
+    [applyWriteResult, loadPlaylistHistory, playlistRevision, reportSaveError],
+  );
 
-    setEditedSong((current) =>
-      current
-        ? {
-            ...current,
-            lyrics: normalizeLyricsWorkflow(current.lyrics || ""),
-          }
-        : current,
-    );
-    setPlaylistNotice({
-      tone: "success",
-      title: t("notices.lyricsNormalized.title"),
-      message: t("notices.lyricsNormalized.selectedMessage"),
-    });
-    addLog("> Edited lyrics normalized");
-  }, [addLog, editedSong, t]);
-
-  const handleConvertEditedLyricsToLrc = useCallback(() => {
-    if (!editedSong) return;
-    if (editedSong.duration <= 0) {
-      const message = "Duration is required to convert plain lyrics to LRC";
-      setPlaylistNotice({
-        tone: "error",
-        title: t("notices.conversionFailed.title"),
-        message,
+  const handleArchiveSong = useCallback(
+    async (songId: string) => {
+      const song = playlist.find((item) => item.id === songId);
+      if (!song || song.assetStatus === "archived") return;
+      const saved = await persistArchiveStatus(songId, "archived", {
+        tone: "warning",
+        title: t("notices.trackArchived.title"),
+        message: t("notices.trackArchived.message"),
       });
-      addLog(`> Error: ${message}`);
-      return;
-    }
+      if (!saved) return;
+      archivedSongRef.current = {
+        id: songId,
+        previousStatus: song.assetStatus,
+      };
+      setArchivedSongId(songId);
+      if (archiveUndoTimerRef.current)
+        clearTimeout(archiveUndoTimerRef.current);
+      archiveUndoTimerRef.current = setTimeout(() => {
+        archivedSongRef.current = null;
+        setArchivedSongId(null);
+      }, 10_000);
+    },
+    [persistArchiveStatus, playlist, t],
+  );
 
-    setEditedSong((current) =>
-      current
-        ? {
-            ...current,
-            lyrics: convertPlainLyricsWorkflow(
-              current.lyrics || "",
-              current.duration,
-            ),
-          }
-        : current,
+  const handleUndoArchive = useCallback(async () => {
+    const archivedSong = archivedSongRef.current;
+    if (!archivedSong) return;
+    const restored = await persistArchiveStatus(
+      archivedSong.id,
+      archivedSong.previousStatus,
+      {
+        tone: "success",
+        title: t("notices.archiveUndone.title"),
+        message: t("notices.archiveUndone.message"),
+      },
     );
-    setPlaylistNotice({
-      tone: "success",
-      title: t("notices.convertedToLrc.title"),
-      message: t("notices.convertedToLrc.selectedMessage"),
-    });
-    addLog("> Edited plain lyrics converted to estimated LRC");
-  }, [addLog, editedSong, t]);
+    if (!restored) return;
+    if (archiveUndoTimerRef.current) clearTimeout(archiveUndoTimerRef.current);
+    archiveUndoTimerRef.current = null;
+    archivedSongRef.current = null;
+    setArchivedSongId(null);
+  }, [persistArchiveStatus, t]);
+
+  const handleBulkUpdate = useCallback(
+    async (
+      songIds: string[],
+      patch: Partial<Pick<Song, "assetStatus" | "visibility">>,
+    ) => {
+      if (!(playlistRevision && songIds.length > 0)) return false;
+      setIsSavingPlaylist(true);
+      try {
+        const result = await patchAdminSongs(songIds, patch, playlistRevision);
+        applyWriteResult(result);
+        setEditedSong((current) =>
+          current && songIds.includes(current.id)
+            ? normalizeSong({ ...current, ...patch })
+            : current,
+        );
+        setPlaylistNotice({
+          tone: "success",
+          title: t("notices.bulkSaved.title"),
+          message: t("notices.bulkSaved.message", { count: songIds.length }),
+        });
+        void loadPlaylistHistory();
+        return true;
+      } catch (error) {
+        return reportSaveError(error);
+      } finally {
+        setIsSavingPlaylist(false);
+      }
+    },
+    [
+      applyWriteResult,
+      loadPlaylistHistory,
+      playlistRevision,
+      reportSaveError,
+      t,
+    ],
+  );
+
+  const handleReorderSongs = useCallback(
+    async (activeSongId: string, overSongId: string) => {
+      if (!playlistRevision) return false;
+      setIsSavingPlaylist(true);
+      try {
+        const result = await reorderAdminSongs(
+          activeSongId,
+          overSongId,
+          playlistRevision,
+        );
+        applyWriteResult(result);
+        setPlaylistNotice({
+          tone: "success",
+          title: t("notices.orderSaved.title"),
+          message: t("notices.orderSaved.message"),
+        });
+        void loadPlaylistHistory();
+        return true;
+      } catch (error) {
+        return reportSaveError(error);
+      } finally {
+        setIsSavingPlaylist(false);
+      }
+    },
+    [
+      applyWriteResult,
+      loadPlaylistHistory,
+      playlistRevision,
+      reportSaveError,
+      t,
+    ],
+  );
+
+  const handleRestoreHistory = useCallback(
+    async (key: string) => {
+      if (!playlistRevision) return false;
+      setIsRestoringHistory(true);
+      try {
+        const result = await restoreAdminPlaylistHistory(key, playlistRevision);
+        applyWriteResult(result);
+        const selectedSong =
+          result.playlist.find((song) => song.id === editingSongId) ||
+          result.playlist[0] ||
+          null;
+        setEditingSongId(selectedSong?.id || null);
+        setEditedSong(selectedSong ? normalizeSong(selectedSong) : null);
+        setPlaylistNotice({
+          tone: "success",
+          title: t("notices.historyRestored.title"),
+          message: t("notices.historyRestored.message"),
+        });
+        await loadPlaylistHistory();
+        return true;
+      } catch (error) {
+        return reportSaveError(error);
+      } finally {
+        setIsRestoringHistory(false);
+      }
+    },
+    [
+      applyWriteResult,
+      editingSongId,
+      loadPlaylistHistory,
+      playlistRevision,
+      reportSaveError,
+      t,
+    ],
+  );
+
+  const updateEditedSong = useCallback(
+    (field: keyof Song, value: Song[keyof Song]) =>
+      setEditedSong((current) =>
+        current ? { ...current, [field]: value } : current,
+      ),
+    [],
+  );
 
   const handleUploadCreatorNoteAudio = useCallback(
     (file: File) => uploadAudioFileToR2(file, () => undefined, "creator-note"),
@@ -266,27 +403,31 @@ export function useAdminPlaylistFlow({
   );
 
   return {
-    editedLyricsDescriptor: describeLyrics(editedSong?.lyrics || ""),
+    archivedSongId,
     editedSong,
     editingSongId,
+    handleArchiveSong,
+    handleBulkUpdate,
     handleCancelEdit,
-    handleConvertEditedLyricsToLrc,
-    handleDeleteSong,
     handleEditSong,
-    handleFetchLyricsEdit,
-    handleNormalizeEditedLyrics,
+    handleReorderSongs,
+    handleRestoreHistory,
     handleSaveEdit,
-    handleSavePlaylist,
+    handleUndoArchive,
     handleUploadCreatorNoteAudio,
-    isFetchingLyricsEdit,
+    isLoadingHistory,
     isLoadingPlaylist,
+    isRestoringHistory,
     isSavingPlaylist,
+    lastSavedAt,
     loadPlaylist,
-    neteaseUrlEdit,
+    loadPlaylistHistory,
     playlist,
     playlistError,
+    playlistHistory,
     playlistNotice,
-    setNeteaseUrlEdit,
     updateEditedSong,
+    ...lyrics,
+    ...media,
   };
 }
