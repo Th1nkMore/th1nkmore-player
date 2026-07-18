@@ -8,7 +8,11 @@ import {
   saveAdminPlaylist,
   uploadAudioFileToR2,
 } from "@/lib/admin-utils";
-import type { AdminNotice } from "@/lib/admin-workspace";
+import {
+  type AdminNotice,
+  patchPlaylistSongs,
+  reorderPlaylistSongs,
+} from "@/lib/admin-workspace";
 import {
   convertPlainLyricsWorkflow,
   describeLyrics,
@@ -239,6 +243,89 @@ export function useAdminPlaylistFlow({
     setArchivedSongId(null);
   }, [persistArchiveStatus, t]);
 
+  const handleBulkUpdate = useCallback(
+    async (
+      songIds: string[],
+      patch: Partial<Pick<Song, "assetStatus" | "visibility">>,
+    ): Promise<boolean> => {
+      if (songIds.length === 0) return false;
+      const nextPlaylist = patchPlaylistSongs(playlist, songIds, patch);
+      setIsSavingPlaylist(true);
+      setPlaylistNotice({
+        tone: "neutral",
+        title: t("notices.songSaving.title"),
+        message: t("notices.bulkSaving.message", { count: songIds.length }),
+      });
+
+      try {
+        await saveAdminPlaylist(nextPlaylist);
+        setPlaylist(nextPlaylist);
+        setEditedSong((current) => {
+          if (!(current && songIds.includes(current.id))) return current;
+          return normalizeSong({ ...current, ...patch });
+        });
+        setLastSavedAt(new Date());
+        setPlaylistNotice({
+          tone: "success",
+          title: t("notices.bulkSaved.title"),
+          message: t("notices.bulkSaved.message", { count: songIds.length }),
+        });
+        addLog(`> Updated ${songIds.length} selected track(s)`);
+        return true;
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        setPlaylistNotice({
+          tone: "error",
+          title: t("notices.saveFailed.title"),
+          message: errorMessage,
+        });
+        addLog(`> Error: ${errorMessage}`);
+        return false;
+      } finally {
+        setIsSavingPlaylist(false);
+      }
+    },
+    [addLog, playlist, t],
+  );
+
+  const handleReorderSongs = useCallback(
+    async (activeSongId: string, overSongId: string): Promise<boolean> => {
+      const nextPlaylist = reorderPlaylistSongs(
+        playlist,
+        activeSongId,
+        overSongId,
+      );
+      if (nextPlaylist === playlist) return true;
+      setIsSavingPlaylist(true);
+
+      try {
+        await saveAdminPlaylist(nextPlaylist);
+        setPlaylist(nextPlaylist);
+        setLastSavedAt(new Date());
+        setPlaylistNotice({
+          tone: "success",
+          title: t("notices.orderSaved.title"),
+          message: t("notices.orderSaved.message"),
+        });
+        return true;
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        setPlaylistNotice({
+          tone: "error",
+          title: t("notices.saveFailed.title"),
+          message: errorMessage,
+        });
+        addLog(`> Error: ${errorMessage}`);
+        return false;
+      } finally {
+        setIsSavingPlaylist(false);
+      }
+    },
+    [addLog, playlist, t],
+  );
+
   const updateEditedSong = useCallback(
     (field: keyof Song, value: Song[keyof Song]) => {
       setEditedSong((current) =>
@@ -362,11 +449,13 @@ export function useAdminPlaylistFlow({
     editedSong,
     editingSongId,
     handleArchiveSong,
+    handleBulkUpdate,
     handleCancelEdit,
     handleConvertEditedLyricsToLrc,
     handleEditSong,
     handleFetchLyricsEdit,
     handleNormalizeEditedLyrics,
+    handleReorderSongs,
     handleSaveEdit,
     handleUndoArchive,
     handleUploadCreatorNoteAudio,

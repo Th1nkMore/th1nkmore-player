@@ -30,7 +30,7 @@ export function AdminWorkspaceShell({
   children: ReactNode;
 }) {
   return (
-    <div className="flex h-screen w-full flex-col bg-[var(--editor-bg)] font-mono text-[12px] supports-[height:100dvh]:h-[100dvh]">
+    <div className="flex h-screen w-full flex-col bg-[var(--editor-bg)] font-sans text-sm antialiased supports-[height:100dvh]:h-[100dvh]">
       <AdminPageChrome
         activeTab={activeTab}
         currentTime={currentTime}

@@ -371,7 +371,33 @@
       "autosaveHint": "Ein Titel, ein Speichervorgang",
       "searchPlaceholder": "Titel, Interpret, Album oder Tag suchen",
       "badges": {
-        "dirty": "Geändert"
+        "dirty": "Geändert",
+        "attention": "Offen"
+      },
+      "filters": {
+        "label": "Tracks filtern",
+        "all": "Alle Tracks",
+        "needsAttention": "Zu prüfen ({count})",
+        "ready": "Bereit",
+        "archived": "Archiviert"
+      },
+      "sort": {
+        "label": "Tracks sortieren",
+        "manual": "Manuelle Reihenfolge",
+        "title": "Titel A–Z",
+        "artist": "Interpret A–Z"
+      },
+      "showing": "{count} von {total} angezeigt",
+      "selectLabel": "{title} auswählen",
+      "reorderLabel": "{title} neu anordnen",
+      "bulk": {
+        "selectVisible": "Sichtbare auswählen",
+        "clear": "Sichtbare abwählen",
+        "selected": "{count} ausgewählt",
+        "archive": "Archivieren",
+        "ready": "Als bereit markieren",
+        "public": "Öffentlich machen",
+        "private": "Privat machen"
       },
       "detail": {
         "assetTitle": "Asset-Zusammenfassung",
@@ -435,6 +461,17 @@
       "archiveUndone": {
         "title": "Archivierung rückgängig gemacht",
         "message": "Der Titel wurde auf seinen vorherigen Status zurückgesetzt."
+      },
+      "bulkSaving": {
+        "message": "{count} ausgewählte Tracks werden aktualisiert."
+      },
+      "bulkSaved": {
+        "title": "Massenänderung gespeichert",
+        "message": "{count} ausgewählte Tracks wurden aktualisiert."
+      },
+      "orderSaved": {
+        "title": "Reihenfolge gespeichert",
+        "message": "Die manuelle Playlist-Reihenfolge ist aktuell."
       },
       "draftUpdated": {
         "title": "Entwurf aktualisiert",

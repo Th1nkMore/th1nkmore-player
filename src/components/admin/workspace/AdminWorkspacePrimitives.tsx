@@ -1,8 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { AlertTriangle, CheckCircle2, Loader2, Sparkles } from "lucide-react";
-import type { ReactNode } from "react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronDown,
+  Loader2,
+  Sparkles,
+} from "lucide-react";
+import { type ReactNode, useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { AdminNoticeTone } from "@/lib/admin-workspace";
 import { cn } from "@/lib/utils";
@@ -23,23 +29,67 @@ export function AdminSectionCard({
   return (
     <section
       className={cn(
-        "rounded-2xl border border-[var(--border)] bg-[linear-gradient(180deg,rgba(20,24,34,0.96),rgba(12,15,22,0.98))] p-4 shadow-[0_8px_24px_rgba(0,0,0,0.22)] md:p-5",
+        "rounded-2xl bg-[linear-gradient(180deg,rgba(20,24,34,0.96),rgba(12,15,22,0.98))] p-4 shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_8px_24px_rgba(0,0,0,0.22)] md:p-5",
         className,
       )}
     >
       <div className="mb-4 flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-400">
+          <div className="text-balance text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-400">
             {title}
           </div>
           {description ? (
-            <p className="mt-1 text-sm text-gray-500">{description}</p>
+            <p className="mt-1 text-pretty text-sm text-gray-500">
+              {description}
+            </p>
           ) : null}
         </div>
         {aside}
       </div>
       {children}
     </section>
+  );
+}
+
+export function AdminCollapsibleSectionCard({
+  title,
+  description,
+  children,
+  defaultOpen = false,
+  className,
+}: {
+  title: string;
+  description?: string;
+  children: ReactNode;
+  defaultOpen?: boolean;
+  className?: string;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <details
+      open={isOpen}
+      onToggle={(event) => setIsOpen(event.currentTarget.open)}
+      className={cn(
+        "group rounded-2xl bg-[linear-gradient(180deg,rgba(20,24,34,0.96),rgba(12,15,22,0.98))] shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_8px_24px_rgba(0,0,0,0.22)]",
+        className,
+      )}
+    >
+      <summary className="flex min-h-14 cursor-pointer list-none items-center gap-4 rounded-2xl px-4 py-3 transition-[background-color] duration-150 ease-out hover:bg-white/[0.03] md:px-5 [&::-webkit-details-marker]:hidden">
+        <div className="min-w-0 flex-1">
+          <div className="text-balance text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-400">
+            {title}
+          </div>
+          {description ? (
+            <p className="mt-1 text-pretty text-sm text-gray-500">
+              {description}
+            </p>
+          ) : null}
+        </div>
+        <ChevronDown className="h-4 w-4 shrink-0 text-gray-500 transition-transform duration-150 ease-out group-open:rotate-180" />
+      </summary>
+      <div className="border-t border-white/[0.06] p-4 md:p-5">{children}</div>
+    </details>
   );
 }
 
@@ -160,7 +210,7 @@ export function AdminStatusBanner({
           <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-200">
             {title}
           </div>
-          <p className="mt-1 text-sm text-gray-400">{message}</p>
+          <p className="mt-1 text-pretty text-sm text-gray-400">{message}</p>
         </div>
         {action ? <div className="ml-auto shrink-0">{action}</div> : null}
       </div>
@@ -180,7 +230,7 @@ export function AdminActionBar({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-3 rounded-2xl border border-[var(--border)] bg-[rgba(10,14,20,0.92)] p-3 backdrop-blur",
+        "flex flex-wrap items-center gap-3 rounded-2xl bg-[rgba(10,14,20,0.92)] p-3 shadow-[0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur",
         sticky && "sticky bottom-0 z-10 shadow-[0_-8px_24px_rgba(0,0,0,0.24)]",
         className,
       )}
@@ -204,7 +254,9 @@ export function AdminEmptyState({
       <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-400">
         {title}
       </div>
-      <p className="mt-2 max-w-md text-sm text-gray-500">{description}</p>
+      <p className="mt-2 max-w-md text-pretty text-sm text-gray-500">
+        {description}
+      </p>
       {action ? <div className="mt-4">{action}</div> : null}
     </div>
   );

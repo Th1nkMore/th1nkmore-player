@@ -80,6 +80,8 @@ export default function AdminPage() {
             handleSaveEdit={controller.playlist.handleSaveEdit}
             handleArchiveSong={controller.playlist.handleArchiveSong}
             handleUndoArchive={controller.playlist.handleUndoArchive}
+            handleBulkUpdate={controller.playlist.handleBulkUpdate}
+            handleReorderSongs={controller.playlist.handleReorderSongs}
             handleConvertEditedLyricsToLrc={
               controller.playlist.handleConvertEditedLyricsToLrc
             }

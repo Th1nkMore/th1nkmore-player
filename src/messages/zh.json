@@ -371,7 +371,33 @@
       "autosaveHint": "一首一存，修改更安全",
       "searchPlaceholder": "搜索标题、歌手、专辑或标签",
       "badges": {
-        "dirty": "已改"
+        "dirty": "已改",
+        "attention": "待补"
+      },
+      "filters": {
+        "label": "筛选歌曲",
+        "all": "全部歌曲",
+        "needsAttention": "待完善（{count}）",
+        "ready": "已就绪",
+        "archived": "已归档"
+      },
+      "sort": {
+        "label": "歌曲排序",
+        "manual": "手动顺序",
+        "title": "按标题",
+        "artist": "按歌手"
+      },
+      "showing": "显示 {count} / {total} 首",
+      "selectLabel": "选择《{title}》",
+      "reorderLabel": "调整《{title}》顺序",
+      "bulk": {
+        "selectVisible": "选择当前结果",
+        "clear": "清除当前选择",
+        "selected": "已选择 {count} 首",
+        "archive": "归档",
+        "ready": "标为就绪",
+        "public": "设为公开",
+        "private": "设为私密"
       },
       "detail": {
         "assetTitle": "资源摘要",
@@ -435,6 +461,17 @@
       "archiveUndone": {
         "title": "已撤销归档",
         "message": "歌曲已恢复到归档前的状态。"
+      },
+      "bulkSaving": {
+        "message": "正在更新选中的 {count} 首歌曲。"
+      },
+      "bulkSaved": {
+        "title": "批量修改已保存",
+        "message": "已更新选中的 {count} 首歌曲。"
+      },
+      "orderSaved": {
+        "title": "顺序已保存",
+        "message": "歌单手动顺序已更新。"
       },
       "draftUpdated": {
         "title": "草稿已更新",

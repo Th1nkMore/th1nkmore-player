@@ -1,16 +1,14 @@
 "use client";
 
-import { Archive, Save, Search, Undo2 } from "lucide-react";
+import { Archive, Save, Undo2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
-import { AdminSongListRow } from "@/components/admin/playlist/AdminSongListRow";
+import { AdminPlaylistSidebar } from "@/components/admin/playlist/AdminPlaylistSidebar";
 import { AdminConfirmDialog } from "@/components/admin/workspace/AdminConfirmDialog";
 import { AdminSongForm } from "@/components/admin/workspace/AdminSongForm";
 import {
   AdminActionBar,
   AdminEmptyState,
-  AdminErrorState,
-  AdminLoadingCard,
   AdminSectionCard,
   AdminStatusBanner,
 } from "@/components/admin/workspace/AdminWorkspacePrimitives";
@@ -21,7 +19,6 @@ import {
   DrawerDescription,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   type AdminNotice,
@@ -46,6 +43,14 @@ type EditPlaylistProps = {
   handleSaveEdit: () => Promise<boolean>;
   handleArchiveSong: (songId: string) => Promise<void>;
   handleUndoArchive: () => Promise<void>;
+  handleBulkUpdate: (
+    songIds: string[],
+    patch: Partial<Pick<Song, "assetStatus" | "visibility">>,
+  ) => Promise<boolean>;
+  handleReorderSongs: (
+    activeSongId: string,
+    overSongId: string,
+  ) => Promise<boolean>;
   handleConvertEditedLyricsToLrc: () => void;
   handleNormalizeEditedLyrics: () => void;
   handleUploadCreatorNoteAudio: (file: File) => Promise<string>;
@@ -75,6 +80,8 @@ export function EditPlaylist({
   handleSaveEdit,
   handleArchiveSong,
   handleUndoArchive,
+  handleBulkUpdate,
+  handleReorderSongs,
   handleConvertEditedLyricsToLrc,
   handleNormalizeEditedLyrics,
   handleUploadCreatorNoteAudio,
@@ -90,7 +97,6 @@ export function EditPlaylist({
   const t = useTranslations("admin");
   const screenMode = useScreenMode();
   const isMobile = screenMode !== "desktop";
-  const [query, setQuery] = useState("");
   const [pendingSongId, setPendingSongId] = useState<string | null>(null);
   const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false);
   const [songIdToArchive, setSongIdToArchive] = useState<string | null>(null);
@@ -103,28 +109,14 @@ export function EditPlaylist({
   );
   const isDirty = hasSongChanges(selectedSong, editedSong);
 
-  const filteredPlaylist = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    if (!normalized) {
-      return playlist;
-    }
-
-    return playlist.filter((song) =>
-      [song.title, song.artist, song.album, ...song.tags]
-        .join(" ")
-        .toLowerCase()
-        .includes(normalized),
-    );
-  }, [playlist, query]);
-
   useEffect(() => {
-    if (!editingSongId && filteredPlaylist[0]) {
-      handleEditSong(filteredPlaylist[0]);
+    if (!editingSongId && playlist[0]) {
+      handleEditSong(playlist[0]);
       if (isMobile) {
         setMobileDetailOpen(false);
       }
     }
-  }, [editingSongId, filteredPlaylist, handleEditSong, isMobile]);
+  }, [editingSongId, handleEditSong, isMobile, playlist]);
 
   useEffect(() => {
     const preventAccidentalClose = (event: BeforeUnloadEvent) => {
@@ -333,70 +325,19 @@ export function EditPlaylist({
         </div>
 
         <div className="flex min-h-0 flex-1 overflow-hidden">
-          <div className="flex min-h-0 w-full flex-col border-r border-[var(--border)] lg:w-[24rem] lg:min-w-[24rem]">
-            <div className="border-b border-[var(--border)] p-4">
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
-                <Input
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder={t("playlist.searchPlaceholder")}
-                  className="border-[var(--border)] bg-[rgba(7,10,15,0.92)] pl-9 text-gray-200 placeholder:text-gray-600"
-                />
-              </div>
-            </div>
-
-            {isLoadingPlaylist ? (
-              <div className="space-y-3 p-4">
-                <AdminLoadingCard
-                  lines={3}
-                  label={t("loading.loadingPlaylist")}
-                />
-                <AdminLoadingCard
-                  lines={2}
-                  label={t("loading.loadingPlaylist")}
-                />
-              </div>
-            ) : playlistError ? (
-              <div className="p-4">
-                <AdminErrorState
-                  title={t("errors.playlistLoadTitle")}
-                  description={playlistError}
-                  retryLabel={t("actions.retry")}
-                  onRetry={() => {
-                    void loadPlaylist();
-                  }}
-                />
-              </div>
-            ) : filteredPlaylist.length === 0 ? (
-              <div className="p-4">
-                <AdminEmptyState
-                  title={t("playlist.emptyList.title")}
-                  description={t("playlist.emptyList.description")}
-                />
-              </div>
-            ) : (
-              <ScrollArea className="min-h-0 flex-1">
-                <div className="space-y-3 p-4">
-                  {filteredPlaylist.map((song) => (
-                    <AdminSongListRow
-                      key={song.id}
-                      song={song}
-                      isActive={song.id === editingSongId}
-                      isDirty={Boolean(
-                        song.id === editingSongId &&
-                          editedSong &&
-                          hasSongChanges(song, editedSong),
-                      )}
-                      dirtyLabel={t("playlist.badges.dirty")}
-                      disabled={isCreatorNoteUploading}
-                      onSelect={() => selectSong(song)}
-                    />
-                  ))}
-                </div>
-              </ScrollArea>
-            )}
-          </div>
+          <AdminPlaylistSidebar
+            playlist={playlist}
+            isLoading={isLoadingPlaylist}
+            isSaving={isSavingPlaylist}
+            error={playlistError}
+            editingSongId={editingSongId}
+            isEditingSongDirty={isDirty}
+            disabled={isCreatorNoteUploading}
+            onSelectSong={selectSong}
+            onBulkUpdate={handleBulkUpdate}
+            onReorderSongs={handleReorderSongs}
+            onReload={loadPlaylist}
+          />
 
           {!isMobile ? (
             <div className="hidden min-h-0 flex-1 overflow-y-auto p-4 lg:block lg:p-6">
@@ -424,7 +365,7 @@ export function EditPlaylist({
       </div>
 
       <Drawer open={mobileDetailOpen} onOpenChange={setMobileDetailOpen}>
-        <DrawerContent className="max-h-[92dvh] border-[var(--border)] bg-[var(--editor-bg)]">
+        <DrawerContent className="border-[var(--border)] bg-[var(--editor-bg)] data-[vaul-drawer-direction=bottom]:mt-0 data-[vaul-drawer-direction=bottom]:h-[100dvh] data-[vaul-drawer-direction=bottom]:max-h-[100dvh] data-[vaul-drawer-direction=bottom]:rounded-none">
           <div className="shrink-0 px-4 pb-4 pt-2">
             <DrawerTitle className="text-sm font-semibold uppercase tracking-[0.22em] text-gray-300">
               {editedSong?.title || t("playlist.drawerTitle")}

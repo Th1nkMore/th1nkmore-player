@@ -371,7 +371,33 @@
       "autosaveHint": "1 曲ずつ安全に保存",
       "searchPlaceholder": "タイトル、アーティスト、アルバム、タグで検索",
       "badges": {
-        "dirty": "変更あり"
+        "dirty": "変更あり",
+        "attention": "要確認"
+      },
+      "filters": {
+        "label": "トラックを絞り込む",
+        "all": "すべてのトラック",
+        "needsAttention": "要確認（{count}）",
+        "ready": "準備完了",
+        "archived": "アーカイブ済み"
+      },
+      "sort": {
+        "label": "トラックを並べ替える",
+        "manual": "手動順序",
+        "title": "タイトル順",
+        "artist": "アーティスト順"
+      },
+      "showing": "{total} 曲中 {count} 曲を表示",
+      "selectLabel": "{title} を選択",
+      "reorderLabel": "{title} を並べ替え",
+      "bulk": {
+        "selectVisible": "表示中を選択",
+        "clear": "表示中の選択を解除",
+        "selected": "{count} 曲を選択中",
+        "archive": "アーカイブ",
+        "ready": "準備完了にする",
+        "public": "公開にする",
+        "private": "非公開にする"
       },
       "detail": {
         "assetTitle": "アセット概要",
@@ -435,6 +461,17 @@
       "archiveUndone": {
         "title": "アーカイブを元に戻しました",
         "message": "曲を以前の状態へ復元しました。"
+      },
+      "bulkSaving": {
+        "message": "選択した {count} 曲を更新しています。"
+      },
+      "bulkSaved": {
+        "title": "一括更新を保存しました",
+        "message": "選択した {count} 曲を更新しました。"
+      },
+      "orderSaved": {
+        "title": "順序を保存しました",
+        "message": "プレイリストの手動順序を更新しました。"
       },
       "draftUpdated": {
         "title": "下書きを更新しました",

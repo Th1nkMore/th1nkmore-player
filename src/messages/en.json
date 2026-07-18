@@ -371,7 +371,33 @@
       "autosaveHint": "One track, one save",
       "searchPlaceholder": "Search title, artist, album, or tag",
       "badges": {
-        "dirty": "Dirty"
+        "dirty": "Dirty",
+        "attention": "Needs"
+      },
+      "filters": {
+        "label": "Filter tracks",
+        "all": "All tracks",
+        "needsAttention": "Needs attention ({count})",
+        "ready": "Ready",
+        "archived": "Archived"
+      },
+      "sort": {
+        "label": "Sort tracks",
+        "manual": "Manual order",
+        "title": "Title A–Z",
+        "artist": "Artist A–Z"
+      },
+      "showing": "Showing {count} of {total}",
+      "selectLabel": "Select {title}",
+      "reorderLabel": "Reorder {title}",
+      "bulk": {
+        "selectVisible": "Select visible",
+        "clear": "Clear visible",
+        "selected": "{count} selected",
+        "archive": "Archive",
+        "ready": "Mark ready",
+        "public": "Make public",
+        "private": "Make private"
       },
       "detail": {
         "assetTitle": "Asset Summary",
@@ -435,6 +461,17 @@
       "archiveUndone": {
         "title": "Archive undone",
         "message": "The track has been restored to its previous status."
+      },
+      "bulkSaving": {
+        "message": "Updating {count} selected tracks."
+      },
+      "bulkSaved": {
+        "title": "Bulk update saved",
+        "message": "Updated {count} selected tracks."
+      },
+      "orderSaved": {
+        "title": "Order saved",
+        "message": "The manual playlist order is up to date."
       },
       "draftUpdated": {
         "title": "Draft updated",
