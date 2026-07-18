@@ -1,7 +1,8 @@
 # External Cover Production Handoff
 
-> Status: Accepted; implementation pending  
-> Decision date: 2026-07-19  
+> Status: Implemented locally; real production-package acceptance pending
+>
+> Decision date: 2026-07-19
 > Companion document: HuangToolbar repository `docs/COVER_PRODUCTION_WORKFLOW.md`
 
 ## Purpose
@@ -258,6 +259,13 @@ Sequence:
 No existing saved recording should be deleted as part of this transition.
 
 ## Implementation Phases
+
+Implementation checkpoint (2026-07-19):
+
+- Phase A is complete with central-directory inspection, fixed v1 paths, bounded decompression, encryption/symlink rejection, schema and UTF-8 validation, MP3 signature checking, SHA-256 verification, and malicious fixture tests;
+- Phase B is complete in the admin upload workspace, including drag/drop, localized package review, editable metadata/lyrics prefill, technical audio details, and object-URL cleanup through the existing audio preview lifecycle;
+- Phase C is wired to the existing signed upload and ETag-aware playlist write path. Package/project/checksum provenance is stored in `Song.metadata`; an exact previously deployed package is blocked and a different package from the same project is surfaced as a revision warning;
+- Phase D hides the superseded full-cover recording tab while leaving Creator Note recording intact. The dormant recording implementation is retained temporarily so no saved local recording state is deleted during this transition.
 
 ### Phase A: Parser and Contract Tests
 

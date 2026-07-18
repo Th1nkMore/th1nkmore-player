@@ -330,6 +330,29 @@
       }
     },
     "upload": {
+      "packageImport": {
+        "title": "Cover-Paket importieren",
+        "description": "Ein HuangToolbar-.coverpkg lokal prüfen und in den vorhandenen Upload-Ablauf übernehmen.",
+        "choose": ".coverpkg ablegen oder zum Prüfen auswählen",
+        "dropActive": "Cover-Paket zum Prüfen ablegen",
+        "inspecting": "Paket wird lokal geprüft…",
+        "localOnly": "Vor der Prüfung und dem Klick auf „Bereitstellen“ wird nichts hochgeladen.",
+        "verified": "Paketprüfung bestanden",
+        "checksumVerified": "Vier-Dateien-Freigabeliste, v1-Manifest, MP3, UTF-8-Text und SHA-256-Prüfsummen sind gültig.",
+        "performer": "Cover-Interpret",
+        "originalArtist": "Originalinterpret",
+        "audio": "Veröffentlichungsaudio",
+        "lyrics": "Liedtext",
+        "schema": "Paketidentität",
+        "channels": "{count} Kanäle",
+        "timedLines": "{count} zeitgesteuerte Zeilen",
+        "duplicateTitle": "Paket bereits veröffentlicht",
+        "duplicateMessage": "Dieses Paket ist bereits als {id} gespeichert. Eine doppelte Veröffentlichung wurde blockiert.",
+        "relatedTitle": "Vorhandene Projektversion gefunden",
+        "relatedMessage": "Titel {id} stammt aus demselben Cover-Projekt. Bitte als bewusste Revision prüfen.",
+        "warnings": "Hinweise prüfen",
+        "noWarnings": "Keine Paketwarnungen vorhanden."
+      },
       "fileCard": {
         "title": "Audioquelle",
         "description": "Binärdatei anhängen, die in die Bibliothek bereitgestellt wird.",

@@ -330,6 +330,29 @@
       }
     },
     "upload": {
+      "packageImport": {
+        "title": "Import Cover Package",
+        "description": "Verify a HuangToolbar .coverpkg locally and prefill this existing upload workflow.",
+        "choose": "Drop a .coverpkg or click to inspect",
+        "dropActive": "Drop to inspect this cover package",
+        "inspecting": "Inspecting package locally...",
+        "localOnly": "Nothing uploads until you review the editable fields and choose Deploy.",
+        "verified": "Package checks passed",
+        "checksumVerified": "The four-file allowlist, v1 manifest, MP3 signature, UTF-8 lyrics, and all SHA-256 checksums are valid.",
+        "performer": "Performer",
+        "originalArtist": "Original artist",
+        "audio": "Publication audio",
+        "lyrics": "Lyrics",
+        "schema": "Package identity",
+        "channels": "{count} ch",
+        "timedLines": "{count} timed lines",
+        "duplicateTitle": "Exact package already deployed",
+        "duplicateMessage": "This package is already stored as {id}. Deployment is blocked to prevent a duplicate.",
+        "relatedTitle": "Existing project version found",
+        "relatedMessage": "Track {id} came from the same cover project. Treat this import as an explicit revision.",
+        "warnings": "Review warnings",
+        "noWarnings": "No package-level warnings remain."
+      },
       "fileCard": {
         "title": "Audio Source",
         "description": "Attach the binary that will be deployed to the library.",

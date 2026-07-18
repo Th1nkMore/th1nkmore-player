@@ -27,14 +27,14 @@ The current codebase is a usable player and publishing baseline. Bottom-navigati
 - Playlist loading, editing, ordering, and removal from the manifest
 - Lyric fetching, normalization, and editing
 - Track classification, tags, and visibility fields
-- In-browser full recording with preview, retry, and upload handoff
-- Browser-side MP3 export for newly recorded audio
+- Browser-local `.coverpkg` parsing with strict path, count, size, encryption, symlink, schema, MIME, UTF-8, and SHA-256 checks
+- Package review that maps performer and original artist separately, preserves package provenance for duplicate detection, and reuses the signed upload/playlist flow
 - Creator Note writing, language, spoken upload or recording, transcript, replacement, and removal
 
 ## Current Delivery And Quality
 
 - Local pre-commit guards run staged Biome checks, file-length validation, and a full TypeScript check
-- Vitest covers player state, APIs, library behavior, lyrics, recording sessions, tags, and playback sequence logic
+- Vitest covers player state, APIs, library behavior, lyrics, cover-package security/mapping, recording utilities, tags, and playback sequence logic
 - Pushing `live` triggers a least-privilege GitHub Actions quality gate and SSH deployment to the personal server
 - The remote gate uses a frozen lockfile and runs lint, type-checking, the full test suite, and a production build before connecting to the server
 - Deployment actions are pinned to reviewed commit SHAs
@@ -43,7 +43,7 @@ The current codebase is a usable player and publishing baseline. Bottom-navigati
 
 - `src/app`: routes, layouts, metadata, and API endpoints
 - `src/components/ide`: public player and IDE interface
-- `src/components/admin`: owner publishing, recording, and playlist tools
+- `src/components/admin`: owner publishing, cover-package review, Creator Note, and playlist tools
 - `src/lib`: auth, storage, media, lyrics, and shared behavior
 - `src/store`: IDE and player state
 

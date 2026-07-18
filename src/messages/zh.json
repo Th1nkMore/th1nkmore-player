@@ -330,6 +330,29 @@
       }
     },
     "upload": {
+      "packageImport": {
+        "title": "导入翻唱发布包",
+        "description": "在浏览器本地校验 HuangToolbar 生成的 .coverpkg，并填入现有上传流程。",
+        "choose": "拖入 .coverpkg，或点击选择并检查",
+        "dropActive": "松开即可检查这个翻唱发布包",
+        "inspecting": "正在本地检查发布包……",
+        "localOnly": "审核并编辑字段、点击“部署”之前，不会上传任何内容。",
+        "verified": "发布包检查通过",
+        "checksumVerified": "四文件白名单、v1 清单、MP3 标识、UTF-8 歌词和全部 SHA-256 校验和均有效。",
+        "performer": "翻唱演唱者",
+        "originalArtist": "原唱",
+        "audio": "发布音频",
+        "lyrics": "歌词",
+        "schema": "发布包身份",
+        "channels": "{count} 声道",
+        "timedLines": "{count} 行时间轴歌词",
+        "duplicateTitle": "这个发布包已经部署",
+        "duplicateMessage": "相同发布包已保存为 {id}，为避免重复歌曲，当前禁止再次部署。",
+        "relatedTitle": "发现同一项目的已有版本",
+        "relatedMessage": "歌曲 {id} 来自同一个翻唱项目，请把本次导入作为一次明确的修订审阅。",
+        "warnings": "需要审阅的提醒",
+        "noWarnings": "没有待处理的发布包级提醒。"
+      },
       "fileCard": {
         "title": "音频源文件",
         "description": "附加将要部署到曲库的音频二进制文件。",

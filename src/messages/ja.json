@@ -330,6 +330,29 @@
       }
     },
     "upload": {
+      "packageImport": {
+        "title": "カバーパッケージを読み込む",
+        "description": "HuangToolbar の .coverpkg をローカルで検証し、既存のアップロード画面に反映します。",
+        "choose": ".coverpkg をドロップ、またはクリックして検査",
+        "dropActive": "ドロップしてカバーパッケージを検査",
+        "inspecting": "パッケージをローカルで検査中…",
+        "localOnly": "内容を確認して「デプロイ」を選ぶまでアップロードされません。",
+        "verified": "パッケージ検査に合格しました",
+        "checksumVerified": "4 ファイルの許可リスト、v1 manifest、MP3、UTF-8 歌詞、SHA-256 を確認しました。",
+        "performer": "カバー演奏者",
+        "originalArtist": "オリジナルアーティスト",
+        "audio": "公開音源",
+        "lyrics": "歌詞",
+        "schema": "パッケージ ID",
+        "channels": "{count} ch",
+        "timedLines": "タイム付き {count} 行",
+        "duplicateTitle": "同じパッケージは公開済みです",
+        "duplicateMessage": "このパッケージは {id} として保存済みのため、重複公開を防止しました。",
+        "relatedTitle": "同じプロジェクトの既存版があります",
+        "relatedMessage": "{id} は同じカバープロジェクト由来です。明示的な改訂として確認してください。",
+        "warnings": "確認が必要な警告",
+        "noWarnings": "パッケージに警告はありません。"
+      },
       "fileCard": {
         "title": "音声ソース",
         "description": "ライブラリへデプロイする音声ファイルを添付します。",

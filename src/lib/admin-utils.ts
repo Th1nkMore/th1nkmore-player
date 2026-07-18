@@ -287,6 +287,8 @@ export async function persistSongAssetToLibrary({
   }
 
   let nextFormData = { ...formData };
+  const coverPackageId = nextFormData.metadata?.coverPackageId;
+  let currentSnapshot = await coverPackagePreflight(coverPackageId);
   if (accompanimentFile) {
     const accompanimentUrl = await uploadAudioFileToR2(
       accompanimentFile,
@@ -304,7 +306,7 @@ export async function persistSongAssetToLibrary({
   }
 
   const publicUrl = await uploadAudioFileToR2(file, addLog, assetKind);
-  let currentSnapshot = await fetchAdminPlaylistSnapshot();
+  currentSnapshot ||= await fetchAdminPlaylistSnapshot();
   let newSong = createSongFromFormData(
     nextFormData.title || "",
     nextFormData.artist || "",
@@ -319,6 +321,7 @@ export async function persistSongAssetToLibrary({
   } catch (error) {
     if (!(error instanceof AdminPlaylistConflictError)) throw error;
     currentSnapshot = await fetchAdminPlaylistSnapshot();
+    assertCoverPackageIsNew(currentSnapshot.playlist, coverPackageId);
     newSong = createSongFromFormData(
       nextFormData.title || "",
       nextFormData.artist || "",
@@ -330,6 +333,25 @@ export async function persistSongAssetToLibrary({
     await createAdminSong(newSong, currentSnapshot.revision);
   }
   return newSong;
+}
+
+async function coverPackagePreflight(packageId: unknown) {
+  if (!(typeof packageId === "string" && packageId.trim())) return null;
+  const snapshot = await fetchAdminPlaylistSnapshot();
+  assertCoverPackageIsNew(snapshot.playlist, packageId);
+  return snapshot;
+}
+
+function assertCoverPackageIsNew(playlist: Song[], packageId: unknown) {
+  if (!(typeof packageId === "string" && packageId.trim())) return;
+  const duplicate = playlist.find(
+    (song) => song.metadata?.coverPackageId === packageId,
+  );
+  if (duplicate) {
+    throw new Error(
+      `This cover package is already deployed as ${duplicate.id}.`,
+    );
+  }
 }
 
 export async function fetchLyricsFromAdmin(

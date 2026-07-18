@@ -10,6 +10,12 @@ import {
   uploadAudioFileToR2,
 } from "@/lib/admin-utils";
 import type { AdminNotice } from "@/lib/admin-workspace";
+import type { CoverPackageReview } from "@/lib/cover-package";
+import {
+  clearCoverPackageMetadata,
+  coverPackageSongDraft,
+  prepareCoverPackageReview,
+} from "@/lib/cover-package-review";
 import {
   convertPlainLyricsWorkflow,
   describeLyrics,
@@ -29,11 +35,9 @@ type FileStatus = {
 export function useAdminUploadFlow({
   addLog,
   clearLogs,
-  onUseRecordingSource,
 }: {
   addLog: AdminLogger;
   clearLogs: () => void;
-  onUseRecordingSource: () => void;
 }) {
   const t = useTranslations("admin");
   const [formData, setFormData] = useState<Partial<Song>>(createEmptySongDraft);
@@ -43,14 +47,27 @@ export function useAdminUploadFlow({
   const [isDeploying, setIsDeploying] = useState(false);
   const [isFetchingLyrics, setIsFetchingLyrics] = useState(false);
   const [neteaseUrl, setNeteaseUrl] = useState("");
+  const [coverPackageReview, setCoverPackageReview] =
+    useState<CoverPackageReview | null>(null);
+  const [isImportingCoverPackage, setIsImportingCoverPackage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const coverPackageInputRef = useRef<HTMLInputElement>(null);
+  const coverImportSequence = useRef(0);
 
   const handleFileSelect = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
       if (!file) return;
 
+      coverImportSequence.current += 1;
+      setCoverPackageReview(null);
       setAudioFile(file);
+      setFormData((current) => ({
+        ...current,
+        originalArtist: undefined,
+        sourceType: "upload",
+        metadata: clearCoverPackageMetadata(current.metadata),
+      }));
       setFileStatus({
         tone: "neutral",
         title: t("notices.metadataExtracting.title"),
@@ -98,6 +115,72 @@ export function useAdminUploadFlow({
       }
     },
     [addLog, t],
+  );
+
+  const handleCoverPackageFile = useCallback(
+    async (file: File) => {
+      const sequence = coverImportSequence.current + 1;
+      coverImportSequence.current = sequence;
+      setIsImportingCoverPackage(true);
+      setUploadNotice({
+        tone: "neutral",
+        title: "Inspecting cover package",
+        message:
+          "Validating ZIP structure, schema, media, lyrics, and SHA-256 checksums locally.",
+      });
+      addLog(`> Inspecting cover package locally: ${file.name}`);
+
+      try {
+        const review = await prepareCoverPackageReview(file, addLog);
+        if (coverImportSequence.current !== sequence) return;
+        setCoverPackageReview(review);
+        setAudioFile(review.audioFile);
+        setFormData((current) => coverPackageSongDraft(current, review));
+        setFileStatus({
+          tone: "success",
+          title: "Verified cover package",
+          message: `${review.manifest.title} • ${review.manifest.artist} • ${review.lyricLineCount} timed lyric lines`,
+        });
+        setUploadNotice(packageUploadNotice(review));
+        addLog(`> Package verified: ${review.manifest.packageId}`);
+        addLog(
+          `> Performer: ${review.manifest.artist}; original artist: ${review.manifest.originalArtist}`,
+        );
+      } catch (importError) {
+        if (coverImportSequence.current !== sequence) return;
+        setCoverPackageReview(null);
+        setAudioFile(null);
+        const message =
+          importError instanceof Error
+            ? importError.message
+            : String(importError);
+        setFileStatus({
+          tone: "error",
+          title: "Invalid cover package",
+          message,
+        });
+        setUploadNotice({
+          tone: "error",
+          title: "Cover package import failed",
+          message,
+        });
+        addLog(`> Error: Cover package rejected locally: ${message}`);
+      } finally {
+        if (coverImportSequence.current === sequence) {
+          setIsImportingCoverPackage(false);
+        }
+      }
+    },
+    [addLog],
+  );
+
+  const handleCoverPackageSelect = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      event.target.value = "";
+      if (file) void handleCoverPackageFile(file);
+    },
+    [handleCoverPackageFile],
   );
 
   const handleFetchLyrics = useCallback(async () => {
@@ -194,16 +277,31 @@ export function useAdminUploadFlow({
   );
 
   const resetUploadForm = useCallback(() => {
+    coverImportSequence.current += 1;
     setFormData(createEmptySongDraft());
     setAudioFile(null);
+    setCoverPackageReview(null);
     setNeteaseUrl("");
     setFileStatus(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+    if (coverPackageInputRef.current) {
+      coverPackageInputRef.current.value = "";
+    }
   }, []);
 
   const handleDeploy = useCallback(async () => {
+    if (coverPackageReview?.duplicateSongId) {
+      const message = `This exact package is already deployed as ${coverPackageReview.duplicateSongId}.`;
+      addLog(`> Error: ${message}`);
+      setUploadNotice({
+        tone: "error",
+        title: "Duplicate deployment blocked",
+        message,
+      });
+      return;
+    }
     if (!audioFile) {
       const message = "No audio file selected";
       addLog(`> Error: ${message}`);
@@ -265,46 +363,63 @@ export function useAdminUploadFlow({
     } finally {
       setIsDeploying(false);
     }
-  }, [addLog, audioFile, clearLogs, formData, resetUploadForm, t]);
-
-  const handleUseRecordingAsUploadSource = useCallback(
-    (recordedFile: File, durationSeconds: number) => {
-      setAudioFile(recordedFile);
-      setFormData((current) => ({
-        ...current,
-        duration: durationSeconds,
-        sourceType: "recording",
-      }));
-      setFileStatus({
-        tone: "success",
-        title: t("notices.recordingAttached.title"),
-        message: t("notices.recordingAttached.message", {
-          filename: recordedFile.name,
-        }),
-      });
-      onUseRecordingSource();
-    },
-    [onUseRecordingSource, t],
-  );
+  }, [
+    addLog,
+    audioFile,
+    clearLogs,
+    coverPackageReview,
+    formData,
+    resetUploadForm,
+    t,
+  ]);
 
   return {
     audioFile,
+    coverPackageInputRef,
+    coverPackageReview,
     fileInputRef,
     fileStatus,
     formData,
     handleConvertLyricsToLrc,
+    handleCoverPackageFile,
+    handleCoverPackageSelect,
     handleDeploy,
     handleFetchLyrics,
     handleFileSelect,
     handleNormalizeLyrics,
     handleUploadCreatorNoteAudio,
-    handleUseRecordingAsUploadSource,
     isDeploying,
     isFetchingLyrics,
+    isImportingCoverPackage,
     neteaseUrl,
     setFormData,
     setNeteaseUrl,
     uploadLyricsDescriptor: describeLyrics(formData.lyrics || ""),
     uploadNotice,
+  };
+}
+
+function packageUploadNotice(review: CoverPackageReview): AdminNotice {
+  if (review.duplicateSongId) {
+    return {
+      tone: "error",
+      title: "Package already deployed",
+      message: `This exact package is already stored as ${review.duplicateSongId}; deployment is blocked to prevent a duplicate.`,
+    };
+  }
+  if (review.relatedSongId) {
+    return {
+      tone: "warning",
+      title: "Cover project revision found",
+      message: `This project already has a published track (${review.relatedSongId}). Review this package as an explicit revision before deploying.`,
+    };
+  }
+  return {
+    tone: review.warnings.length > 0 ? "warning" : "success",
+    title: "Cover package ready for review",
+    message:
+      review.warnings.length > 0
+        ? "The package is valid but has review warnings. Check them before deploying."
+        : "The package passed local validation. Review the editable metadata and lyrics before deploying.",
   };
 }

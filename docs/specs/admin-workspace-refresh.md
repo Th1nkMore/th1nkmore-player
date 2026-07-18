@@ -15,7 +15,7 @@ This note documents the April 2026 refresh of the admin upload and playlist-edit
 - The admin area now uses a workspace-card layout instead of long stacked forms.
 - Upload keeps all existing capabilities while adding better readiness feedback, file status, and summary notices.
 - Playlist editing now uses a searchable master-detail layout with staged draft edits and explicit discard/delete confirmation.
-- The recording tab keeps its current flow and only consumes the refreshed shell.
+- A later 2026-07-19 product decision retired the full-cover recording tab after `.coverpkg` import landed; Creator Note recording remains embedded in the shared story fields.
 
 ## Engineering Notes
 

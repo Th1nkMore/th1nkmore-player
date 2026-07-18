@@ -1,13 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { persistSongAssetToLibrary } from "@/lib/admin-utils";
 import { useAdminLogs } from "@/lib/hooks/useAdminLogs";
-import type { Song } from "@/types/music";
 import { useAdminPlaylistFlow } from "./useAdminPlaylistFlow";
 import { useAdminUploadFlow } from "./useAdminUploadFlow";
 
-type Tab = "upload" | "record" | "edit";
+type Tab = "upload" | "edit";
 
 export function useAdminPageController() {
   const [activeTab, setActiveTab] = useState<Tab>("upload");
@@ -16,11 +14,7 @@ export function useAdminPageController() {
   const [currentTime, setCurrentTime] = useState<string>("");
   const { logs, addLog, clearLogs } = useAdminLogs();
 
-  const upload = useAdminUploadFlow({
-    addLog,
-    clearLogs,
-    onUseRecordingSource: () => setActiveTab("upload"),
-  });
+  const upload = useAdminUploadFlow({ addLog, clearLogs });
   const playlist = useAdminPlaylistFlow({
     addLog,
     clearLogs,
@@ -42,34 +36,6 @@ export function useAdminPageController() {
     }
   }, [logs]);
 
-  const handleSaveRecordingToLibrary = useCallback(
-    async (
-      recordedFile: File,
-      durationSeconds: number,
-      draft: Partial<Song>,
-      accompanimentFile?: File | null,
-    ) => {
-      const recordingFormData: Partial<Song> = {
-        ...draft,
-        duration: durationSeconds,
-        sourceType: "recording",
-      };
-      const newSong = await persistSongAssetToLibrary({
-        addLog,
-        accompanimentFile,
-        assetKind: "recording",
-        file: recordedFile,
-        formData: recordingFormData,
-      });
-
-      addLog(`> New recording: ${newSong.title} by ${newSong.artist}`);
-      if (activeTab === "edit") {
-        await playlist.loadPlaylist();
-      }
-    },
-    [activeTab, addLog, playlist],
-  );
-
   const handleLogout = useCallback(async () => {
     setIsSigningOut(true);
 
@@ -87,7 +53,6 @@ export function useAdminPageController() {
     addLog,
     currentTime,
     handleLogout,
-    handleSaveRecordingToLibrary,
     isSigningOut,
     isTerminalOpen,
     logs,

@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { AdminPageChrome } from "@/components/admin/AdminPageChrome";
 import { TerminalOutput } from "@/components/admin/TerminalOutput";
 
-type AdminTab = "upload" | "record" | "edit";
+type AdminTab = "upload" | "edit";
 
 export function AdminWorkspaceShell({
   activeTab,

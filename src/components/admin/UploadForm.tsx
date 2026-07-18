@@ -17,12 +17,14 @@ import {
   AdminSectionCard,
   AdminStatusBanner,
 } from "@/components/admin/workspace/AdminWorkspacePrimitives";
+import { CoverPackageImportCard } from "@/components/admin/workspace/CoverPackageImportCard";
 import { Button } from "@/components/ui/button";
 import {
   type AdminNotice,
   formatSongDuration,
   getUploadReadiness,
 } from "@/lib/admin-workspace";
+import type { CoverPackageReview } from "@/lib/cover-package";
 import type { Song } from "@/types/music";
 
 type UploadFormProps = {
@@ -36,9 +38,14 @@ type UploadFormProps = {
   lyricsFormat: "lrc" | "plain" | "empty";
   lyricLineCount: number;
   fileInputRef: RefObject<HTMLInputElement | null>;
+  coverPackageInputRef: RefObject<HTMLInputElement | null>;
+  coverPackageReview: CoverPackageReview | null;
+  isImportingCoverPackage: boolean;
   uploadNotice: AdminNotice | null;
   fileStatus: AdminNotice | null;
   handleConvertLyricsToLrc: () => void;
+  handleCoverPackageFile: (file: File) => void;
+  handleCoverPackageSelect: (e: ChangeEvent<HTMLInputElement>) => void;
   handleFileSelect: (e: ChangeEvent<HTMLInputElement>) => void;
   handleFetchLyrics: () => void;
   handleDeploy: () => void;
@@ -63,9 +70,14 @@ export function UploadForm({
   lyricsFormat,
   lyricLineCount,
   fileInputRef,
+  coverPackageInputRef,
+  coverPackageReview,
+  isImportingCoverPackage,
   uploadNotice,
   fileStatus,
   handleConvertLyricsToLrc,
+  handleCoverPackageFile,
+  handleCoverPackageSelect,
   handleFileSelect,
   handleFetchLyrics,
   handleDeploy,
@@ -105,6 +117,10 @@ export function UploadForm({
 
     const file = event.dataTransfer.files?.[0];
     if (!file) return;
+    if (file.name.toLowerCase().endsWith(".coverpkg")) {
+      handleCoverPackageFile(file);
+      return;
+    }
 
     const syntheticEvent = {
       target: { files: event.dataTransfer.files },
@@ -113,6 +129,7 @@ export function UploadForm({
   };
 
   const readiness = getUploadReadiness(formData, audioFile);
+  const canDeploy = readiness.canDeploy && !coverPackageReview?.duplicateSongId;
   const summaryNotices: AdminNotice[] = [
     isDeploying
       ? {
@@ -120,7 +137,7 @@ export function UploadForm({
           title: t("notices.deploying.title"),
           message: t("notices.deploying.message"),
         }
-      : readiness.canDeploy
+      : canDeploy
         ? {
             tone: "success",
             title: t("upload.readiness.title"),
@@ -176,6 +193,14 @@ export function UploadForm({
                 message={uploadNotice.message}
               />
             ) : null}
+
+            <CoverPackageImportCard
+              inputRef={coverPackageInputRef}
+              isImporting={isImportingCoverPackage}
+              review={coverPackageReview}
+              onFile={handleCoverPackageFile}
+              onSelect={handleCoverPackageSelect}
+            />
 
             <AdminSectionCard
               title={t("upload.fileCard.title")}
@@ -364,11 +389,7 @@ export function UploadForm({
                 <Button
                   type="button"
                   onClick={handleDeploy}
-                  disabled={
-                    !readiness.canDeploy ||
-                    isDeploying ||
-                    isCreatorNoteUploading
-                  }
+                  disabled={!canDeploy || isDeploying || isCreatorNoteUploading}
                 >
                   {isDeploying ? (
                     <>
@@ -393,16 +414,14 @@ export function UploadForm({
           <div className="text-xs text-gray-500">
             {isCreatorNoteUploading
               ? t("creatorNote.uploading")
-              : readiness.canDeploy
+              : canDeploy
                 ? t("upload.readiness.deployReady")
                 : t("upload.readiness.deployBlocked")}
           </div>
           <Button
             type="button"
             onClick={handleDeploy}
-            disabled={
-              !readiness.canDeploy || isDeploying || isCreatorNoteUploading
-            }
+            disabled={!canDeploy || isDeploying || isCreatorNoteUploading}
           >
             {isDeploying ? (
               <>

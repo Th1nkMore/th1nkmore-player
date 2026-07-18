@@ -2,7 +2,7 @@
 
 Sonic IDE is an IDE-inspired personal cover portfolio, audio journal, and single-owner player. Songs appear as files, lyrics as editor content, and playback as a terminal-like runtime. The product is optimized for one owner and public listeners rather than positioned as a general-purpose music-source platform.
 
-The current public app already supports library browsing, playback, queues, synchronized lyrics, metadata, responsive layouts, and localization. The authenticated admin workspace supports uploads, playlist editing, lyric management, in-browser recording, and a first browser-side MP3 export flow.
+The current public app already supports library browsing, playback, queues, synchronized lyrics, metadata, responsive layouts, and localization. The authenticated admin workspace supports ordinary uploads, verified `.coverpkg` import, playlist editing, lyric management, and Creator Note authoring.
 
 The next product direction adds a narrative layer to each full cover recording. A track can include a Creator Note (shown as “翻唱者说” in the relevant UI) made from personal writing and an optional spoken recording. The spoken note is supporting editorial content, not another song: it never enters the queue and never plays at the same time as the cover recording.
 
@@ -11,7 +11,7 @@ The next product direction adds a narrative layer to each full cover recording. 
 - Keep the core identity as a personal cover portfolio and audio journal, with the player as its delivery surface
 - Treat the IDE shell as the product language without carrying over confusing IDE semantics
 - Make each public track shareable as a standalone work containing the cover, lyrics, and Creator Note
-- Keep full cover recordings and spoken Creator Note recordings as separate audio roles with one shared audio-focus policy
+- Produce full covers in HuangToolbar and Audacity while keeping spoken Creator Note recording as a separate lightweight website role
 - Preserve a single-owner workflow instead of adding multi-user, marketplace, or arbitrary music-source features
 - Add curated per-track visual themes only after the content and sharing model is stable
 
@@ -23,7 +23,7 @@ Current planning highlights:
 - Library model: [`docs/product/library-model.md`](docs/product/library-model.md)
 - Branching and release: [`docs/process/branching-release.md`](docs/process/branching-release.md)
 - Implementation plan: [`docs/roadmap/implementation-plan.md`](docs/roadmap/implementation-plan.md)
-- Recording and export draft: [`docs/specs/recording-export.md`](docs/specs/recording-export.md)
+- External cover handoff: [`docs/specs/external-cover-production-handoff.md`](docs/specs/external-cover-production-handoff.md)
 
 ## Core Features
 
@@ -32,9 +32,8 @@ Current planning highlights:
 - Responsive layouts for desktop, mobile portrait, and mobile landscape, including swipe paging synchronized with mobile bottom navigation
 - Localized routes with `en`, `zh`, `ja`, and `de`
 - Admin upload flow with signed R2 uploads, playlist editing, and NetEase lyric import
+- Local `.coverpkg` inspection with a strict ZIP allowlist, schema/size/path checks, SHA-256 verification, editable review, and duplicate-package blocking
 - Track classification metadata for portfolio vs personal, source type, visibility, and asset status
-- Admin-only recording workspace with microphone capture, preview, retry, save-to-library, and upload handoff
-- Browser-side MP3 export for newly recorded audio
 - Creator Note authoring with personal writing, optional spoken recording, and transcript
 - Narrative track information surface with a dedicated spoken-note player and one-audio-focus behavior
 
@@ -103,10 +102,10 @@ pnpm test
 1. Set `ADMIN_SECRET` and `ADMIN_PASSWORD` in `.env.local`.
 2. Open `/admin/login`.
 3. Sign in with the configured admin password.
-4. Upload an audio file to R2 with a signed URL, or switch to the recording workspace and capture audio in-browser.
-5. Set track metadata such as track type, source type, visibility, and asset status.
-6. Append or edit entries in the playlist source.
-7. Optionally import or normalize lyrics, and export a recording to MP3 from the recording workspace.
+4. Import a HuangToolbar `.coverpkg` for local verification and form prefill, or attach an ordinary audio file.
+5. Review or edit the performer, original-artist credit, album, classification, lyrics, visibility, and asset status.
+6. Choose Deploy to reuse the signed R2 upload and conflict-aware playlist write path.
+7. Use the playlist workspace for later edits; Creator Note spoken recording remains available inside its own story field.
 
 ## Branching Workflow
 
@@ -129,7 +128,7 @@ Detailed process: [`docs/process/branching-release.md`](docs/process/branching-r
 
 - Public R2 object URLs bypass application-level visibility filtering; true private playback still requires private storage and authenticated delivery.
 - The app still uses a playlist-shaped library model rather than a richer media catalog.
-- Recording and MP3 export exist, but the workflow is still narrow: export currently targets newly recorded client-side audio rather than all managed tracks.
+- `.coverpkg` import is implemented locally; a real Audacity-produced package still needs production deployment acceptance through R2 and the public player.
 - Track-level share routes, copy-link migration, and per-track social metadata are not yet implemented.
 - Playback session state is not yet restored across visits, and Media Session integration is not implemented.
 - GitHub `live` branch protection and Cloudflare edge rate limiting remain production configuration rather than repository code.

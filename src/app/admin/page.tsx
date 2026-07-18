@@ -1,7 +1,6 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { AdminRecordingWorkspace } from "@/components/admin/AdminRecordingWorkspace";
 import { EditPlaylist } from "@/components/admin/EditPlaylist";
 import { UploadForm } from "@/components/admin/UploadForm";
 import { useAdminPageController } from "@/components/admin/useAdminPageController";
@@ -43,10 +42,17 @@ export default function AdminPage() {
             lyricsFormat={controller.upload.uploadLyricsDescriptor.format}
             lyricLineCount={controller.upload.uploadLyricsDescriptor.lineCount}
             fileInputRef={controller.upload.fileInputRef}
+            coverPackageInputRef={controller.upload.coverPackageInputRef}
+            coverPackageReview={controller.upload.coverPackageReview}
+            isImportingCoverPackage={controller.upload.isImportingCoverPackage}
             uploadNotice={controller.upload.uploadNotice}
             fileStatus={controller.upload.fileStatus}
             handleConvertLyricsToLrc={
               controller.upload.handleConvertLyricsToLrc
+            }
+            handleCoverPackageFile={controller.upload.handleCoverPackageFile}
+            handleCoverPackageSelect={
+              controller.upload.handleCoverPackageSelect
             }
             handleFileSelect={controller.upload.handleFileSelect}
             handleFetchLyrics={controller.upload.handleFetchLyrics}
@@ -54,14 +60,6 @@ export default function AdminPage() {
             handleNormalizeLyrics={controller.upload.handleNormalizeLyrics}
             handleUploadCreatorNoteAudio={
               controller.upload.handleUploadCreatorNoteAudio
-            }
-          />
-        ) : controller.activeTab === "record" ? (
-          <AdminRecordingWorkspace
-            addLog={controller.addLog}
-            onSaveRecordedFile={controller.handleSaveRecordingToLibrary}
-            onUseRecordedFile={
-              controller.upload.handleUseRecordingAsUploadSource
             }
           />
         ) : (

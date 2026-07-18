@@ -3,6 +3,7 @@ import { songOne } from "@/../tests/fixtures/songs";
 import {
   AdminPlaylistConflictError,
   createSongFromFormData,
+  persistSongAssetToLibrary,
   saveAdminPlaylist,
 } from "@/lib/admin-utils";
 
@@ -117,5 +118,33 @@ describe("admin song creation", () => {
       name: AdminPlaylistConflictError.name,
       currentRevision: "revision-2",
     });
+  });
+
+  it("blocks an already deployed cover package before requesting an upload URL", async () => {
+    const duplicate = {
+      ...songOne,
+      metadata: { coverPackageId: "pkg_test_123" },
+    };
+    const fetchMock = vi.fn().mockResolvedValue(
+      Response.json([duplicate], {
+        headers: { ETag: '"revision-1"' },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      persistSongAssetToLibrary({
+        addLog: vi.fn(),
+        file: new File(["ID3"], "publish.mp3", { type: "audio/mpeg" }),
+        formData: {
+          title: "Test Song",
+          artist: "Huang",
+          album: "Cover",
+          metadata: { coverPackageId: "pkg_test_123" },
+        },
+      }),
+    ).rejects.toThrow("already deployed as");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith("/api/admin/playlist");
   });
 });
