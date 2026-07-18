@@ -191,6 +191,9 @@
       "deploy": "Deploy Track",
       "deploying": "Deploying...",
       "reset": "Reset Draft",
+      "saveSong": "Save Changes",
+      "archive": "Archive Track",
+      "undo": "Undo",
       "stageChanges": "Stage Changes",
       "delete": "Delete Track",
       "saving": "Saving...",
@@ -364,17 +367,49 @@
     },
     "playlist": {
       "title": "Playlist ({count} songs)",
-      "subtitle": "Review, search, and stage edits before committing the library.",
+      "subtitle": "Review and save each track directly to the library.",
+      "autosaveHint": "One track, one save",
       "searchPlaceholder": "Search title, artist, album, or tag",
       "badges": {
-        "dirty": "Dirty"
+        "dirty": "Dirty",
+        "attention": "Needs"
+      },
+      "filters": {
+        "label": "Filter tracks",
+        "all": "All tracks",
+        "needsAttention": "Needs attention ({count})",
+        "ready": "Ready",
+        "archived": "Archived"
+      },
+      "sort": {
+        "label": "Sort tracks",
+        "manual": "Manual order",
+        "title": "Title A–Z",
+        "artist": "Artist A–Z"
+      },
+      "showing": "Showing {count} of {total}",
+      "selectLabel": "Select {title}",
+      "reorderLabel": "Reorder {title}",
+      "bulk": {
+        "selectVisible": "Select visible",
+        "clear": "Clear visible",
+        "selected": "{count} selected",
+        "archive": "Archive",
+        "ready": "Mark ready",
+        "public": "Make public",
+        "private": "Make private",
+        "backfillDuration": "Backfill duration ({count})",
+        "backfillingDuration": "Reading audio durations..."
       },
       "detail": {
         "assetTitle": "Asset Summary",
         "assetDescription": "Preview and inspect the currently selected track source.",
         "audioUrl": "Audio URL",
+        "replaceAudio": "Replace audio",
+        "replacingAudio": "Replacing...",
         "unsaved": "You have unsaved draft changes for the selected track.",
-        "synced": "The selected draft matches the staged playlist."
+        "synced": "The selected draft matches the library.",
+        "savedAt": "Saved at {time}"
       },
       "emptyDetail": {
         "title": "No track selected",
@@ -390,12 +425,28 @@
         "open": "Open Editor"
       },
       "drawerTitle": "Track Editor",
-      "drawerDescription": "Select a track to start editing."
+      "drawerDescription": "Select a track to start editing.",
+      "history": {
+        "title": "Version history",
+        "description": "Every write creates a recoverable R2 manifest snapshot.",
+        "count": "{count} snapshots",
+        "refresh": "Refresh",
+        "empty": "No snapshots yet. The first one is created before the next playlist write.",
+        "restore": "Restore",
+        "restoring": "Restoring..."
+      }
     },
     "confirm": {
       "discardTitle": "Discard unsaved changes?",
       "discardDescription": "Switching tracks will drop any unsaved draft changes for the current selection.",
       "discardConfirm": "Discard and continue",
+      "saveAndContinue": "Save and continue",
+      "archiveTitle": "Archive this track?",
+      "archiveDescription": "The track will disappear from the public player, but its entry and audio asset remain available for recovery.",
+      "archiveConfirm": "Archive track",
+      "restoreTitle": "Restore this playlist version?",
+      "restoreDescription": "The current manifest is backed up first, then the selected snapshot becomes active.",
+      "restoreConfirm": "Restore version",
       "deleteTitle": "Delete this track?",
       "deleteDescription": "The track will be removed from the staged playlist until you save or reload.",
       "deleteConfirm": "Delete track",
@@ -411,6 +462,52 @@
       "playlistLoadTitle": "Playlist load failed"
     },
     "notices": {
+      "songSaving": {
+        "title": "Saving changes",
+        "message": "Writing this track directly to the library."
+      },
+      "songSaved": {
+        "title": "Changes saved",
+        "message": "{title} is up to date in the library."
+      },
+      "trackArchived": {
+        "title": "Track archived",
+        "message": "The track is hidden from the public player. Undo is available for 10 seconds."
+      },
+      "archiveUndone": {
+        "title": "Archive undone",
+        "message": "The track has been restored to its previous status."
+      },
+      "bulkSaving": {
+        "message": "Updating {count} selected tracks."
+      },
+      "bulkSaved": {
+        "title": "Bulk update saved",
+        "message": "Updated {count} selected tracks."
+      },
+      "orderSaved": {
+        "title": "Order saved",
+        "message": "The manual playlist order is up to date."
+      },
+      "revisionConflict": {
+        "title": "Newer library version detected",
+        "message": "Another session saved first. Reload the playlist, review your draft, and try again."
+      },
+      "audioReplaced": {
+        "title": "Audio replaced",
+        "message": "{title} now uses the new audio file and refreshed duration."
+      },
+      "durationBackfilled": {
+        "title": "Durations updated",
+        "message": "Recovered duration metadata for {count} tracks."
+      },
+      "durationBackfillFailed": {
+        "message": "No selected audio files exposed readable duration metadata."
+      },
+      "historyRestored": {
+        "title": "Version restored",
+        "message": "The selected playlist snapshot is active; the previous state was backed up."
+      },
       "draftUpdated": {
         "title": "Draft updated",
         "message": "Track changes are staged locally until you save the playlist."

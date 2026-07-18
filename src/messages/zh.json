@@ -191,6 +191,9 @@
       "deploy": "部署歌曲",
       "deploying": "部署中...",
       "reset": "重置草稿",
+      "saveSong": "保存修改",
+      "archive": "归档歌曲",
+      "undo": "撤销",
       "stageChanges": "暂存修改",
       "delete": "删除歌曲",
       "saving": "保存中...",
@@ -364,17 +367,49 @@
     },
     "playlist": {
       "title": "歌单（{count} 首）",
-      "subtitle": "先审阅、搜索并暂存修改，再统一提交到曲库。",
+      "subtitle": "逐首审阅并直接保存到曲库。",
+      "autosaveHint": "一首一存，修改更安全",
       "searchPlaceholder": "搜索标题、歌手、专辑或标签",
       "badges": {
-        "dirty": "已改"
+        "dirty": "已改",
+        "attention": "待补"
+      },
+      "filters": {
+        "label": "筛选歌曲",
+        "all": "全部歌曲",
+        "needsAttention": "待完善（{count}）",
+        "ready": "已就绪",
+        "archived": "已归档"
+      },
+      "sort": {
+        "label": "歌曲排序",
+        "manual": "手动顺序",
+        "title": "按标题",
+        "artist": "按歌手"
+      },
+      "showing": "显示 {count} / {total} 首",
+      "selectLabel": "选择《{title}》",
+      "reorderLabel": "调整《{title}》顺序",
+      "bulk": {
+        "selectVisible": "选择当前结果",
+        "clear": "清除当前选择",
+        "selected": "已选择 {count} 首",
+        "archive": "归档",
+        "ready": "标为就绪",
+        "public": "设为公开",
+        "private": "设为私密",
+        "backfillDuration": "回填时长（{count}）",
+        "backfillingDuration": "正在读取音频时长…"
       },
       "detail": {
         "assetTitle": "资源摘要",
         "assetDescription": "预览并检查当前选中歌曲的资源来源。",
         "audioUrl": "音频地址",
+        "replaceAudio": "替换主音频",
+        "replacingAudio": "正在替换…",
         "unsaved": "当前选中的歌曲存在未保存草稿修改。",
-        "synced": "当前草稿与暂存歌单一致。"
+        "synced": "当前草稿与曲库一致。",
+        "savedAt": "已于 {time} 保存"
       },
       "emptyDetail": {
         "title": "尚未选择歌曲",
@@ -390,12 +425,28 @@
         "open": "打开编辑器"
       },
       "drawerTitle": "歌曲编辑器",
-      "drawerDescription": "选择一首歌曲开始编辑。"
+      "drawerDescription": "选择一首歌曲开始编辑。",
+      "history": {
+        "title": "版本历史",
+        "description": "每次写入前都会在 R2 保存一份可恢复的歌单快照。",
+        "count": "{count} 份快照",
+        "refresh": "刷新",
+        "empty": "暂无快照；下次修改歌单前会自动创建第一份。",
+        "restore": "恢复",
+        "restoring": "正在恢复…"
+      }
     },
     "confirm": {
       "discardTitle": "放弃未保存修改？",
       "discardDescription": "切换歌曲会丢弃当前选中歌曲尚未保存的草稿修改。",
       "discardConfirm": "放弃并继续",
+      "saveAndContinue": "保存并继续",
+      "archiveTitle": "归档这首歌曲？",
+      "archiveDescription": "歌曲会从公开播放器隐藏，但条目与音频资源都会保留，可随时恢复。",
+      "archiveConfirm": "归档歌曲",
+      "restoreTitle": "恢复这个歌单版本？",
+      "restoreDescription": "系统会先备份当前歌单，再将所选快照设为生效版本。",
+      "restoreConfirm": "恢复版本",
       "deleteTitle": "删除这首歌曲？",
       "deleteDescription": "该歌曲会从当前暂存歌单中移除，直到你保存或重新加载。",
       "deleteConfirm": "删除歌曲",
@@ -411,6 +462,52 @@
       "playlistLoadTitle": "歌单加载失败"
     },
     "notices": {
+      "songSaving": {
+        "title": "正在保存修改",
+        "message": "正在将当前歌曲直接写入曲库。"
+      },
+      "songSaved": {
+        "title": "修改已保存",
+        "message": "《{title}》已与曲库同步。"
+      },
+      "trackArchived": {
+        "title": "歌曲已归档",
+        "message": "歌曲已从公开播放器隐藏，可在 10 秒内撤销。"
+      },
+      "archiveUndone": {
+        "title": "已撤销归档",
+        "message": "歌曲已恢复到归档前的状态。"
+      },
+      "bulkSaving": {
+        "message": "正在更新选中的 {count} 首歌曲。"
+      },
+      "bulkSaved": {
+        "title": "批量修改已保存",
+        "message": "已更新选中的 {count} 首歌曲。"
+      },
+      "orderSaved": {
+        "title": "顺序已保存",
+        "message": "歌单手动顺序已更新。"
+      },
+      "revisionConflict": {
+        "title": "检测到更新的曲库版本",
+        "message": "另一个页面已先保存。请重新载入歌单、核对当前草稿后再试。"
+      },
+      "audioReplaced": {
+        "title": "主音频已替换",
+        "message": "《{title}》已使用新音频，并刷新了时长。"
+      },
+      "durationBackfilled": {
+        "title": "时长已更新",
+        "message": "已为 {count} 首歌曲回填音频时长。"
+      },
+      "durationBackfillFailed": {
+        "message": "所选音频均未能读取到有效时长。"
+      },
+      "historyRestored": {
+        "title": "版本已恢复",
+        "message": "所选歌单快照已生效，恢复前的状态也已自动备份。"
+      },
       "draftUpdated": {
         "title": "草稿已更新",
         "message": "歌曲修改已在本地暂存，保存歌单后才会正式写入。"

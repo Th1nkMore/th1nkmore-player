@@ -1,145 +1,83 @@
-import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
-import { revalidateTag } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
-import { PUBLIC_PLAYLIST_CACHE_TAG } from "@/lib/public-playlist";
-import { R2_BUCKET_NAME, r2Client } from "@/lib/r2";
-import { isSupportedMediaUrl, normalizeSong } from "@/lib/song";
+import {
+  type AdminPlaylistSnapshot,
+  formatPlaylistEtag,
+  mutateAdminPlaylist,
+  PlaylistRevisionConflictError,
+  PlaylistRevisionRequiredError,
+  PlaylistValidationError,
+  parsePlaylistEtag,
+  readAdminPlaylistSnapshot,
+} from "@/lib/admin-playlist.server";
+import {
+  patchPlaylistSongs,
+  reorderPlaylistSongs,
+} from "@/lib/admin-workspace";
 import type { Song } from "@/types/music";
 
-/**
- * Helper function to convert stream to string
- * AWS SDK v3 returns Body as a ReadableStream, Blob, or Node.js Readable stream
- */
-function isNodeReadableStream(
-  value: unknown,
-): value is NodeJS.ReadableStream & {
-  on: (event: string, listener: (...args: unknown[]) => void) => void;
-} {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "on" in value &&
-    typeof (value as { on?: unknown }).on === "function"
+function playlistHeaders(revision: string) {
+  return {
+    ETag: formatPlaylistEtag(revision),
+    "X-Playlist-Revision": revision,
+  };
+}
+
+function playlistWriteResponse(snapshot: AdminPlaylistSnapshot) {
+  return NextResponse.json(
+    {
+      success: true,
+      count: snapshot.playlist.length,
+      playlist: snapshot.playlist,
+      revision: snapshot.revision,
+    },
+    { headers: playlistHeaders(snapshot.revision) },
   );
 }
 
-async function streamToString(body: unknown): Promise<string> {
-  if (!body) {
-    return "";
+function playlistErrorResponse(error: unknown) {
+  if (error instanceof PlaylistRevisionRequiredError) {
+    return NextResponse.json({ error: error.message }, { status: 428 });
+  }
+  if (error instanceof PlaylistRevisionConflictError) {
+    return NextResponse.json(
+      {
+        error: error.message,
+        currentRevision: error.currentRevision,
+      },
+      {
+        status: 412,
+        headers: playlistHeaders(error.currentRevision),
+      },
+    );
+  }
+  if (error instanceof PlaylistValidationError) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
-  // If it's a string, return it
-  if (typeof body === "string") {
-    return body;
-  }
-
-  // If it's a Blob, convert to text
-  if (body instanceof Blob) {
-    return await body.text();
-  }
-
-  // If it's a ReadableStream (Web API), convert it
-  if (body instanceof ReadableStream) {
-    const reader = body.getReader();
-    const decoder = new TextDecoder();
-    let result = "";
-
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        result += decoder.decode(value, { stream: true });
-      }
-    } finally {
-      reader.releaseLock();
-    }
-
-    return result;
-  }
-
-  // If it's a Node.js Readable stream (has pipe/on methods)
-  if (isNodeReadableStream(body)) {
-    const chunks: Uint8Array[] = [];
-    return new Promise((resolve, reject) => {
-      body.on("data", (chunk: unknown) => {
-        if (chunk instanceof Uint8Array) {
-          chunks.push(chunk);
-        }
-      });
-      body.on("end", () => resolve(Buffer.concat(chunks).toString("utf-8")));
-      body.on("error", (err: unknown) => reject(err));
-    });
-  }
-
-  // Fallback: try to convert to string
-  try {
-    return String(body);
-  } catch {
-    return JSON.stringify(body);
-  }
+  console.error("Error updating playlist:", error);
+  return NextResponse.json(
+    { error: "Failed to update playlist" },
+    { status: 500 },
+  );
 }
 
-function normalizePlaylist(playlist: Song[]): Song[] {
-  return playlist.map(normalizeSong);
+function requestRevision(request: NextRequest) {
+  return parsePlaylistEtag(request.headers.get("if-match"));
 }
 
-function validatePlaylistStoryFields(playlist: Song[]): string | null {
-  const shareSlugs = new Set<string>();
-
-  for (const song of playlist) {
-    const spokenAudioUrl = song.creatorNote?.audioUrl;
-    if (spokenAudioUrl && !isSupportedMediaUrl(spokenAudioUrl)) {
-      return `Invalid Creator Note audio URL for ${song.id || "unknown song"}`;
-    }
-
-    if (song.shareSlug) {
-      if (shareSlugs.has(song.shareSlug)) {
-        return `Duplicate share slug: ${song.shareSlug}`;
-      }
-      shareSlugs.add(song.shareSlug);
-    }
-  }
-
-  return null;
-}
-
-/**
- * GET /api/admin/playlist
- * Fetches the current playlist.json from R2
- */
 export async function GET() {
   try {
-    if (!R2_BUCKET_NAME) {
-      return NextResponse.json(
-        { error: "R2_BUCKET_NAME is not configured" },
-        { status: 500 },
-      );
-    }
-
-    const command = new GetObjectCommand({
-      Bucket: R2_BUCKET_NAME,
-      Key: "playlist.json",
+    const snapshot = await readAdminPlaylistSnapshot();
+    return NextResponse.json(snapshot.playlist, {
+      headers: playlistHeaders(snapshot.revision),
     });
-
-    const response = await r2Client.send(command);
-
-    if (!response.Body) {
+  } catch (error) {
+    if ((error as Error).message === "Playlist file not found") {
       return NextResponse.json(
         { error: "Playlist file not found" },
         { status: 404 },
       );
     }
-
-    const bodyString = await streamToString(response.Body as ReadableStream);
-    const playlist = normalizePlaylist(JSON.parse(bodyString) as Song[]);
-
-    return NextResponse.json(playlist);
-  } catch (error) {
-    // If file doesn't exist, return empty array
-    if ((error as { name?: string }).name === "NoSuchKey") {
-      return NextResponse.json([]);
-    }
-
     console.error("Error fetching playlist:", error);
     return NextResponse.json(
       { error: "Failed to fetch playlist" },
@@ -148,72 +86,110 @@ export async function GET() {
   }
 }
 
-/**
- * PUT /api/admin/playlist
- * Updates the playlist.json file in R2
- */
 export async function PUT(request: NextRequest) {
   try {
-    if (!R2_BUCKET_NAME) {
-      return NextResponse.json(
-        { error: "R2_BUCKET_NAME is not configured" },
-        { status: 500 },
-      );
-    }
-
     const payload = await request.json();
-
     if (!Array.isArray(payload)) {
       return NextResponse.json(
         { error: "Playlist must be an array" },
         { status: 400 },
       );
     }
-
-    const playlist = normalizePlaylist(payload as Song[]);
-
-    // Validate each song has required fields
-    for (const song of playlist) {
-      if (
-        !(song.id && song.title && song.artist && song.album && song.audioUrl)
-      ) {
-        return NextResponse.json(
-          { error: "Invalid song data: missing required fields" },
-          { status: 400 },
-        );
-      }
-    }
-
-    const storyValidationError = validatePlaylistStoryFields(playlist);
-    if (storyValidationError) {
-      return NextResponse.json(
-        { error: storyValidationError },
-        { status: 400 },
-      );
-    }
-
-    const command = new PutObjectCommand({
-      Bucket: R2_BUCKET_NAME,
-      Key: "playlist.json",
-      Body: JSON.stringify(playlist, null, 2),
-      ContentType: "application/json",
-    });
-
-    await r2Client.send(command);
-    try {
-      revalidateTag(PUBLIC_PLAYLIST_CACHE_TAG, { expire: 0 });
-    } catch (error) {
-      // The playlist is already durable at this point. Report cache failures
-      // without telling the client that the save itself failed.
-      console.warn("Playlist saved, but cache invalidation failed:", error);
-    }
-
-    return NextResponse.json({ success: true, count: playlist.length });
-  } catch (error) {
-    console.error("Error updating playlist:", error);
-    return NextResponse.json(
-      { error: "Failed to update playlist" },
-      { status: 500 },
+    return playlistWriteResponse(
+      await mutateAdminPlaylist(
+        requestRevision(request),
+        () => payload as Song[],
+      ),
     );
+  } catch (error) {
+    return playlistErrorResponse(error);
+  }
+}
+
+type PlaylistPatchPayload =
+  | { type: "updateSong"; song: Song }
+  | {
+      type: "updateMany";
+      songIds: string[];
+      patch: Partial<Pick<Song, "assetStatus" | "visibility">>;
+    }
+  | { type: "replaceSongs"; songs: Song[] }
+  | { type: "reorder"; activeSongId: string; overSongId: string };
+
+function applyPlaylistPatch(playlist: Song[], payload: PlaylistPatchPayload) {
+  if (payload.type === "updateSong") {
+    if (!playlist.some((song) => song.id === payload.song?.id)) {
+      throw new PlaylistValidationError("Track not found");
+    }
+    return playlist.map((song) =>
+      song.id === payload.song.id ? payload.song : song,
+    );
+  }
+
+  if (payload.type === "updateMany") {
+    if (!(Array.isArray(payload.songIds) && payload.patch)) {
+      throw new PlaylistValidationError("Invalid bulk update payload");
+    }
+    return patchPlaylistSongs(playlist, payload.songIds, payload.patch);
+  }
+
+  if (payload.type === "replaceSongs") {
+    if (!Array.isArray(payload.songs)) {
+      throw new PlaylistValidationError("Invalid song update payload");
+    }
+    const replacements = new Map(payload.songs.map((song) => [song.id, song]));
+    if (
+      replacements.size !== payload.songs.length ||
+      [...replacements.keys()].some(
+        (songId) => !playlist.some((song) => song.id === songId),
+      )
+    ) {
+      throw new PlaylistValidationError("Invalid song update payload");
+    }
+    return playlist.map((song) => replacements.get(song.id) || song);
+  }
+
+  if (payload.type === "reorder") {
+    return reorderPlaylistSongs(
+      playlist,
+      payload.activeSongId,
+      payload.overSongId,
+    );
+  }
+
+  throw new PlaylistValidationError("Unsupported playlist update");
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const payload = (await request.json()) as PlaylistPatchPayload;
+    const snapshot = await mutateAdminPlaylist(
+      requestRevision(request),
+      (playlist) => applyPlaylistPatch(playlist, payload),
+    );
+    return playlistWriteResponse(snapshot);
+  } catch (error) {
+    return playlistErrorResponse(error);
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const payload = (await request.json()) as { song?: Song };
+    if (!payload.song) {
+      throw new PlaylistValidationError("Song payload is required");
+    }
+    const snapshot = await mutateAdminPlaylist(
+      requestRevision(request),
+      (playlist) => {
+        if (playlist.some((song) => song.id === payload.song?.id)) {
+          throw new PlaylistValidationError("Track ID already exists");
+        }
+        return [...playlist, payload.song as Song];
+      },
+    );
+    return playlistWriteResponse(snapshot);
+  } catch (error) {
+    return playlistErrorResponse(error);
   }
 }

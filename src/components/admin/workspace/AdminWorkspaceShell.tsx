@@ -23,14 +23,19 @@ export function AdminWorkspaceShell({
   isBusy: boolean;
   isExpanded: boolean;
   isSigningOut: boolean;
-  logs: Array<{ id: string; message: string; timestamp: Date }>;
+  logs: Array<{
+    id: string;
+    level: "info" | "error";
+    message: string;
+    timestamp: Date;
+  }>;
   onLogout: () => void;
   onTabChange: (tab: AdminTab) => void;
   onToggleTerminal: () => void;
   children: ReactNode;
 }) {
   return (
-    <div className="flex h-screen w-full flex-col bg-[var(--editor-bg)] font-mono text-[12px] supports-[height:100dvh]:h-[100dvh]">
+    <div className="flex h-screen w-full flex-col bg-[var(--editor-bg)] font-sans text-sm antialiased supports-[height:100dvh]:h-[100dvh]">
       <AdminPageChrome
         activeTab={activeTab}
         currentTime={currentTime}
