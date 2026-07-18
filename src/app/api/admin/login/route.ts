@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
     const response = jsonResponse({ success: true }, 200);
     return setAdminCookieInResponse(response, token);
   } catch (error) {
+    console.error("Admin login request failed:", error);
     const message = getErrorMessage(error);
     const isConfigurationError = /ADMIN_(?:PASSWORD|SECRET)/.test(message);
 
