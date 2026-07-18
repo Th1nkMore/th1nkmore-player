@@ -25,6 +25,7 @@
 - Keep each `feat/*` branch scoped to one coherent unit of acceptance
 - Treat `dev` as the place for integration verification, not long-lived unreviewed experimentation
 - Treat `live` as a release artifact branch rather than a daily development branch
+- Protect `live` in GitHub: require the deployment quality-gate check, block force pushes, and restrict direct pushes to the release path
 
 ## Suggested Naming
 
