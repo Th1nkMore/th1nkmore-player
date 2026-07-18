@@ -9,6 +9,116 @@ export type AdminNotice = {
   message: string;
 };
 
+export type SongAttentionIssue = "duration" | "tags" | "lyrics" | "creatorNote";
+
+export type AdminPlaylistFilter =
+  | "all"
+  | "needsAttention"
+  | "ready"
+  | "archived";
+
+export type AdminPlaylistSort = "manual" | "title" | "artist";
+
+export function getSongAttentionIssues(song: Song): SongAttentionIssue[] {
+  const issues: SongAttentionIssue[] = [];
+  if (!(song.duration > 0)) issues.push("duration");
+  if (song.tags.length === 0) issues.push("tags");
+  if (!song.lyrics.trim()) issues.push("lyrics");
+  if (!(song.creatorNote?.body || song.creatorNote?.audioUrl)) {
+    issues.push("creatorNote");
+  }
+  return issues;
+}
+
+export function getPlaylistAttentionSummary(playlist: Song[]) {
+  const summary: Record<SongAttentionIssue, number> = {
+    duration: 0,
+    tags: 0,
+    lyrics: 0,
+    creatorNote: 0,
+  };
+
+  for (const song of playlist) {
+    for (const issue of getSongAttentionIssues(song)) {
+      summary[issue] += 1;
+    }
+  }
+
+  return {
+    ...summary,
+    songs: playlist.filter((song) => getSongAttentionIssues(song).length > 0)
+      .length,
+  };
+}
+
+export function filterAndSortAdminPlaylist(
+  playlist: Song[],
+  {
+    filter,
+    query,
+    sort,
+  }: {
+    filter: AdminPlaylistFilter;
+    query: string;
+    sort: AdminPlaylistSort;
+  },
+) {
+  const normalizedQuery = query.trim().toLocaleLowerCase();
+  const filtered = playlist.filter((song) => {
+    if (
+      filter === "needsAttention" &&
+      getSongAttentionIssues(song).length === 0
+    ) {
+      return false;
+    }
+    if (filter === "ready" && song.assetStatus !== "ready") return false;
+    if (filter === "archived" && song.assetStatus !== "archived") return false;
+    if (!normalizedQuery) return true;
+
+    return [song.title, song.artist, song.album, ...song.tags]
+      .join(" ")
+      .toLocaleLowerCase()
+      .includes(normalizedQuery);
+  });
+
+  if (sort === "manual") return filtered;
+
+  return filtered.toSorted((first, second) => {
+    const firstValue = sort === "title" ? first.title : first.artist;
+    const secondValue = sort === "title" ? second.title : second.artist;
+    return firstValue.localeCompare(secondValue, undefined, {
+      numeric: true,
+      sensitivity: "base",
+    });
+  });
+}
+
+export function reorderPlaylistSongs(
+  playlist: Song[],
+  activeSongId: string,
+  overSongId: string,
+) {
+  const fromIndex = playlist.findIndex((song) => song.id === activeSongId);
+  const toIndex = playlist.findIndex((song) => song.id === overSongId);
+  if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return playlist;
+
+  const reordered = [...playlist];
+  const [movedSong] = reordered.splice(fromIndex, 1);
+  reordered.splice(toIndex, 0, movedSong);
+  return reordered;
+}
+
+export function patchPlaylistSongs(
+  playlist: Song[],
+  songIds: string[],
+  patch: Partial<Pick<Song, "assetStatus" | "visibility">>,
+) {
+  const selectedIds = new Set(songIds);
+  return playlist.map((song) =>
+    selectedIds.has(song.id) ? normalizeSong({ ...song, ...patch }) : song,
+  );
+}
+
 export type UploadReadiness = {
   canDeploy: boolean;
   checks: Array<{

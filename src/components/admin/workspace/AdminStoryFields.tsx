@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import {
+  AdminCollapsibleSectionCard,
   AdminField,
   AdminFieldGrid,
   AdminSectionCard,
@@ -20,17 +21,22 @@ export function AdminStoryFields({
   onChange,
   onUploadCreatorNoteAudio,
   onCreatorNoteUploadingChange,
+  collapsible = false,
 }: {
   draft: Partial<Song> | Song;
   onChange: (patch: Partial<Song>) => void;
   onUploadCreatorNoteAudio: (file: File) => Promise<string>;
   onCreatorNoteUploadingChange: (isUploading: boolean) => void;
+  collapsible?: boolean;
 }) {
   const t = useTranslations("admin");
+  const SectionCard = collapsible
+    ? AdminCollapsibleSectionCard
+    : AdminSectionCard;
 
   return (
     <>
-      <AdminSectionCard
+      <SectionCard
         title={t("sections.story.title")}
         description={t("sections.story.description")}
       >
@@ -80,9 +86,9 @@ export function AdminStoryFields({
             />
           </AdminField>
         </AdminFieldGrid>
-      </AdminSectionCard>
+      </SectionCard>
 
-      <AdminSectionCard
+      <SectionCard
         title={t("sections.creatorNote.title")}
         description={t("sections.creatorNote.description")}
       >
@@ -93,7 +99,7 @@ export function AdminStoryFields({
           onUploadAudio={onUploadCreatorNoteAudio}
           onUploadingChange={onCreatorNoteUploadingChange}
         />
-      </AdminSectionCard>
+      </SectionCard>
     </>
   );
 }

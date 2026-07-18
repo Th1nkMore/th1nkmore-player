@@ -37,16 +37,10 @@ export function useAdminPageController() {
   }, []);
 
   useEffect(() => {
-    if (logs.length > 0) {
+    if (logs.at(-1)?.level === "error") {
       setIsTerminalOpen(true);
     }
-  }, [logs.length]);
-
-  useEffect(() => {
-    if (upload.isDeploying) {
-      setIsTerminalOpen(true);
-    }
-  }, [upload.isDeploying]);
+  }, [logs]);
 
   const handleSaveRecordingToLibrary = useCallback(
     async (
