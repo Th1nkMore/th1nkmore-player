@@ -15,7 +15,8 @@ This directory contains the product, process, architecture, and roadmap baseline
 - `roadmap/engineering-roadmap.md`: engineering and performance roadmap
 - `roadmap/implementation-plan.md`: branch-by-branch implementation sequence
 - `specs/admin-workspace-refresh.md`: modernized admin upload and playlist editing workspace
-- `specs/recording-export.md`: recording and export design draft
+- `specs/external-cover-production-handoff.md`: accepted HuangToolbar/Audacity cover-package import and publication contract
+- `specs/recording-export.md`: superseded full-cover recording draft, retained as historical context and for separate Creator Note considerations
 - `specs/creator-note-and-sharing.md`: Creator Note content, spoken-audio focus, info page, and track sharing
 - `specs/mobile-swipe-navigation.md`: mobile pager gestures, conflicts, transitions, and accessibility
 - `specs/lyrics-sync-hardening.md`: timed lyrics parsing and teleprompter stability notes

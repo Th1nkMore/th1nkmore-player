@@ -1,5 +1,7 @@
 # Recording And Export Spec Draft
 
+> Superseded for full cover production as of 2026-07-19. Covers are now prepared in HuangToolbar, recorded and mixed in Audacity, then imported through a `.coverpkg`. See `external-cover-production-handoff.md`. The Creator Note spoken-audio use case remains separate and is not superseded by this decision.
+
 ## Scope
 
 This document defines the first practical design direction for two future admin capabilities:
