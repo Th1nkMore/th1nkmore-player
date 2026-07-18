@@ -67,8 +67,8 @@ App routes:
 Create `.env.local` with:
 
 ```env
-ADMIN_SECRET=your-secret-key-here-minimum-32-characters-recommended
-ADMIN_PASSWORD=choose-a-long-random-admin-password
+ADMIN_SECRET=change-me
+ADMIN_PASSWORD=change-me
 NEXT_PUBLIC_ASSET_BASE_URL=https://your-public-assets-domain.example.com
 R2_ACCOUNT_ID=your-r2-account-id
 R2_ACCESS_KEY_ID=your-r2-access-key-id
@@ -83,6 +83,7 @@ Notes:
 - `R2_PUBLIC_URL` is used to build public audio asset URLs after upload.
 - `PLAYLIST_PUBLIC_URL` is optional. If omitted, the app falls back to `R2_PUBLIC_URL`.
 - `NEXT_PUBLIC_ASSET_BASE_URL` is used by the client to normalize legacy audio URLs.
+- `ADMIN_SECRET` must contain at least 32 encoded bytes, and `ADMIN_PASSWORD` must contain at least 16 characters. Use generated values rather than the examples.
 - The public pages are pre-rendered and refreshed with ISR, so playlist/R2 variables must be present during `pnpm build`, not only at runtime.
 - `visibility: private` and `visibility: unlisted` currently remove tracks from the public app and public playlist API. They are not storage-level access control when the R2 manifest and audio objects use public URLs. Use a private bucket plus authenticated or signed delivery before treating those assets as confidential.
 
@@ -131,5 +132,5 @@ Detailed process: [`docs/process/branching-release.md`](docs/process/branching-r
 - Recording and MP3 export exist, but the workflow is still narrow: export currently targets newly recorded client-side audio rather than all managed tracks.
 - Track-level share routes, copy-link migration, and per-track social metadata are not yet implemented.
 - Playback session state is not yet restored across visits, and Media Session integration is not implemented.
-- The deployment workflow builds before release, but lint, tests, and frozen-lockfile validation are not yet full remote gates.
+- GitHub `live` branch protection and Cloudflare edge rate limiting remain production configuration rather than repository code.
 - Public R2 URLs still make visibility a discovery control rather than storage-level privacy.

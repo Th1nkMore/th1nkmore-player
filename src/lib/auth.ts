@@ -1,6 +1,14 @@
 import { jwtVerify, SignJWT } from "jose";
 import { cookies } from "next/headers";
 import type { NextRequest, NextResponse } from "next/server";
+import {
+  ADMIN_SESSION_TTL_SECONDS,
+  ADMIN_TOKEN_AUDIENCE,
+  ADMIN_TOKEN_ISSUER,
+  ADMIN_TOKEN_SUBJECT,
+  getAdminSessionCookieName,
+  LEGACY_ADMIN_COOKIE_NAME,
+} from "@/lib/admin-auth-policy";
 
 const ADMIN_SECRET = process.env.ADMIN_SECRET;
 
@@ -8,11 +16,15 @@ function getSecret() {
   if (!ADMIN_SECRET) {
     throw new Error("ADMIN_SECRET environment variable is required");
   }
-  return new TextEncoder().encode(ADMIN_SECRET);
+  const encodedSecret = new TextEncoder().encode(ADMIN_SECRET);
+  if (encodedSecret.byteLength < 32) {
+    throw new Error("ADMIN_SECRET must contain at least 32 bytes");
+  }
+  return encodedSecret;
 }
 
-const COOKIE_NAME = "admin_session";
-const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days in seconds
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
+const COOKIE_NAME = getAdminSessionCookieName(IS_PRODUCTION);
 
 /**
  * Verifies a JWT token using the ADMIN_SECRET
@@ -22,14 +34,19 @@ const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days in seconds
 export async function verifyAuthToken(
   token: string,
 ): Promise<{ sub: string; exp: number } | null> {
+  const secret = getSecret();
   try {
-    const secret = getSecret();
     const { payload } = await jwtVerify(token, secret, {
       algorithms: ["HS256"],
+      audience: ADMIN_TOKEN_AUDIENCE,
+      issuer: ADMIN_TOKEN_ISSUER,
+      subject: ADMIN_TOKEN_SUBJECT,
     });
+    if (typeof payload.exp !== "number" || typeof payload.iat !== "number") {
+      return null;
+    }
     return payload as { sub: string; exp: number };
-  } catch (error) {
-    console.error("Token verification failed:", error);
+  } catch {
     return null;
   }
 }
@@ -55,18 +72,40 @@ export function setAdminCookieInResponse(
 ): NextResponse {
   response.cookies.set(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: IS_PRODUCTION,
     sameSite: "strict",
-    maxAge: COOKIE_MAX_AGE,
+    maxAge: ADMIN_SESSION_TTL_SECONDS,
     path: "/",
+    priority: "high",
   });
+  if (COOKIE_NAME !== LEGACY_ADMIN_COOKIE_NAME) {
+    expireCookie(response, LEGACY_ADMIN_COOKIE_NAME, false);
+  }
   return response;
+}
+
+function expireCookie(
+  response: NextResponse,
+  cookieName: string,
+  secure: boolean,
+) {
+  response.cookies.set(cookieName, "", {
+    expires: new Date(0),
+    httpOnly: true,
+    maxAge: 0,
+    path: "/",
+    sameSite: "strict",
+    secure,
+  });
 }
 
 export function clearAdminCookieInResponse(
   response: NextResponse,
 ): NextResponse {
-  response.cookies.delete(COOKIE_NAME);
+  expireCookie(response, COOKIE_NAME, IS_PRODUCTION);
+  if (COOKIE_NAME !== LEGACY_ADMIN_COOKIE_NAME) {
+    expireCookie(response, LEGACY_ADMIN_COOKIE_NAME, false);
+  }
   return response;
 }
 
@@ -78,11 +117,15 @@ export async function setUserCookie(token: string): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.set(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: IS_PRODUCTION,
     sameSite: "strict",
-    maxAge: COOKIE_MAX_AGE,
+    maxAge: ADMIN_SESSION_TTL_SECONDS,
     path: "/",
+    priority: "high",
   });
+  if (COOKIE_NAME !== LEGACY_ADMIN_COOKIE_NAME) {
+    cookieStore.delete(LEGACY_ADMIN_COOKIE_NAME);
+  }
 }
 
 /**
@@ -100,22 +143,32 @@ export async function getUserCookie(): Promise<string | null> {
  */
 export async function clearUserCookie(): Promise<void> {
   const cookieStore = await cookies();
-  cookieStore.delete(COOKIE_NAME);
+  cookieStore.set(COOKIE_NAME, "", {
+    expires: new Date(0),
+    httpOnly: true,
+    maxAge: 0,
+    path: "/",
+    sameSite: "strict",
+    secure: IS_PRODUCTION,
+  });
+  if (COOKIE_NAME !== LEGACY_ADMIN_COOKIE_NAME) {
+    cookieStore.delete(LEGACY_ADMIN_COOKIE_NAME);
+  }
 }
 
 /**
  * Generates a JWT token for admin access
- * @param userId - Optional user identifier (defaults to "admin")
- * @param expiresIn - Token expiration time in seconds (defaults to 1 hour)
+ * @param expiresIn - Token expiration time in seconds (defaults to 8 hours)
  * @returns The signed JWT token
  */
 export async function generateAuthToken(
-  userId = "admin",
-  expiresIn = 3600,
+  expiresIn = ADMIN_SESSION_TTL_SECONDS,
 ): Promise<string> {
   const secret = getSecret();
-  const token = await new SignJWT({ sub: userId })
+  const token = await new SignJWT({ sub: ADMIN_TOKEN_SUBJECT })
     .setProtectedHeader({ alg: "HS256" })
+    .setAudience(ADMIN_TOKEN_AUDIENCE)
+    .setIssuer(ADMIN_TOKEN_ISSUER)
     .setIssuedAt()
     .setExpirationTime(Math.floor(Date.now() / 1000) + expiresIn)
     .sign(secret);

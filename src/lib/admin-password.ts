@@ -7,6 +7,10 @@ function getAdminPassword() {
     throw new Error("ADMIN_PASSWORD environment variable is required");
   }
 
+  if (ADMIN_PASSWORD.length < 16) {
+    throw new Error("ADMIN_PASSWORD must contain at least 16 characters");
+  }
+
   return ADMIN_PASSWORD;
 }
 

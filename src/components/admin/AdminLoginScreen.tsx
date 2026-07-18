@@ -3,6 +3,10 @@
 import { type FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  ADMIN_SESSION_TTL_LABEL,
+  getSafeAdminNextPath,
+} from "@/lib/admin-auth-policy";
 
 type AdminLoginScreenProps = {
   nextPath?: string;
@@ -14,7 +18,7 @@ export function AdminLoginScreen({
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const safeNextPath = nextPath.startsWith("/") ? nextPath : "/admin";
+  const safeNextPath = getSafeAdminNextPath(nextPath);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -82,7 +86,9 @@ export function AdminLoginScreen({
                   <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-emerald-300/45">
                     Session TTL
                   </p>
-                  <p className="mt-3 font-mono text-xl text-emerald-100">7D</p>
+                  <p className="mt-3 font-mono text-xl text-emerald-100">
+                    {ADMIN_SESSION_TTL_LABEL}
+                  </p>
                 </div>
                 <div className="rounded-2xl border border-emerald-500/15 bg-emerald-500/[0.04] p-4">
                   <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-emerald-300/45">
@@ -110,7 +116,7 @@ export function AdminLoginScreen({
                 <p>{"> owner-route armed"}</p>
                 <p>{"> query-token login disabled"}</p>
                 <p>{"> session cookie mode = strict"}</p>
-                <p>{"> hidden status node can wake login portal"}</p>
+                <p>{"> access requires server-side authentication"}</p>
               </div>
             </section>
 
@@ -142,6 +148,8 @@ export function AdminLoginScreen({
                       id="password"
                       type="password"
                       autoComplete="current-password"
+                      minLength={16}
+                      maxLength={512}
                       value={password}
                       onChange={(event) => setPassword(event.target.value)}
                       className="h-12 rounded-2xl border-emerald-500/20 bg-emerald-500/[0.03] px-4 font-mono text-sm text-white placeholder:text-emerald-100/24"
@@ -174,8 +182,8 @@ export function AdminLoginScreen({
                 </form>
 
                 <div className="mt-6 border-t border-emerald-500/12 pt-5 font-mono text-[11px] leading-6 text-emerald-100/44">
-                  <p>{"> hidden entry: tap status node five times"}</p>
-                  <p>{"> fallback path: /admin/login"}</p>
+                  <p>{"> route visibility is not an authentication factor"}</p>
+                  <p>{"> repeated failures are temporarily rate limited"}</p>
                 </div>
               </div>
             </section>
