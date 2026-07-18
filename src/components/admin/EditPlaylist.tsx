@@ -1,8 +1,9 @@
 "use client";
 
-import { Save, Search, Trash2 } from "lucide-react";
+import { Archive, Save, Search, Undo2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
+import { AdminSongListRow } from "@/components/admin/playlist/AdminSongListRow";
 import { AdminConfirmDialog } from "@/components/admin/workspace/AdminConfirmDialog";
 import { AdminSongForm } from "@/components/admin/workspace/AdminSongForm";
 import {
@@ -28,7 +29,6 @@ import {
   hasSongChanges,
 } from "@/lib/admin-workspace";
 import { useScreenMode } from "@/lib/hooks/useScreenMode";
-import { cn } from "@/lib/utils";
 import type { Song } from "@/types/music";
 
 type EditPlaylistProps = {
@@ -39,11 +39,13 @@ type EditPlaylistProps = {
   playlistNotice: AdminNotice | null;
   editingSongId: string | null;
   editedSong: Song | null;
+  archivedSongId: string | null;
+  lastSavedAt: Date | null;
   handleEditSong: (song: Song) => void;
   handleCancelEdit: () => void;
-  handleSaveEdit: () => void;
-  handleDeleteSong: (songId: string) => void;
-  handleSavePlaylist: () => void;
+  handleSaveEdit: () => Promise<boolean>;
+  handleArchiveSong: (songId: string) => Promise<void>;
+  handleUndoArchive: () => Promise<void>;
   handleConvertEditedLyricsToLrc: () => void;
   handleNormalizeEditedLyrics: () => void;
   handleUploadCreatorNoteAudio: (file: File) => Promise<string>;
@@ -57,79 +59,6 @@ type EditPlaylistProps = {
   loadPlaylist: () => Promise<void>;
 };
 
-function SongListRow({
-  song,
-  isActive,
-  isDirty,
-  dirtyLabel,
-  disabled,
-  onSelect,
-}: {
-  song: Song;
-  isActive: boolean;
-  isDirty: boolean;
-  dirtyLabel: string;
-  disabled: boolean;
-  onSelect: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      disabled={disabled}
-      className={cn(
-        "w-full rounded-2xl border p-3 text-left transition-[background-color,border-color,box-shadow] duration-150 ease-out",
-        disabled && "cursor-wait opacity-60",
-        isActive
-          ? "border-sky-400/50 bg-sky-400/10"
-          : "border-[var(--border)] bg-[rgba(11,15,22,0.88)] hover:border-sky-400/30 hover:bg-[rgba(18,22,30,0.96)]",
-      )}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="truncate text-sm font-semibold text-gray-200">
-            {song.title}
-          </div>
-          <div className="mt-1 truncate text-xs text-gray-500">
-            {song.artist} • {song.album}
-          </div>
-        </div>
-        {isDirty ? (
-          <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-amber-200">
-            {dirtyLabel}
-          </span>
-        ) : null}
-      </div>
-
-      <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-gray-500">
-        <span className="tabular-nums">
-          {formatSongDuration(song.duration)}
-        </span>
-        <span>{song.visibility}</span>
-        <span>{song.assetStatus}</span>
-      </div>
-
-      {song.tags.length > 0 ? (
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {song.tags.slice(0, 4).map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full border border-sky-500/20 bg-sky-500/8 px-2 py-0.5 text-[10px] text-sky-100"
-            >
-              {tag}
-            </span>
-          ))}
-          {song.tags.length > 4 ? (
-            <span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-[10px] text-gray-500">
-              +{song.tags.length - 4}
-            </span>
-          ) : null}
-        </div>
-      ) : null}
-    </button>
-  );
-}
-
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Playlist workspace coordinates list/detail/mobile confirmation flows in one container
 export function EditPlaylist({
   playlist,
@@ -139,11 +68,13 @@ export function EditPlaylist({
   playlistNotice,
   editingSongId,
   editedSong,
+  archivedSongId,
+  lastSavedAt,
   handleEditSong,
   handleCancelEdit,
   handleSaveEdit,
-  handleDeleteSong,
-  handleSavePlaylist,
+  handleArchiveSong,
+  handleUndoArchive,
   handleConvertEditedLyricsToLrc,
   handleNormalizeEditedLyrics,
   handleUploadCreatorNoteAudio,
@@ -162,7 +93,7 @@ export function EditPlaylist({
   const [query, setQuery] = useState("");
   const [pendingSongId, setPendingSongId] = useState<string | null>(null);
   const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false);
-  const [songIdToDelete, setSongIdToDelete] = useState<string | null>(null);
+  const [songIdToArchive, setSongIdToArchive] = useState<string | null>(null);
   const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
   const [isCreatorNoteUploading, setIsCreatorNoteUploading] = useState(false);
 
@@ -195,6 +126,41 @@ export function EditPlaylist({
     }
   }, [editingSongId, filteredPlaylist, handleEditSong, isMobile]);
 
+  useEffect(() => {
+    const preventAccidentalClose = (event: BeforeUnloadEvent) => {
+      if (!isDirty) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", preventAccidentalClose);
+    return () =>
+      window.removeEventListener("beforeunload", preventAccidentalClose);
+  }, [isDirty]);
+
+  useEffect(() => {
+    const saveWithKeyboard = (event: KeyboardEvent) => {
+      if (
+        !(event.metaKey || event.ctrlKey) ||
+        event.key.toLowerCase() !== "s"
+      ) {
+        return;
+      }
+      event.preventDefault();
+      if (isDirty && !isSavingPlaylist && !isCreatorNoteUploading) {
+        void handleSaveEdit();
+      }
+    };
+    window.addEventListener("keydown", saveWithKeyboard);
+    return () => window.removeEventListener("keydown", saveWithKeyboard);
+  }, [handleSaveEdit, isCreatorNoteUploading, isDirty, isSavingPlaylist]);
+
+  const openSong = (song: Song) => {
+    handleEditSong(song);
+    if (isMobile) {
+      setMobileDetailOpen(true);
+    }
+  };
+
   const selectSong = (song: Song) => {
     if (isCreatorNoteUploading) return;
     if (editedSong && isDirty && song.id !== editedSong.id) {
@@ -203,9 +169,22 @@ export function EditPlaylist({
       return;
     }
 
-    handleEditSong(song);
-    if (isMobile) {
-      setMobileDetailOpen(true);
+    openSong(song);
+  };
+
+  const switchToPendingSong = () => {
+    const nextSong = playlist.find((song) => song.id === pendingSongId);
+    if (nextSong) {
+      openSong(nextSong);
+    }
+    setConfirmDiscardOpen(false);
+    setPendingSongId(null);
+  };
+
+  const saveAndSwitch = async () => {
+    const saved = await handleSaveEdit();
+    if (saved) {
+      switchToPendingSong();
     }
   };
 
@@ -216,6 +195,20 @@ export function EditPlaylist({
           tone={playlistNotice.tone}
           title={playlistNotice.title}
           message={playlistNotice.message}
+          action={
+            archivedSongId ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={isSavingPlaylist}
+                onClick={() => void handleUndoArchive()}
+              >
+                <Undo2 className="h-3.5 w-3.5" />
+                {t("actions.undo")}
+              </Button>
+            ) : undefined
+          }
         />
       ) : null}
 
@@ -266,35 +259,49 @@ export function EditPlaylist({
         </div>
       </AdminSectionCard>
 
-      <AdminActionBar className="justify-between">
+      <AdminActionBar sticky className="justify-between">
         <div className="text-xs text-gray-500">
-          {isDirty ? t("playlist.detail.unsaved") : t("playlist.detail.synced")}
+          {isDirty
+            ? t("playlist.detail.unsaved")
+            : lastSavedAt
+              ? t("playlist.detail.savedAt", {
+                  time: lastSavedAt.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                })
+              : t("playlist.detail.synced")}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
             variant="outline"
-            disabled={isCreatorNoteUploading}
+            disabled={!isDirty || isSavingPlaylist || isCreatorNoteUploading}
             onClick={handleCancelEdit}
           >
             {t("actions.reset")}
           </Button>
           <Button
             type="button"
-            disabled={isCreatorNoteUploading}
-            onClick={handleSaveEdit}
+            disabled={!isDirty || isSavingPlaylist || isCreatorNoteUploading}
+            onClick={() => void handleSaveEdit()}
           >
             <Save className="h-3.5 w-3.5" />
-            {t("actions.stageChanges")}
+            {isSavingPlaylist ? t("actions.saving") : t("actions.saveSong")}
           </Button>
           <Button
             type="button"
             variant="destructive"
-            disabled={isCreatorNoteUploading}
-            onClick={() => setSongIdToDelete(editedSong.id)}
+            disabled={
+              isSavingPlaylist ||
+              isCreatorNoteUploading ||
+              isDirty ||
+              editedSong.assetStatus === "archived"
+            }
+            onClick={() => setSongIdToArchive(editedSong.id)}
           >
-            <Trash2 className="h-3.5 w-3.5" />
-            {t("actions.delete")}
+            <Archive className="h-3.5 w-3.5" />
+            {t("actions.archive")}
           </Button>
         </div>
       </AdminActionBar>
@@ -319,16 +326,9 @@ export function EditPlaylist({
                 {t("playlist.subtitle")}
               </p>
             </div>
-            <Button
-              type="button"
-              onClick={handleSavePlaylist}
-              disabled={isSavingPlaylist || isCreatorNoteUploading}
-            >
-              <Save className="h-3.5 w-3.5" />
-              {isSavingPlaylist
-                ? t("actions.saving")
-                : t("actions.savePlaylist")}
-            </Button>
+            <div className="flex min-h-10 items-center rounded-full bg-white/[0.04] px-3 text-xs text-gray-500 shadow-[0_0_0_1px_rgba(255,255,255,0.08)]">
+              {t("playlist.autosaveHint")}
+            </div>
           </div>
         </div>
 
@@ -379,7 +379,7 @@ export function EditPlaylist({
               <ScrollArea className="min-h-0 flex-1">
                 <div className="space-y-3 p-4">
                   {filteredPlaylist.map((song) => (
-                    <SongListRow
+                    <AdminSongListRow
                       key={song.id}
                       song={song}
                       isActive={song.id === editingSongId}
@@ -445,37 +445,29 @@ export function EditPlaylist({
         open={confirmDiscardOpen}
         title={t("confirm.discardTitle")}
         description={t("confirm.discardDescription")}
-        confirmLabel={t("confirm.discardConfirm")}
+        confirmLabel={t("confirm.saveAndContinue")}
         cancelLabel={t("confirm.cancel")}
+        secondaryLabel={t("confirm.discardConfirm")}
         onCancel={() => {
           setConfirmDiscardOpen(false);
           setPendingSongId(null);
         }}
-        onConfirm={() => {
-          const nextSong = playlist.find((song) => song.id === pendingSongId);
-          if (nextSong) {
-            handleEditSong(nextSong);
-            if (isMobile) {
-              setMobileDetailOpen(true);
-            }
-          }
-          setConfirmDiscardOpen(false);
-          setPendingSongId(null);
-        }}
+        onSecondary={switchToPendingSong}
+        onConfirm={saveAndSwitch}
       />
 
       <AdminConfirmDialog
-        open={Boolean(songIdToDelete)}
-        title={t("confirm.deleteTitle")}
-        description={t("confirm.deleteDescription")}
-        confirmLabel={t("confirm.deleteConfirm")}
+        open={Boolean(songIdToArchive)}
+        title={t("confirm.archiveTitle")}
+        description={t("confirm.archiveDescription")}
+        confirmLabel={t("confirm.archiveConfirm")}
         cancelLabel={t("confirm.cancel")}
-        onCancel={() => setSongIdToDelete(null)}
-        onConfirm={() => {
-          if (songIdToDelete) {
-            handleDeleteSong(songIdToDelete);
+        onCancel={() => setSongIdToArchive(null)}
+        onConfirm={async () => {
+          if (songIdToArchive) {
+            await handleArchiveSong(songIdToArchive);
           }
-          setSongIdToDelete(null);
+          setSongIdToArchive(null);
         }}
       />
     </>

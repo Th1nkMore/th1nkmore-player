@@ -191,6 +191,9 @@
       "deploy": "Track bereitstellen",
       "deploying": "Wird bereitgestellt...",
       "reset": "Entwurf zurücksetzen",
+      "saveSong": "Änderungen speichern",
+      "archive": "Titel archivieren",
+      "undo": "Rückgängig",
       "stageChanges": "Änderungen vormerken",
       "delete": "Track löschen",
       "saving": "Wird gespeichert...",
@@ -364,7 +367,8 @@
     },
     "playlist": {
       "title": "Playlist ({count} Songs)",
-      "subtitle": "Prüfen, suchen und Änderungen vormerken, bevor die Bibliothek gespeichert wird.",
+      "subtitle": "Titel einzeln prüfen und direkt in der Bibliothek speichern.",
+      "autosaveHint": "Ein Titel, ein Speichervorgang",
       "searchPlaceholder": "Titel, Interpret, Album oder Tag suchen",
       "badges": {
         "dirty": "Geändert"
@@ -374,7 +378,8 @@
         "assetDescription": "Quelle des aktuell gewählten Tracks prüfen und vorhören.",
         "audioUrl": "Audio-URL",
         "unsaved": "Für den ausgewählten Track gibt es ungespeicherte Entwurfsänderungen.",
-        "synced": "Der aktuelle Entwurf entspricht der vorgemerkten Playlist."
+        "synced": "Der aktuelle Entwurf entspricht der Bibliothek.",
+        "savedAt": "Um {time} gespeichert"
       },
       "emptyDetail": {
         "title": "Kein Track ausgewählt",
@@ -396,6 +401,10 @@
       "discardTitle": "Ungespeicherte Änderungen verwerfen?",
       "discardDescription": "Beim Wechsel des Songs gehen ungespeicherte Änderungen am aktuellen Entwurf verloren.",
       "discardConfirm": "Verwerfen und fortfahren",
+      "saveAndContinue": "Speichern und fortfahren",
+      "archiveTitle": "Diesen Titel archivieren?",
+      "archiveDescription": "Der Titel wird im öffentlichen Player ausgeblendet, Eintrag und Audiodatei bleiben zur Wiederherstellung erhalten.",
+      "archiveConfirm": "Titel archivieren",
       "deleteTitle": "Diesen Track löschen?",
       "deleteDescription": "Der Track wird aus der vorgemerkten Playlist entfernt, bis Sie speichern oder neu laden.",
       "deleteConfirm": "Track löschen",
@@ -411,6 +420,22 @@
       "playlistLoadTitle": "Playlist konnte nicht geladen werden"
     },
     "notices": {
+      "songSaving": {
+        "title": "Änderungen werden gespeichert",
+        "message": "Dieser Titel wird direkt in die Bibliothek geschrieben."
+      },
+      "songSaved": {
+        "title": "Änderungen gespeichert",
+        "message": "{title} ist in der Bibliothek aktuell."
+      },
+      "trackArchived": {
+        "title": "Titel archiviert",
+        "message": "Der Titel ist im öffentlichen Player ausgeblendet. 10 Sekunden lang kann dies rückgängig gemacht werden."
+      },
+      "archiveUndone": {
+        "title": "Archivierung rückgängig gemacht",
+        "message": "Der Titel wurde auf seinen vorherigen Status zurückgesetzt."
+      },
       "draftUpdated": {
         "title": "Entwurf aktualisiert",
         "message": "Track-Änderungen bleiben lokal vorgemerkt, bis die Playlist gespeichert wird."

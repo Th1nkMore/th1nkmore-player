@@ -9,8 +9,10 @@ export function AdminConfirmDialog({
   description,
   confirmLabel,
   cancelLabel,
+  secondaryLabel,
   onConfirm,
   onCancel,
+  onSecondary,
   children,
 }: {
   open: boolean;
@@ -18,8 +20,10 @@ export function AdminConfirmDialog({
   description: string;
   confirmLabel: string;
   cancelLabel: string;
-  onConfirm: () => void;
+  secondaryLabel?: string;
+  onConfirm: () => void | Promise<void>;
   onCancel: () => void;
+  onSecondary?: () => void;
   children?: ReactNode;
 }) {
   if (!open) {
@@ -34,10 +38,15 @@ export function AdminConfirmDialog({
         </div>
         <p className="mt-2 text-sm text-gray-500">{description}</p>
         {children ? <div className="mt-3">{children}</div> : null}
-        <div className="mt-5 flex items-center justify-end gap-2">
+        <div className="mt-5 flex flex-wrap items-center justify-end gap-2">
           <Button type="button" variant="outline" onClick={onCancel}>
             {cancelLabel}
           </Button>
+          {secondaryLabel && onSecondary ? (
+            <Button type="button" variant="destructive" onClick={onSecondary}>
+              {secondaryLabel}
+            </Button>
+          ) : null}
           <Button type="button" onClick={onConfirm}>
             {confirmLabel}
           </Button>

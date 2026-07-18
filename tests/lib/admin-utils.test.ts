@@ -1,6 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { songOne } from "@/../tests/fixtures/songs";
-import { createSongFromFormData } from "@/lib/admin-utils";
+import { createSongFromFormData, saveAdminPlaylist } from "@/lib/admin-utils";
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe("admin song creation", () => {
   it("persists cover credits and a combined Creator Note", () => {
@@ -50,5 +54,35 @@ describe("admin song creation", () => {
     );
 
     expect(song).not.toHaveProperty("creatorNote");
+  });
+
+  it("saves the normalized admin playlist payload", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(null, { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await saveAdminPlaylist([songOne]);
+
+    expect(fetchMock).toHaveBeenCalledWith("/api/admin/playlist", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify([songOne]),
+    });
+  });
+
+  it("surfaces the admin API error when a save fails", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(
+          Response.json({ error: "Duplicate share slug" }, { status: 400 }),
+        ),
+    );
+
+    await expect(saveAdminPlaylist([songOne])).rejects.toThrow(
+      "Duplicate share slug",
+    );
   });
 });

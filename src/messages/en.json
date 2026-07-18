@@ -191,6 +191,9 @@
       "deploy": "Deploy Track",
       "deploying": "Deploying...",
       "reset": "Reset Draft",
+      "saveSong": "Save Changes",
+      "archive": "Archive Track",
+      "undo": "Undo",
       "stageChanges": "Stage Changes",
       "delete": "Delete Track",
       "saving": "Saving...",
@@ -364,7 +367,8 @@
     },
     "playlist": {
       "title": "Playlist ({count} songs)",
-      "subtitle": "Review, search, and stage edits before committing the library.",
+      "subtitle": "Review and save each track directly to the library.",
+      "autosaveHint": "One track, one save",
       "searchPlaceholder": "Search title, artist, album, or tag",
       "badges": {
         "dirty": "Dirty"
@@ -374,7 +378,8 @@
         "assetDescription": "Preview and inspect the currently selected track source.",
         "audioUrl": "Audio URL",
         "unsaved": "You have unsaved draft changes for the selected track.",
-        "synced": "The selected draft matches the staged playlist."
+        "synced": "The selected draft matches the library.",
+        "savedAt": "Saved at {time}"
       },
       "emptyDetail": {
         "title": "No track selected",
@@ -396,6 +401,10 @@
       "discardTitle": "Discard unsaved changes?",
       "discardDescription": "Switching tracks will drop any unsaved draft changes for the current selection.",
       "discardConfirm": "Discard and continue",
+      "saveAndContinue": "Save and continue",
+      "archiveTitle": "Archive this track?",
+      "archiveDescription": "The track will disappear from the public player, but its entry and audio asset remain available for recovery.",
+      "archiveConfirm": "Archive track",
       "deleteTitle": "Delete this track?",
       "deleteDescription": "The track will be removed from the staged playlist until you save or reload.",
       "deleteConfirm": "Delete track",
@@ -411,6 +420,22 @@
       "playlistLoadTitle": "Playlist load failed"
     },
     "notices": {
+      "songSaving": {
+        "title": "Saving changes",
+        "message": "Writing this track directly to the library."
+      },
+      "songSaved": {
+        "title": "Changes saved",
+        "message": "{title} is up to date in the library."
+      },
+      "trackArchived": {
+        "title": "Track archived",
+        "message": "The track is hidden from the public player. Undo is available for 10 seconds."
+      },
+      "archiveUndone": {
+        "title": "Archive undone",
+        "message": "The track has been restored to its previous status."
+      },
       "draftUpdated": {
         "title": "Draft updated",
         "message": "Track changes are staged locally until you save the playlist."

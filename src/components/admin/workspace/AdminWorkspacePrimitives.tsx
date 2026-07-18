@@ -131,11 +131,13 @@ export function AdminStatusBanner({
   tone,
   title,
   message,
+  action,
   className,
 }: {
   tone: AdminNoticeTone;
   title: string;
   message: string;
+  action?: ReactNode;
   className?: string;
 }) {
   const style = toneStyles[tone];
@@ -160,6 +162,7 @@ export function AdminStatusBanner({
           </div>
           <p className="mt-1 text-sm text-gray-400">{message}</p>
         </div>
+        {action ? <div className="ml-auto shrink-0">{action}</div> : null}
       </div>
     </motion.div>
   );
@@ -178,8 +181,7 @@ export function AdminActionBar({
     <div
       className={cn(
         "flex flex-wrap items-center gap-3 rounded-2xl border border-[var(--border)] bg-[rgba(10,14,20,0.92)] p-3 backdrop-blur",
-        sticky &&
-          "sticky bottom-0 z-10 border-t border-[var(--border)] shadow-[0_-8px_24px_rgba(0,0,0,0.24)]",
+        sticky && "sticky bottom-0 z-10 shadow-[0_-8px_24px_rgba(0,0,0,0.24)]",
         className,
       )}
     >

@@ -73,11 +73,13 @@ export default function AdminPage() {
             playlistNotice={controller.playlist.playlistNotice}
             editingSongId={controller.playlist.editingSongId}
             editedSong={controller.playlist.editedSong}
+            archivedSongId={controller.playlist.archivedSongId}
+            lastSavedAt={controller.playlist.lastSavedAt}
             handleEditSong={controller.playlist.handleEditSong}
             handleCancelEdit={controller.playlist.handleCancelEdit}
             handleSaveEdit={controller.playlist.handleSaveEdit}
-            handleDeleteSong={controller.playlist.handleDeleteSong}
-            handleSavePlaylist={controller.playlist.handleSavePlaylist}
+            handleArchiveSong={controller.playlist.handleArchiveSong}
+            handleUndoArchive={controller.playlist.handleUndoArchive}
             handleConvertEditedLyricsToLrc={
               controller.playlist.handleConvertEditedLyricsToLrc
             }

@@ -118,7 +118,10 @@ export async function saveAdminPlaylist(playlist: Song[]): Promise<void> {
   });
 
   if (!response.ok) {
-    throw new Error("Failed to update playlist");
+    const payload = (await response.json().catch(() => null)) as {
+      error?: string;
+    } | null;
+    throw new Error(payload?.error || "Failed to update playlist");
   }
 }
 

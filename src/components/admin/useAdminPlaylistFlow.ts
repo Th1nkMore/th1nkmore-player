@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   fetchLyricsFromAdmin,
   mergeFetchedSongInfo,
@@ -38,6 +38,15 @@ export function useAdminPlaylistFlow({
   const [playlistNotice, setPlaylistNotice] = useState<AdminNotice | null>(
     null,
   );
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  const [archivedSongId, setArchivedSongId] = useState<string | null>(null);
+  const archivedSongRef = useRef<{
+    id: string;
+    previousStatus: Song["assetStatus"];
+  } | null>(null);
+  const archiveUndoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   const [neteaseUrlEdit, setNeteaseUrlEdit] = useState("");
   const [isFetchingLyricsEdit, setIsFetchingLyricsEdit] = useState(false);
 
@@ -68,6 +77,15 @@ export function useAdminPlaylistFlow({
     }
   }, [loadPlaylist, shouldLoad]);
 
+  useEffect(
+    () => () => {
+      if (archiveUndoTimerRef.current) {
+        clearTimeout(archiveUndoTimerRef.current);
+      }
+    },
+    [],
+  );
+
   const handleEditSong = useCallback((song: Song) => {
     setEditingSongId(song.id);
     setEditedSong(normalizeSong(song));
@@ -75,78 +93,151 @@ export function useAdminPlaylistFlow({
   }, []);
 
   const handleCancelEdit = useCallback(() => {
-    setEditingSongId(null);
-    setEditedSong(null);
+    const savedSong = playlist.find((song) => song.id === editingSongId);
+    setEditedSong(savedSong ? normalizeSong(savedSong) : null);
     setNeteaseUrlEdit("");
-  }, []);
+  }, [editingSongId, playlist]);
 
-  const handleSaveEdit = useCallback(() => {
-    if (!editedSong) return;
+  const handleSaveEdit = useCallback(async (): Promise<boolean> => {
+    if (!editedSong) return false;
 
     const nextSong = normalizeSong(editedSong);
-    setPlaylist((currentPlaylist) =>
-      currentPlaylist.map((song) =>
-        song.id === nextSong.id ? nextSong : song,
-      ),
+    const nextPlaylist = playlist.map((song) =>
+      song.id === nextSong.id ? nextSong : song,
     );
-    setEditingSongId(nextSong.id);
-    setEditedSong(nextSong);
-    setPlaylistNotice({
-      tone: "success",
-      title: t("notices.draftUpdated.title"),
-      message: t("notices.draftUpdated.message"),
-    });
-  }, [editedSong, t]);
-
-  const handleDeleteSong = useCallback(
-    (songId: string) => {
-      setPlaylist((currentPlaylist) =>
-        currentPlaylist.filter((song) => song.id !== songId),
-      );
-      setPlaylistNotice({
-        tone: "warning",
-        title: t("notices.trackRemoved.title"),
-        message: t("notices.trackRemoved.message"),
-      });
-      setEditingSongId((current) => (current === songId ? null : current));
-      setEditedSong((current) => (current?.id === songId ? null : current));
-    },
-    [t],
-  );
-
-  const handleSavePlaylist = useCallback(async () => {
     setIsSavingPlaylist(true);
     setPlaylistNotice({
       tone: "neutral",
-      title: t("notices.playlistSaving.title"),
-      message: t("notices.playlistSaving.message"),
+      title: t("notices.songSaving.title"),
+      message: t("notices.songSaving.message"),
     });
     clearLogs();
 
     try {
-      addLog("> Saving playlist...");
-      await saveAdminPlaylist(playlist);
-      addLog("> Playlist saved successfully!");
-      addLog(`> Updated ${playlist.length} song(s)`);
+      addLog(`> Saving track: ${nextSong.title}`);
+      await saveAdminPlaylist(nextPlaylist);
+      setPlaylist(nextPlaylist);
+      setEditingSongId(nextSong.id);
+      setEditedSong(nextSong);
+      setLastSavedAt(new Date());
       setPlaylistNotice({
         tone: "success",
-        title: t("notices.playlistSaved.title"),
-        message: t("notices.playlistSaved.message", { count: playlist.length }),
+        title: t("notices.songSaved.title"),
+        message: t("notices.songSaved.message", { title: nextSong.title }),
       });
+      addLog(`> Track saved: ${nextSong.title}`);
+      return true;
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
-      addLog(`> Error: ${errorMessage}`);
-      addLog("> Failed to save playlist");
       setPlaylistNotice({
         tone: "error",
         title: t("notices.saveFailed.title"),
         message: errorMessage,
       });
+      addLog(`> Error: ${errorMessage}`);
+      return false;
     } finally {
       setIsSavingPlaylist(false);
     }
-  }, [addLog, clearLogs, playlist, t]);
+  }, [addLog, clearLogs, editedSong, playlist, t]);
+
+  const persistArchiveStatus = useCallback(
+    async (
+      songId: string,
+      status: Song["assetStatus"],
+      notice: AdminNotice,
+    ): Promise<boolean> => {
+      const nextPlaylist = playlist.map((song) =>
+        song.id === songId
+          ? normalizeSong({ ...song, assetStatus: status })
+          : song,
+      );
+      setIsSavingPlaylist(true);
+      setPlaylistNotice({
+        tone: "neutral",
+        title: t("notices.songSaving.title"),
+        message: t("notices.songSaving.message"),
+      });
+
+      try {
+        await saveAdminPlaylist(nextPlaylist);
+        setPlaylist(nextPlaylist);
+        setEditedSong((current) =>
+          current?.id === songId
+            ? normalizeSong({ ...current, assetStatus: status })
+            : current,
+        );
+        setLastSavedAt(new Date());
+        setPlaylistNotice(notice);
+        return true;
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        setPlaylistNotice({
+          tone: "error",
+          title: t("notices.saveFailed.title"),
+          message: errorMessage,
+        });
+        addLog(`> Error: ${errorMessage}`);
+        return false;
+      } finally {
+        setIsSavingPlaylist(false);
+      }
+    },
+    [addLog, playlist, t],
+  );
+
+  const handleArchiveSong = useCallback(
+    async (songId: string) => {
+      const song = playlist.find((item) => item.id === songId);
+      if (!song || song.assetStatus === "archived") return;
+
+      const saved = await persistArchiveStatus(songId, "archived", {
+        tone: "warning",
+        title: t("notices.trackArchived.title"),
+        message: t("notices.trackArchived.message"),
+      });
+      if (!saved) return;
+
+      archivedSongRef.current = {
+        id: songId,
+        previousStatus: song.assetStatus,
+      };
+      setArchivedSongId(songId);
+      if (archiveUndoTimerRef.current) {
+        clearTimeout(archiveUndoTimerRef.current);
+      }
+      archiveUndoTimerRef.current = setTimeout(() => {
+        archivedSongRef.current = null;
+        setArchivedSongId(null);
+      }, 10_000);
+    },
+    [persistArchiveStatus, playlist, t],
+  );
+
+  const handleUndoArchive = useCallback(async () => {
+    const archivedSong = archivedSongRef.current;
+    if (!archivedSong) return;
+
+    const restored = await persistArchiveStatus(
+      archivedSong.id,
+      archivedSong.previousStatus,
+      {
+        tone: "success",
+        title: t("notices.archiveUndone.title"),
+        message: t("notices.archiveUndone.message"),
+      },
+    );
+    if (!restored) return;
+
+    if (archiveUndoTimerRef.current) {
+      clearTimeout(archiveUndoTimerRef.current);
+      archiveUndoTimerRef.current = null;
+    }
+    archivedSongRef.current = null;
+    setArchivedSongId(null);
+  }, [persistArchiveStatus, t]);
 
   const updateEditedSong = useCallback(
     (field: keyof Song, value: Song[keyof Song]) => {
@@ -266,21 +357,23 @@ export function useAdminPlaylistFlow({
   );
 
   return {
+    archivedSongId,
     editedLyricsDescriptor: describeLyrics(editedSong?.lyrics || ""),
     editedSong,
     editingSongId,
+    handleArchiveSong,
     handleCancelEdit,
     handleConvertEditedLyricsToLrc,
-    handleDeleteSong,
     handleEditSong,
     handleFetchLyricsEdit,
     handleNormalizeEditedLyrics,
     handleSaveEdit,
-    handleSavePlaylist,
+    handleUndoArchive,
     handleUploadCreatorNoteAudio,
     isFetchingLyricsEdit,
     isLoadingPlaylist,
     isSavingPlaylist,
+    lastSavedAt,
     loadPlaylist,
     neteaseUrlEdit,
     playlist,

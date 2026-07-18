@@ -191,6 +191,9 @@
       "deploy": "トラックをデプロイ",
       "deploying": "デプロイ中...",
       "reset": "下書きをリセット",
+      "saveSong": "変更を保存",
+      "archive": "曲をアーカイブ",
+      "undo": "元に戻す",
       "stageChanges": "変更をステージ",
       "delete": "トラックを削除",
       "saving": "保存中...",
@@ -364,7 +367,8 @@
     },
     "playlist": {
       "title": "プレイリスト（{count} 曲）",
-      "subtitle": "編集内容を確認・検索・ステージしてからライブラリに反映します。",
+      "subtitle": "各トラックを確認し、ライブラリへ直接保存します。",
+      "autosaveHint": "1 曲ずつ安全に保存",
       "searchPlaceholder": "タイトル、アーティスト、アルバム、タグで検索",
       "badges": {
         "dirty": "変更あり"
@@ -374,7 +378,8 @@
         "assetDescription": "選択中トラックのソースを確認・試聴します。",
         "audioUrl": "音声 URL",
         "unsaved": "選択中トラックには未保存の下書き変更があります。",
-        "synced": "現在の下書きはステージ済みプレイリストと一致しています。"
+        "synced": "現在の下書きはライブラリと一致しています。",
+        "savedAt": "{time} に保存"
       },
       "emptyDetail": {
         "title": "トラック未選択",
@@ -396,6 +401,10 @@
       "discardTitle": "未保存の変更を破棄しますか？",
       "discardDescription": "別の曲へ切り替えると、現在の下書き変更は失われます。",
       "discardConfirm": "破棄して続行",
+      "saveAndContinue": "保存して続行",
+      "archiveTitle": "この曲をアーカイブしますか？",
+      "archiveDescription": "公開プレーヤーから非表示になりますが、項目と音声ファイルは復元用に保持されます。",
+      "archiveConfirm": "曲をアーカイブ",
       "deleteTitle": "この曲を削除しますか？",
       "deleteDescription": "保存または再読み込みするまで、この曲はステージ済みプレイリストから削除されます。",
       "deleteConfirm": "トラックを削除",
@@ -411,6 +420,22 @@
       "playlistLoadTitle": "プレイリストの読み込みに失敗しました"
     },
     "notices": {
+      "songSaving": {
+        "title": "変更を保存中",
+        "message": "このトラックをライブラリへ直接書き込んでいます。"
+      },
+      "songSaved": {
+        "title": "変更を保存しました",
+        "message": "{title} はライブラリと同期済みです。"
+      },
+      "trackArchived": {
+        "title": "曲をアーカイブしました",
+        "message": "公開プレーヤーから非表示にしました。10 秒以内なら元に戻せます。"
+      },
+      "archiveUndone": {
+        "title": "アーカイブを元に戻しました",
+        "message": "曲を以前の状態へ復元しました。"
+      },
       "draftUpdated": {
         "title": "下書きを更新しました",
         "message": "トラックの変更はプレイリストを保存するまでローカルで保持されます。"

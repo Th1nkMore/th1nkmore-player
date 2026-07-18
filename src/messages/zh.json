@@ -191,6 +191,9 @@
       "deploy": "部署歌曲",
       "deploying": "部署中...",
       "reset": "重置草稿",
+      "saveSong": "保存修改",
+      "archive": "归档歌曲",
+      "undo": "撤销",
       "stageChanges": "暂存修改",
       "delete": "删除歌曲",
       "saving": "保存中...",
@@ -364,7 +367,8 @@
     },
     "playlist": {
       "title": "歌单（{count} 首）",
-      "subtitle": "先审阅、搜索并暂存修改，再统一提交到曲库。",
+      "subtitle": "逐首审阅并直接保存到曲库。",
+      "autosaveHint": "一首一存，修改更安全",
       "searchPlaceholder": "搜索标题、歌手、专辑或标签",
       "badges": {
         "dirty": "已改"
@@ -374,7 +378,8 @@
         "assetDescription": "预览并检查当前选中歌曲的资源来源。",
         "audioUrl": "音频地址",
         "unsaved": "当前选中的歌曲存在未保存草稿修改。",
-        "synced": "当前草稿与暂存歌单一致。"
+        "synced": "当前草稿与曲库一致。",
+        "savedAt": "已于 {time} 保存"
       },
       "emptyDetail": {
         "title": "尚未选择歌曲",
@@ -396,6 +401,10 @@
       "discardTitle": "放弃未保存修改？",
       "discardDescription": "切换歌曲会丢弃当前选中歌曲尚未保存的草稿修改。",
       "discardConfirm": "放弃并继续",
+      "saveAndContinue": "保存并继续",
+      "archiveTitle": "归档这首歌曲？",
+      "archiveDescription": "歌曲会从公开播放器隐藏，但条目与音频资源都会保留，可随时恢复。",
+      "archiveConfirm": "归档歌曲",
       "deleteTitle": "删除这首歌曲？",
       "deleteDescription": "该歌曲会从当前暂存歌单中移除，直到你保存或重新加载。",
       "deleteConfirm": "删除歌曲",
@@ -411,6 +420,22 @@
       "playlistLoadTitle": "歌单加载失败"
     },
     "notices": {
+      "songSaving": {
+        "title": "正在保存修改",
+        "message": "正在将当前歌曲直接写入曲库。"
+      },
+      "songSaved": {
+        "title": "修改已保存",
+        "message": "《{title}》已与曲库同步。"
+      },
+      "trackArchived": {
+        "title": "歌曲已归档",
+        "message": "歌曲已从公开播放器隐藏，可在 10 秒内撤销。"
+      },
+      "archiveUndone": {
+        "title": "已撤销归档",
+        "message": "歌曲已恢复到归档前的状态。"
+      },
       "draftUpdated": {
         "title": "草稿已更新",
         "message": "歌曲修改已在本地暂存，保存歌单后才会正式写入。"
