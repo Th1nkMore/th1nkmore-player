@@ -1,4 +1,5 @@
 import { AdminLoginScreen } from "@/components/admin/AdminLoginScreen";
+import { getSafeAdminNextPath } from "@/lib/admin-auth-policy";
 
 type AdminLoginPageProps = {
   searchParams: Promise<{ next?: string | string[] }>;
@@ -12,7 +13,9 @@ export default async function AdminLoginPage({
 
   return (
     <AdminLoginScreen
-      nextPath={typeof nextPath === "string" ? nextPath : undefined}
+      nextPath={getSafeAdminNextPath(
+        typeof nextPath === "string" ? nextPath : undefined,
+      )}
     />
   );
 }
