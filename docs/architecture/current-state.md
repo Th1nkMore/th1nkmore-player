@@ -21,7 +21,8 @@ The current codebase is a usable player and publishing baseline. Bottom-navigati
 
 ## Current Admin Capabilities
 
-- Password-based admin access with a cookie-backed session
+- Password-based admin access with an 8-hour, host-bound cookie session
+- Per-client login throttling and issuer-, audience-, and subject-scoped JWT verification
 - Direct signed uploads to R2
 - Playlist loading, editing, ordering, and removal from the manifest
 - Lyric fetching, normalization, and editing
@@ -34,8 +35,9 @@ The current codebase is a usable player and publishing baseline. Bottom-navigati
 
 - Local pre-commit guards run staged Biome checks, file-length validation, and a full TypeScript check
 - Vitest covers player state, APIs, library behavior, lyrics, recording sessions, tags, and playback sequence logic
-- Pushing `live` triggers a GitHub Actions production build and SSH deployment to the personal server
-- The remote deployment gate currently builds the application but does not independently run lint and the full test suite
+- Pushing `live` triggers a least-privilege GitHub Actions quality gate and SSH deployment to the personal server
+- The remote gate uses a frozen lockfile and runs lint, type-checking, the full test suite, and a production build before connecting to the server
+- Deployment actions are pinned to reviewed commit SHAs
 
 ## Main Code Areas
 
@@ -58,5 +60,6 @@ The current codebase is a usable player and publishing baseline. Bottom-navigati
 - The library remains a flat manifest rather than a rich media catalog
 - Playlist removal does not automatically remove backing R2 assets
 - Public R2 URLs do not provide storage-level privacy
-- Remote deployment should add frozen-lockfile install, lint, type-check, and tests before build and deploy
+- The in-process admin login limiter needs a Cloudflare edge rule and a non-public origin to provide distributed abuse protection
+- GitHub branch protection for `live` remains a repository setting rather than a code-level control
 - Runtime product analytics and playback-error monitoring are not formalized

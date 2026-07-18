@@ -10,12 +10,22 @@
 
 import { resolve } from "node:path";
 import { config } from "dotenv";
+import {
+  ADMIN_SESSION_TTL_SECONDS,
+  ADMIN_TOKEN_AUDIENCE,
+  ADMIN_TOKEN_ISSUER,
+  ADMIN_TOKEN_SUBJECT,
+  getAdminSessionCookieName,
+} from "../src/lib/admin-auth-policy";
 
 // Load environment variables
 config({ path: resolve(process.cwd(), ".env.local") });
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 const ADMIN_SECRET = process.env.ADMIN_SECRET;
+const ADMIN_COOKIE_NAME = getAdminSessionCookieName(
+  BASE_URL.startsWith("https://"),
+);
 
 if (!ADMIN_SECRET) {
   console.error("❌ Error: ADMIN_SECRET is not set in .env.local");
@@ -27,10 +37,14 @@ async function generateToken(): Promise<string> {
   const { SignJWT } = await import("jose");
   const secret = new TextEncoder().encode(ADMIN_SECRET);
 
-  const token = await new SignJWT({ sub: "admin" })
+  const token = await new SignJWT({ sub: ADMIN_TOKEN_SUBJECT })
     .setProtectedHeader({ alg: "HS256" })
+    .setAudience(ADMIN_TOKEN_AUDIENCE)
+    .setIssuer(ADMIN_TOKEN_ISSUER)
     .setIssuedAt()
-    .setExpirationTime(Math.floor(Date.now() / 1000) + 3600)
+    .setExpirationTime(
+      Math.floor(Date.now() / 1000) + ADMIN_SESSION_TTL_SECONDS,
+    )
     .sign(secret);
 
   return token;
@@ -42,7 +56,7 @@ async function requestSignedUrl(token: string): Promise<boolean> {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Cookie: `admin_session=${token}`,
+      Cookie: `${ADMIN_COOKIE_NAME}=${token}`,
     },
     body: JSON.stringify({
       filename: "test-song.mp3",
@@ -68,7 +82,7 @@ async function fetchCurrentPlaylist(token: string): Promise<boolean> {
   console.log("📋 Step 2: Fetching current playlist...");
   const playlistResponse = await fetch(`${BASE_URL}/api/admin/playlist`, {
     headers: {
-      Cookie: `admin_session=${token}`,
+      Cookie: `${ADMIN_COOKIE_NAME}=${token}`,
     },
   });
 

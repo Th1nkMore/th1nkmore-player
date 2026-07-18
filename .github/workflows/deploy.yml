@@ -5,11 +5,18 @@ on:
     branches:
       - live
 
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
 # --- CONFIGURATION SECTION ---
 # Change these values to match your server environment
 env:
   # The path you found using 'which pnpm' on the server
-  NODE_BIN_PATH: "/usr/local/node-v20.14.0/bin" 
+  NODE_BIN_PATH: "/home/jianyulai/.nvm/versions/node/v24.13.0/bin"
   # Where your app lives on the server
   DEPLOY_PATH: "/var/www/sonic-ide"
   # The name you want to see in PM2
@@ -18,24 +25,28 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
 
-      # Optional: This creates a "Health Check" build on GitHub 
-      # to ensure code isn't broken before we even try to connect to the server.
-      - name: Build Check (Local)
-        uses: actions/setup-node@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-      - name: Install & Test Build
+      - name: Run release quality gate
         run: |
-          npm install -g pnpm@9
-          pnpm install
+          npm install -g pnpm@10.28.1
+          pnpm install --frozen-lockfile
+          pnpm lint
+          pnpm type-check
+          pnpm test
           pnpm build
 
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 # v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
@@ -63,7 +74,7 @@ jobs:
             git reset --hard origin/live
 
             # 4. Install dependencies and build on server
-            pnpm install
+            pnpm install --frozen-lockfile
             pnpm build
 
             # 5. Restart service

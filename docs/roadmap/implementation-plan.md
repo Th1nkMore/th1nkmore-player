@@ -180,6 +180,8 @@ Acceptance:
 
 ## Phase 7: Asset And Delivery Hardening
 
+Status: Release validation is implemented; asset lifecycle, backup, and monitoring work remains.
+
 Suggested branches:
 
 - `feat/library-backup-restore`
@@ -194,6 +196,12 @@ Scope:
 - Add frozen-lockfile install, lint, type-check, tests, and build to remote release validation
 - Add playback-error and publish-failure monitoring
 - Implement signed delivery only if non-public personal content becomes a real use case
+
+Implementation notes:
+
+- The `live` workflow installs from the frozen lockfile and runs lint, type-checking, tests, and a production build before SSH deployment
+- Workflow permissions are read-only and third-party actions are pinned to commit SHAs
+- Repository-level `live` branch protection and Cloudflare login rate limiting still require production configuration
 
 Acceptance:
 
