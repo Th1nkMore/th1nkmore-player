@@ -397,12 +397,16 @@
         "archive": "アーカイブ",
         "ready": "準備完了にする",
         "public": "公開にする",
-        "private": "非公開にする"
+        "private": "非公開にする",
+        "backfillDuration": "長さを補完（{count}）",
+        "backfillingDuration": "音声の長さを取得中…"
       },
       "detail": {
         "assetTitle": "アセット概要",
         "assetDescription": "選択中トラックのソースを確認・試聴します。",
         "audioUrl": "音声 URL",
+        "replaceAudio": "主音声を置換",
+        "replacingAudio": "置換中…",
         "unsaved": "選択中トラックには未保存の下書き変更があります。",
         "synced": "現在の下書きはライブラリと一致しています。",
         "savedAt": "{time} に保存"
@@ -421,7 +425,16 @@
         "open": "エディタを開く"
       },
       "drawerTitle": "トラックエディタ",
-      "drawerDescription": "編集する曲を選択してください。"
+      "drawerDescription": "編集する曲を選択してください。",
+      "history": {
+        "title": "バージョン履歴",
+        "description": "書き込み前に復元可能な R2 マニフェストのスナップショットを保存します。",
+        "count": "{count} 件のスナップショット",
+        "refresh": "更新",
+        "empty": "スナップショットはまだありません。次回の書き込み前に作成されます。",
+        "restore": "復元",
+        "restoring": "復元中…"
+      }
     },
     "confirm": {
       "discardTitle": "未保存の変更を破棄しますか？",
@@ -431,6 +444,9 @@
       "archiveTitle": "この曲をアーカイブしますか？",
       "archiveDescription": "公開プレーヤーから非表示になりますが、項目と音声ファイルは復元用に保持されます。",
       "archiveConfirm": "曲をアーカイブ",
+      "restoreTitle": "このプレイリスト版を復元しますか？",
+      "restoreDescription": "現在の状態を先にバックアップしてから、選択したスナップショットを有効にします。",
+      "restoreConfirm": "バージョンを復元",
       "deleteTitle": "この曲を削除しますか？",
       "deleteDescription": "保存または再読み込みするまで、この曲はステージ済みプレイリストから削除されます。",
       "deleteConfirm": "トラックを削除",
@@ -472,6 +488,25 @@
       "orderSaved": {
         "title": "順序を保存しました",
         "message": "プレイリストの手動順序を更新しました。"
+      },
+      "revisionConflict": {
+        "title": "新しいライブラリ版を検出しました",
+        "message": "別のセッションが先に保存しました。再読み込みして下書きを確認し、もう一度お試しください。"
+      },
+      "audioReplaced": {
+        "title": "主音声を置換しました",
+        "message": "{title} に新しい音声と更新された長さを適用しました。"
+      },
+      "durationBackfilled": {
+        "title": "長さを更新しました",
+        "message": "{count} 曲の長さを補完しました。"
+      },
+      "durationBackfillFailed": {
+        "message": "選択した音声から有効な長さを取得できませんでした。"
+      },
+      "historyRestored": {
+        "title": "バージョンを復元しました",
+        "message": "選択したスナップショットを有効化し、以前の状態もバックアップしました。"
       },
       "draftUpdated": {
         "title": "下書きを更新しました",

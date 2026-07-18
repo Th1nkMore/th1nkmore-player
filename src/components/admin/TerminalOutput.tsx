@@ -4,6 +4,7 @@ import { ChevronUp } from "lucide-react";
 
 type LogEntry = {
   id: string;
+  level: "info" | "error";
   message: string;
   timestamp: Date;
 };
@@ -24,7 +25,7 @@ export function TerminalOutput({
   const lastLog = logs.length > 0 ? logs[logs.length - 1] : null;
 
   return (
-    <div className="border-t border-gray-800 bg-black font-mono shrink-0">
+    <div className="shrink-0 border-t border-gray-800 bg-black font-mono">
       {/* Header bar — always visible at 32px */}
       <button
         type="button"
@@ -57,7 +58,12 @@ export function TerminalOutput({
             </div>
           ) : (
             logs.map((log) => (
-              <div key={log.id} className="text-gray-400">
+              <div
+                key={log.id}
+                className={
+                  log.level === "error" ? "text-rose-300" : "text-gray-400"
+                }
+              >
                 <span className="text-gray-600">
                   {log.timestamp.toLocaleTimeString()}
                 </span>{" "}

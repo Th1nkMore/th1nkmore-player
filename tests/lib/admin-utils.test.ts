@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { songOne } from "@/../tests/fixtures/songs";
-import { createSongFromFormData, saveAdminPlaylist } from "@/lib/admin-utils";
+import {
+  AdminPlaylistConflictError,
+  createSongFromFormData,
+  saveAdminPlaylist,
+} from "@/lib/admin-utils";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -57,16 +61,23 @@ describe("admin song creation", () => {
   });
 
   it("saves the normalized admin playlist payload", async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue(new Response(null, { status: 200 }));
+    const fetchMock = vi.fn().mockResolvedValue(
+      Response.json({
+        playlist: [songOne],
+        revision: "revision-2",
+        count: 1,
+      }),
+    );
     vi.stubGlobal("fetch", fetchMock);
 
-    await saveAdminPlaylist([songOne]);
+    await saveAdminPlaylist([songOne], "revision-1");
 
     expect(fetchMock).toHaveBeenCalledWith("/api/admin/playlist", {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "If-Match": '"revision-1"',
+      },
       body: JSON.stringify([songOne]),
     });
   });
@@ -81,8 +92,30 @@ describe("admin song creation", () => {
         ),
     );
 
-    await expect(saveAdminPlaylist([songOne])).rejects.toThrow(
+    await expect(saveAdminPlaylist([songOne], "revision-1")).rejects.toThrow(
       "Duplicate share slug",
     );
+  });
+
+  it("surfaces revision conflicts as a dedicated error", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        Response.json(
+          {
+            error: "The playlist changed in another session",
+            currentRevision: "revision-2",
+          },
+          { status: 412 },
+        ),
+      ),
+    );
+
+    await expect(
+      saveAdminPlaylist([songOne], "revision-1"),
+    ).rejects.toMatchObject({
+      name: AdminPlaylistConflictError.name,
+      currentRevision: "revision-2",
+    });
   });
 });

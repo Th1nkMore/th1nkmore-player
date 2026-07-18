@@ -1,8 +1,9 @@
 "use client";
 
-import { Archive, Save, Undo2 } from "lucide-react";
+import { Archive, RefreshCcw, Save, Undo2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { AdminPlaylistHistoryPanel } from "@/components/admin/playlist/AdminPlaylistHistoryPanel";
 import { AdminPlaylistSidebar } from "@/components/admin/playlist/AdminPlaylistSidebar";
 import { AdminConfirmDialog } from "@/components/admin/workspace/AdminConfirmDialog";
 import { AdminSongForm } from "@/components/admin/workspace/AdminSongForm";
@@ -20,6 +21,7 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import type { AdminPlaylistHistoryItem } from "@/lib/admin-utils";
 import {
   type AdminNotice,
   formatSongDuration,
@@ -32,12 +34,17 @@ type EditPlaylistProps = {
   playlist: Song[];
   isLoadingPlaylist: boolean;
   isSavingPlaylist: boolean;
+  isBackfillingDurations: boolean;
+  isLoadingHistory: boolean;
+  isReplacingAudio: boolean;
+  isRestoringHistory: boolean;
   playlistError: string | null;
   playlistNotice: AdminNotice | null;
   editingSongId: string | null;
   editedSong: Song | null;
   archivedSongId: string | null;
   lastSavedAt: Date | null;
+  playlistHistory: AdminPlaylistHistoryItem[];
   handleEditSong: (song: Song) => void;
   handleCancelEdit: () => void;
   handleSaveEdit: () => Promise<boolean>;
@@ -51,6 +58,9 @@ type EditPlaylistProps = {
     activeSongId: string,
     overSongId: string,
   ) => Promise<boolean>;
+  handleBackfillDurations: (songIds: string[]) => Promise<boolean>;
+  handleReplaceSongAudio: (file: File) => Promise<boolean>;
+  handleRestoreHistory: (key: string) => Promise<boolean>;
   handleConvertEditedLyricsToLrc: () => void;
   handleNormalizeEditedLyrics: () => void;
   handleUploadCreatorNoteAudio: (file: File) => Promise<string>;
@@ -62,6 +72,7 @@ type EditPlaylistProps = {
   editedLyricFormat: "lrc" | "plain" | "empty";
   editedLyricLineCount: number;
   loadPlaylist: () => Promise<void>;
+  loadPlaylistHistory: () => Promise<void>;
 };
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Playlist workspace coordinates list/detail/mobile confirmation flows in one container
@@ -69,12 +80,17 @@ export function EditPlaylist({
   playlist,
   isLoadingPlaylist,
   isSavingPlaylist,
+  isBackfillingDurations,
+  isLoadingHistory,
+  isReplacingAudio,
+  isRestoringHistory,
   playlistError,
   playlistNotice,
   editingSongId,
   editedSong,
   archivedSongId,
   lastSavedAt,
+  playlistHistory,
   handleEditSong,
   handleCancelEdit,
   handleSaveEdit,
@@ -82,6 +98,9 @@ export function EditPlaylist({
   handleUndoArchive,
   handleBulkUpdate,
   handleReorderSongs,
+  handleBackfillDurations,
+  handleReplaceSongAudio,
+  handleRestoreHistory,
   handleConvertEditedLyricsToLrc,
   handleNormalizeEditedLyrics,
   handleUploadCreatorNoteAudio,
@@ -93,6 +112,7 @@ export function EditPlaylist({
   editedLyricFormat,
   editedLyricLineCount,
   loadPlaylist,
+  loadPlaylistHistory,
 }: EditPlaylistProps) {
   const t = useTranslations("admin");
   const screenMode = useScreenMode();
@@ -102,12 +122,15 @@ export function EditPlaylist({
   const [songIdToArchive, setSongIdToArchive] = useState<string | null>(null);
   const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
   const [isCreatorNoteUploading, setIsCreatorNoteUploading] = useState(false);
+  const audioFileInputRef = useRef<HTMLInputElement>(null);
 
   const selectedSong = useMemo(
     () => playlist.find((song) => song.id === editingSongId) ?? null,
     [editingSongId, playlist],
   );
   const isDirty = hasSongChanges(selectedSong, editedSong);
+  const isDetailBusy =
+    isCreatorNoteUploading || isReplacingAudio || isRestoringHistory;
 
   useEffect(() => {
     if (!editingSongId && playlist[0]) {
@@ -138,13 +161,13 @@ export function EditPlaylist({
         return;
       }
       event.preventDefault();
-      if (isDirty && !isSavingPlaylist && !isCreatorNoteUploading) {
+      if (isDirty && !isSavingPlaylist && !isDetailBusy) {
         void handleSaveEdit();
       }
     };
     window.addEventListener("keydown", saveWithKeyboard);
     return () => window.removeEventListener("keydown", saveWithKeyboard);
-  }, [handleSaveEdit, isCreatorNoteUploading, isDirty, isSavingPlaylist]);
+  }, [handleSaveEdit, isDetailBusy, isDirty, isSavingPlaylist]);
 
   const openSong = (song: Song) => {
     handleEditSong(song);
@@ -154,7 +177,7 @@ export function EditPlaylist({
   };
 
   const selectSong = (song: Song) => {
-    if (isCreatorNoteUploading) return;
+    if (isDetailBusy) return;
     if (editedSong && isDirty && song.id !== editedSong.id) {
       setPendingSongId(song.id);
       setConfirmDiscardOpen(true);
@@ -229,6 +252,37 @@ export function EditPlaylist({
       <AdminSectionCard
         title={t("playlist.detail.assetTitle")}
         description={t("playlist.detail.assetDescription")}
+        aside={
+          <>
+            <input
+              ref={audioFileInputRef}
+              type="file"
+              accept="audio/*,.mp3,.m4a,.wav,.flac,.ogg,.webm"
+              className="hidden"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) void handleReplaceSongAudio(file);
+                event.target.value = "";
+              }}
+            />
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={isDirty || isDetailBusy || isSavingPlaylist}
+              onClick={() => audioFileInputRef.current?.click()}
+            >
+              <RefreshCcw
+                className={
+                  isReplacingAudio ? "h-3.5 w-3.5 animate-spin" : "h-3.5 w-3.5"
+                }
+              />
+              {isReplacingAudio
+                ? t("playlist.detail.replacingAudio")
+                : t("playlist.detail.replaceAudio")}
+            </Button>
+          </>
+        }
       >
         <div className="space-y-2 text-sm text-gray-400">
           <div className="flex items-center justify-between gap-3">
@@ -245,11 +299,20 @@ export function EditPlaylist({
           </div>
         </div>
 
-        <div className="mt-4 rounded-2xl border border-[var(--border)] bg-[rgba(7,10,15,0.82)] p-3">
+        <div className="mt-4 rounded-2xl bg-[rgba(7,10,15,0.82)] p-3 shadow-[0_0_0_1px_rgba(255,255,255,0.08)]">
           {/* biome-ignore lint/a11y/useMediaCaption: audio preview does not need captions */}
           <audio controls src={editedSong.audioUrl} className="h-10 w-full" />
         </div>
       </AdminSectionCard>
+
+      <AdminPlaylistHistoryPanel
+        history={playlistHistory}
+        isLoading={isLoadingHistory}
+        isRestoring={isRestoringHistory}
+        disabled={isDirty || isDetailBusy || isSavingPlaylist}
+        onReload={loadPlaylistHistory}
+        onRestore={handleRestoreHistory}
+      />
 
       <AdminActionBar sticky className="justify-between">
         <div className="text-xs text-gray-500">
@@ -268,14 +331,14 @@ export function EditPlaylist({
           <Button
             type="button"
             variant="outline"
-            disabled={!isDirty || isSavingPlaylist || isCreatorNoteUploading}
+            disabled={!isDirty || isSavingPlaylist || isDetailBusy}
             onClick={handleCancelEdit}
           >
             {t("actions.reset")}
           </Button>
           <Button
             type="button"
-            disabled={!isDirty || isSavingPlaylist || isCreatorNoteUploading}
+            disabled={!isDirty || isSavingPlaylist || isDetailBusy}
             onClick={() => void handleSaveEdit()}
           >
             <Save className="h-3.5 w-3.5" />
@@ -286,7 +349,7 @@ export function EditPlaylist({
             variant="destructive"
             disabled={
               isSavingPlaylist ||
-              isCreatorNoteUploading ||
+              isDetailBusy ||
               isDirty ||
               editedSong.assetStatus === "archived"
             }
@@ -329,12 +392,14 @@ export function EditPlaylist({
             playlist={playlist}
             isLoading={isLoadingPlaylist}
             isSaving={isSavingPlaylist}
+            isBackfillingDurations={isBackfillingDurations}
             error={playlistError}
             editingSongId={editingSongId}
             isEditingSongDirty={isDirty}
-            disabled={isCreatorNoteUploading}
+            disabled={isDetailBusy || isBackfillingDurations}
             onSelectSong={selectSong}
             onBulkUpdate={handleBulkUpdate}
+            onBackfillDurations={handleBackfillDurations}
             onReorderSongs={handleReorderSongs}
             onReload={loadPlaylist}
           />

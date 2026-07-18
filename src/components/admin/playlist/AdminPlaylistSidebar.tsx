@@ -14,7 +14,14 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Archive, CheckCircle2, Eye, EyeOff, Search } from "lucide-react";
+import {
+  Archive,
+  CheckCircle2,
+  Clock3,
+  Eye,
+  EyeOff,
+  Search,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { AdminSongListRow } from "@/components/admin/playlist/AdminSongListRow";
@@ -40,28 +47,33 @@ const selectClassName =
 
 type BulkPatch = Partial<Pick<Song, "assetStatus" | "visibility">>;
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Sidebar coordinates filtering, selection, bulk actions, and accessible drag state.
 export function AdminPlaylistSidebar({
   playlist,
   isLoading,
   isSaving,
+  isBackfillingDurations,
   error,
   editingSongId,
   isEditingSongDirty,
   disabled,
   onSelectSong,
   onBulkUpdate,
+  onBackfillDurations,
   onReorderSongs,
   onReload,
 }: {
   playlist: Song[];
   isLoading: boolean;
   isSaving: boolean;
+  isBackfillingDurations: boolean;
   error: string | null;
   editingSongId: string | null;
   isEditingSongDirty: boolean;
   disabled: boolean;
   onSelectSong: (song: Song) => void;
   onBulkUpdate: (songIds: string[], patch: BulkPatch) => Promise<boolean>;
+  onBackfillDurations: (songIds: string[]) => Promise<boolean>;
   onReorderSongs: (
     activeSongId: string,
     overSongId: string,
@@ -94,6 +106,9 @@ export function AdminPlaylistSidebar({
   const allVisibleSelected =
     visiblePlaylist.length > 0 &&
     selectedVisibleCount === visiblePlaylist.length;
+  const selectedMissingDurationCount = playlist.filter(
+    (song) => selectedIds.has(song.id) && !(song.duration > 0),
+  ).length;
   const dragEnabled =
     sort === "manual" &&
     filter === "all" &&
@@ -249,6 +264,26 @@ export function AdminPlaylistSidebar({
               >
                 <EyeOff className="h-3.5 w-3.5" />
                 {t("playlist.bulk.private")}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={
+                  isSaving ||
+                  disabled ||
+                  isBackfillingDurations ||
+                  selectedMissingDurationCount === 0
+                }
+                onClick={() => void onBackfillDurations([...selectedIds])}
+                className="col-span-2"
+              >
+                <Clock3 className="h-3.5 w-3.5" />
+                {isBackfillingDurations
+                  ? t("playlist.bulk.backfillingDuration")
+                  : t("playlist.bulk.backfillDuration", {
+                      count: selectedMissingDurationCount,
+                    })}
               </Button>
             </div>
           </div>

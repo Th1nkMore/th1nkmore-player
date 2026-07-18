@@ -23,7 +23,12 @@ export function AdminWorkspaceShell({
   isBusy: boolean;
   isExpanded: boolean;
   isSigningOut: boolean;
-  logs: Array<{ id: string; message: string; timestamp: Date }>;
+  logs: Array<{
+    id: string;
+    level: "info" | "error";
+    message: string;
+    timestamp: Date;
+  }>;
   onLogout: () => void;
   onTabChange: (tab: AdminTab) => void;
   onToggleTerminal: () => void;

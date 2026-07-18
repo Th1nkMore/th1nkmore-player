@@ -397,12 +397,16 @@
         "archive": "Archive",
         "ready": "Mark ready",
         "public": "Make public",
-        "private": "Make private"
+        "private": "Make private",
+        "backfillDuration": "Backfill duration ({count})",
+        "backfillingDuration": "Reading audio durations..."
       },
       "detail": {
         "assetTitle": "Asset Summary",
         "assetDescription": "Preview and inspect the currently selected track source.",
         "audioUrl": "Audio URL",
+        "replaceAudio": "Replace audio",
+        "replacingAudio": "Replacing...",
         "unsaved": "You have unsaved draft changes for the selected track.",
         "synced": "The selected draft matches the library.",
         "savedAt": "Saved at {time}"
@@ -421,7 +425,16 @@
         "open": "Open Editor"
       },
       "drawerTitle": "Track Editor",
-      "drawerDescription": "Select a track to start editing."
+      "drawerDescription": "Select a track to start editing.",
+      "history": {
+        "title": "Version history",
+        "description": "Every write creates a recoverable R2 manifest snapshot.",
+        "count": "{count} snapshots",
+        "refresh": "Refresh",
+        "empty": "No snapshots yet. The first one is created before the next playlist write.",
+        "restore": "Restore",
+        "restoring": "Restoring..."
+      }
     },
     "confirm": {
       "discardTitle": "Discard unsaved changes?",
@@ -431,6 +444,9 @@
       "archiveTitle": "Archive this track?",
       "archiveDescription": "The track will disappear from the public player, but its entry and audio asset remain available for recovery.",
       "archiveConfirm": "Archive track",
+      "restoreTitle": "Restore this playlist version?",
+      "restoreDescription": "The current manifest is backed up first, then the selected snapshot becomes active.",
+      "restoreConfirm": "Restore version",
       "deleteTitle": "Delete this track?",
       "deleteDescription": "The track will be removed from the staged playlist until you save or reload.",
       "deleteConfirm": "Delete track",
@@ -472,6 +488,25 @@
       "orderSaved": {
         "title": "Order saved",
         "message": "The manual playlist order is up to date."
+      },
+      "revisionConflict": {
+        "title": "Newer library version detected",
+        "message": "Another session saved first. Reload the playlist, review your draft, and try again."
+      },
+      "audioReplaced": {
+        "title": "Audio replaced",
+        "message": "{title} now uses the new audio file and refreshed duration."
+      },
+      "durationBackfilled": {
+        "title": "Durations updated",
+        "message": "Recovered duration metadata for {count} tracks."
+      },
+      "durationBackfillFailed": {
+        "message": "No selected audio files exposed readable duration metadata."
+      },
+      "historyRestored": {
+        "title": "Version restored",
+        "message": "The selected playlist snapshot is active; the previous state was backed up."
       },
       "draftUpdated": {
         "title": "Draft updated",

@@ -19,6 +19,26 @@ export type LyricsFetchResult = {
   songInfo?: SongInfoPayload | null;
 };
 
+export type AdminPlaylistWriteResult = {
+  playlist: Song[];
+  revision: string;
+  count: number;
+};
+
+export type AdminPlaylistHistoryItem = {
+  key: string;
+  createdAt: string;
+  revision: string;
+  size: number;
+};
+
+export class AdminPlaylistConflictError extends Error {
+  constructor(public readonly currentRevision?: string) {
+    super("The playlist changed in another session. Reload before saving.");
+    this.name = "AdminPlaylistConflictError";
+  }
+}
+
 export const createSongFromFormData = (
   title: string,
   artist: string,
@@ -101,28 +121,150 @@ export async function uploadAudioFileToR2(
   return publicUrl;
 }
 
-export async function fetchAdminPlaylist(): Promise<Song[]> {
+function responseRevision(response: Response, payload?: { revision?: string }) {
+  const headerRevision = response.headers
+    .get("etag")
+    ?.trim()
+    .replace(/^W\//, "")
+    .replace(/^"|"$/g, "");
+  return payload?.revision || headerRevision || "";
+}
+
+async function parseAdminPlaylistWriteResponse(response: Response) {
+  const payload = (await response.json().catch(() => null)) as {
+    error?: string;
+    currentRevision?: string;
+    playlist?: Song[];
+    revision?: string;
+    count?: number;
+  } | null;
+  if (response.status === 412) {
+    throw new AdminPlaylistConflictError(
+      payload?.currentRevision || responseRevision(response),
+    );
+  }
+  if (!response.ok) {
+    throw new Error(payload?.error || "Failed to update playlist");
+  }
+
+  const revision = responseRevision(response, payload || undefined);
+  if (!(payload?.playlist && revision)) {
+    throw new Error("Playlist update response is incomplete");
+  }
+  return {
+    playlist: payload.playlist,
+    revision,
+    count: payload.count ?? payload.playlist.length,
+  } satisfies AdminPlaylistWriteResult;
+}
+
+async function mutateAdminPlaylistRequest(
+  method: "PATCH" | "POST" | "PUT",
+  body: unknown,
+  revision: string,
+  path = "/api/admin/playlist",
+) {
+  const response = await fetch(path, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      "If-Match": `"${revision}"`,
+    },
+    body: JSON.stringify(body),
+  });
+  return parseAdminPlaylistWriteResponse(response);
+}
+
+export async function fetchAdminPlaylistSnapshot(): Promise<{
+  playlist: Song[];
+  revision: string;
+}> {
   const playlistResponse = await fetch("/api/admin/playlist");
   if (!playlistResponse.ok) {
     throw new Error("Failed to fetch playlist");
   }
-
-  return playlistResponse.json();
+  const playlist = (await playlistResponse.json()) as Song[];
+  const revision = responseRevision(playlistResponse);
+  if (!revision) throw new Error("Playlist revision is missing");
+  return { playlist, revision };
 }
 
-export async function saveAdminPlaylist(playlist: Song[]): Promise<void> {
-  const response = await fetch("/api/admin/playlist", {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(playlist),
-  });
+export async function fetchAdminPlaylist(): Promise<Song[]> {
+  return (await fetchAdminPlaylistSnapshot()).playlist;
+}
 
+export async function saveAdminPlaylist(playlist: Song[], revision: string) {
+  return mutateAdminPlaylistRequest("PUT", playlist, revision);
+}
+
+export async function updateAdminSong(song: Song, revision: string) {
+  return mutateAdminPlaylistRequest(
+    "PATCH",
+    { type: "updateSong", song },
+    revision,
+  );
+}
+
+export async function updateAdminSongs(songs: Song[], revision: string) {
+  return mutateAdminPlaylistRequest(
+    "PATCH",
+    { type: "replaceSongs", songs },
+    revision,
+  );
+}
+
+export async function patchAdminSongs(
+  songIds: string[],
+  patch: Partial<Pick<Song, "assetStatus" | "visibility">>,
+  revision: string,
+) {
+  return mutateAdminPlaylistRequest(
+    "PATCH",
+    { type: "updateMany", songIds, patch },
+    revision,
+  );
+}
+
+export async function reorderAdminSongs(
+  activeSongId: string,
+  overSongId: string,
+  revision: string,
+) {
+  return mutateAdminPlaylistRequest(
+    "PATCH",
+    { type: "reorder", activeSongId, overSongId },
+    revision,
+  );
+}
+
+export async function createAdminSong(song: Song, revision: string) {
+  return mutateAdminPlaylistRequest("POST", { song }, revision);
+}
+
+export async function fetchAdminPlaylistHistory(): Promise<
+  AdminPlaylistHistoryItem[]
+> {
+  const response = await fetch("/api/admin/playlist/history");
+  const payload = (await response.json().catch(() => null)) as {
+    error?: string;
+    items?: AdminPlaylistHistoryItem[];
+  } | null;
   if (!response.ok) {
-    const payload = (await response.json().catch(() => null)) as {
-      error?: string;
-    } | null;
-    throw new Error(payload?.error || "Failed to update playlist");
+    throw new Error(payload?.error || "Failed to load playlist history");
   }
+  return payload?.items || [];
+}
+
+export async function restoreAdminPlaylistHistory(
+  key: string,
+  revision: string,
+) {
+  return mutateAdminPlaylistRequest(
+    "POST",
+    { key },
+    revision,
+    "/api/admin/playlist/history",
+  );
 }
 
 type PersistSongAssetInput = {
@@ -162,18 +304,31 @@ export async function persistSongAssetToLibrary({
   }
 
   const publicUrl = await uploadAudioFileToR2(file, addLog, assetKind);
-  const currentPlaylist = await fetchAdminPlaylist();
-  const newSong = createSongFromFormData(
+  let currentSnapshot = await fetchAdminPlaylistSnapshot();
+  let newSong = createSongFromFormData(
     nextFormData.title || "",
     nextFormData.artist || "",
     nextFormData.album || "",
     publicUrl,
-    currentPlaylist,
+    currentSnapshot.playlist,
     nextFormData,
   );
 
-  const updatedPlaylist = [...currentPlaylist, newSong];
-  await saveAdminPlaylist(updatedPlaylist);
+  try {
+    await createAdminSong(newSong, currentSnapshot.revision);
+  } catch (error) {
+    if (!(error instanceof AdminPlaylistConflictError)) throw error;
+    currentSnapshot = await fetchAdminPlaylistSnapshot();
+    newSong = createSongFromFormData(
+      nextFormData.title || "",
+      nextFormData.artist || "",
+      nextFormData.album || "",
+      publicUrl,
+      currentSnapshot.playlist,
+      nextFormData,
+    );
+    await createAdminSong(newSong, currentSnapshot.revision);
+  }
   return newSong;
 }
 

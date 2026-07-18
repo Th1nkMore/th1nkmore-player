@@ -69,12 +69,17 @@ export default function AdminPage() {
             playlist={controller.playlist.playlist}
             isLoadingPlaylist={controller.playlist.isLoadingPlaylist}
             isSavingPlaylist={controller.playlist.isSavingPlaylist}
+            isBackfillingDurations={controller.playlist.isBackfillingDurations}
+            isLoadingHistory={controller.playlist.isLoadingHistory}
+            isReplacingAudio={controller.playlist.isReplacingAudio}
+            isRestoringHistory={controller.playlist.isRestoringHistory}
             playlistError={controller.playlist.playlistError}
             playlistNotice={controller.playlist.playlistNotice}
             editingSongId={controller.playlist.editingSongId}
             editedSong={controller.playlist.editedSong}
             archivedSongId={controller.playlist.archivedSongId}
             lastSavedAt={controller.playlist.lastSavedAt}
+            playlistHistory={controller.playlist.playlistHistory}
             handleEditSong={controller.playlist.handleEditSong}
             handleCancelEdit={controller.playlist.handleCancelEdit}
             handleSaveEdit={controller.playlist.handleSaveEdit}
@@ -82,6 +87,11 @@ export default function AdminPage() {
             handleUndoArchive={controller.playlist.handleUndoArchive}
             handleBulkUpdate={controller.playlist.handleBulkUpdate}
             handleReorderSongs={controller.playlist.handleReorderSongs}
+            handleBackfillDurations={
+              controller.playlist.handleBackfillDurations
+            }
+            handleReplaceSongAudio={controller.playlist.handleReplaceSongAudio}
+            handleRestoreHistory={controller.playlist.handleRestoreHistory}
             handleConvertEditedLyricsToLrc={
               controller.playlist.handleConvertEditedLyricsToLrc
             }
@@ -103,6 +113,7 @@ export default function AdminPage() {
               controller.playlist.editedLyricsDescriptor.lineCount
             }
             loadPlaylist={controller.playlist.loadPlaylist}
+            loadPlaylistHistory={controller.playlist.loadPlaylistHistory}
           />
         )}
       </AdminWorkspaceErrorBoundary>

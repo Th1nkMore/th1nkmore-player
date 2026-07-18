@@ -10,6 +10,7 @@ export function AdminConfirmDialog({
   confirmLabel,
   cancelLabel,
   secondaryLabel,
+  disabled = false,
   onConfirm,
   onCancel,
   onSecondary,
@@ -21,6 +22,7 @@ export function AdminConfirmDialog({
   confirmLabel: string;
   cancelLabel: string;
   secondaryLabel?: string;
+  disabled?: boolean;
   onConfirm: () => void | Promise<void>;
   onCancel: () => void;
   onSecondary?: () => void;
@@ -39,15 +41,25 @@ export function AdminConfirmDialog({
         <p className="mt-2 text-sm text-gray-500">{description}</p>
         {children ? <div className="mt-3">{children}</div> : null}
         <div className="mt-5 flex flex-wrap items-center justify-end gap-2">
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={disabled}
+            onClick={onCancel}
+          >
             {cancelLabel}
           </Button>
           {secondaryLabel && onSecondary ? (
-            <Button type="button" variant="destructive" onClick={onSecondary}>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={disabled}
+              onClick={onSecondary}
+            >
               {secondaryLabel}
             </Button>
           ) : null}
-          <Button type="button" onClick={onConfirm}>
+          <Button type="button" disabled={disabled} onClick={onConfirm}>
             {confirmLabel}
           </Button>
         </div>
