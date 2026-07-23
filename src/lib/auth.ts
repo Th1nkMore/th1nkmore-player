@@ -12,7 +12,7 @@ import {
 
 const ADMIN_SECRET = process.env.ADMIN_SECRET;
 
-function getSecret() {
+export function getAdminAuthSecret() {
   if (!ADMIN_SECRET) {
     throw new Error("ADMIN_SECRET environment variable is required");
   }
@@ -34,7 +34,7 @@ const COOKIE_NAME = getAdminSessionCookieName(IS_PRODUCTION);
 export async function verifyAuthToken(
   token: string,
 ): Promise<{ sub: string; exp: number } | null> {
-  const secret = getSecret();
+  const secret = getAdminAuthSecret();
   try {
     const { payload } = await jwtVerify(token, secret, {
       algorithms: ["HS256"],
@@ -164,7 +164,7 @@ export async function clearUserCookie(): Promise<void> {
 export async function generateAuthToken(
   expiresIn = ADMIN_SESSION_TTL_SECONDS,
 ): Promise<string> {
-  const secret = getSecret();
+  const secret = getAdminAuthSecret();
   const token = await new SignJWT({ sub: ADMIN_TOKEN_SUBJECT })
     .setProtectedHeader({ alg: "HS256" })
     .setAudience(ADMIN_TOKEN_AUDIENCE)

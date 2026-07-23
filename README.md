@@ -107,6 +107,8 @@ pnpm test
 6. Choose Deploy to reuse the signed R2 upload and conflict-aware playlist write path.
 7. Use the playlist workspace for later edits; Creator Note spoken recording remains available inside its own story field.
 
+Cover Studio can also deliver the same verified `.coverpkg` directly. It logs in with the existing owner password using an in-memory Cookie session, calls `prepare`, streams only the MP3 to a five-minute deterministic R2 URL, then calls `commit`. The server re-reads and hashes the object before it idempotently creates `private + draft`; final review and public visibility remain in `/admin`. Cloud credentials, signed URLs, and commit intents are never stored by HuangToolbar.
+
 ## Branching Workflow
 
 - `main`: stable mainline branch
@@ -128,7 +130,7 @@ Detailed process: [`docs/process/branching-release.md`](docs/process/branching-r
 
 - Public R2 object URLs bypass application-level visibility filtering; true private playback still requires private storage and authenticated delivery.
 - The app still uses a playlist-shaped library model rather than a richer media catalog.
-- `.coverpkg` import is implemented locally; a real Audacity-produced package still needs production deployment acceptance through R2 and the public player.
+- Desktop `.coverpkg` delivery is implemented in code; a real Audacity-produced package still needs one production acceptance run through R2, `/admin` playback, and the public player.
 - Track-level share routes, copy-link migration, and per-track social metadata are not yet implemented.
 - Playback session state is not yet restored across visits, and Media Session integration is not implemented.
 - GitHub `live` branch protection and Cloudflare edge rate limiting remain production configuration rather than repository code.

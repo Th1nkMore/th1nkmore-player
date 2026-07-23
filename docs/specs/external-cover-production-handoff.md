@@ -191,7 +191,16 @@ The package must never contain:
 - local absolute paths;
 - Audacity configuration.
 
-Authentication remains in the existing website admin session. HuangToolbar does not receive website deployment credentials.
+Authentication remains in the existing website admin session. HuangToolbar may establish that session with the owner password, but the password and resulting Cookie remain process-memory-only and are never written to settings, a project, or a package. HuangToolbar does not receive R2, Cloudflare, or Tencent Cloud credentials.
+
+The desktop handoff uses a high-level authenticated protocol rather than duplicating browser upload business logic:
+
+- `POST /api/admin/cover-deploy/prepare` validates the exact public descriptor, returns an existing package idempotently, requires confirmation for a same-project revision, and signs one deterministic MP3 object for five minutes;
+- HuangToolbar streams only `audio/publish.mp3` to that URL and keeps upload progress locally;
+- `POST /api/admin/cover-deploy/commit` verifies the signed intent, re-reads the R2 object, hashes its bytes, and appends a `private + draft` song through the existing revisioned playlist/history writer;
+- `GET /api/admin/cover-deploy/status` lets a retry recover after an expired URL, process exit, or lost response without creating a duplicate.
+
+Neither the presigned URL nor the commit intent is persisted by HuangToolbar. Its local delivery sidecar stores only package/project/audio identity, state, object key, song id, errors, and timestamps.
 
 ## Reuse of Existing Website Code
 
@@ -352,11 +361,11 @@ The first implementation does not:
 The feature is complete when one real Audacity-produced cover can follow this path:
 
 1. HuangToolbar builds a v1 `.coverpkg` containing only the allowed files;
-2. Sonic IDE parses it locally and verifies every checksum;
-3. the review shows the cover performer separately from the original artist;
-4. the administrator can edit metadata and lyrics;
-5. deployment uses the existing signed upload and playlist persistence flow;
-6. the published song plays and timed lyrics render correctly;
+2. HuangToolbar reopens and verifies every checksum before desktop upload, or Sonic IDE parses the same package in the browser review flow;
+3. performer and original artist remain separate;
+4. desktop deployment creates `private + draft`, and the administrator can review/edit metadata and lyrics in the website;
+5. deployment uses short-lived signed upload plus the existing playlist/history persistence path;
+6. after explicit website approval, the song plays and timed lyrics render correctly;
 7. repeating or retrying the operation does not silently create an unintended duplicate;
 8. no local source path, credential, stem, take, Audacity project, or master file reaches the upload request.
 
@@ -368,3 +377,4 @@ The feature is complete when one real Audacity-produced cover can follow this pa
 - D-004: The website remains the only holder of deployment authority.
 - D-005: `artist` is the new performer; `originalArtist` is attribution.
 - D-006: Package import adapts to the existing upload flow instead of replacing it.
+- D-007: Desktop deployment is a high-level, authenticated client flow that always creates a private draft; public release remains a website review action.
