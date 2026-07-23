@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AdminPlaylistHistoryPanel } from "@/components/admin/playlist/AdminPlaylistHistoryPanel";
 import { AdminPlaylistSidebar } from "@/components/admin/playlist/AdminPlaylistSidebar";
+import { CoverRevisionPanel } from "@/components/admin/playlist/CoverRevisionPanel";
 import { AdminConfirmDialog } from "@/components/admin/workspace/AdminConfirmDialog";
 import { AdminSongForm } from "@/components/admin/workspace/AdminSongForm";
 import {
@@ -248,6 +249,14 @@ export function EditPlaylist({
         onCreatorNoteUploadingChange={setIsCreatorNoteUploading}
         mode="edit"
       />
+
+      {typeof editedSong.metadata?.coverProjectId === "string" ? (
+        <CoverRevisionPanel
+          song={editedSong}
+          disabled={isDirty || isDetailBusy || isSavingPlaylist}
+          onSongChanged={loadPlaylist}
+        />
+      ) : null}
 
       <AdminSectionCard
         title={t("playlist.detail.assetTitle")}

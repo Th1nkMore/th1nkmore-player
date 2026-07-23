@@ -197,7 +197,7 @@ The desktop handoff uses a high-level authenticated protocol rather than duplica
 
 - `POST /api/admin/cover-deploy/prepare` validates the exact public descriptor, returns an existing package idempotently, requires confirmation for a same-project revision, and signs one deterministic MP3 object for five minutes;
 - HuangToolbar streams only `audio/publish.mp3` to that URL and keeps upload progress locally;
-- `POST /api/admin/cover-deploy/commit` verifies the signed intent, re-reads the R2 object, hashes its bytes, and appends a `private + draft` song through the existing revisioned playlist/history writer;
+- `POST /api/admin/cover-deploy/commit` verifies the signed intent, re-reads the R2 object, hashes its bytes, and appends a candidate to the stable song's revision ledger; only the first package creates the private draft song;
 - `GET /api/admin/cover-deploy/status` lets a retry recover after an expired URL, process exit, or lost response without creating a duplicate.
 
 Neither the presigned URL nor the commit intent is persisted by HuangToolbar. Its local delivery sidecar stores only package/project/audio identity, state, object key, song id, errors, and timestamps.
@@ -250,7 +250,7 @@ Importing or deploying the same package twice must be understandable and safe.
 - an already deployed package should show a warning and link or identify the existing item when possible;
 - choosing to publish a revised version remains an explicit administrator action.
 
-Version history should be introduced only after the current song model has a clear ownership and migration plan. It is not required to ship the first importer.
+Version history now uses a stable-song plus immutable-revision model. `projectId` owns one stable `Song.id`; every distinct package becomes a candidate in an admin-only R2 ledger. Uploading does not change `Song.audioUrl`, lyrics, visibility, or the public link. Promotion updates only the stable song's playable asset fields and revision provenance; a superseded revision can be promoted again as rollback.
 
 ## Recording Workspace Transition
 
@@ -275,6 +275,7 @@ Implementation checkpoint (2026-07-19):
 - Phase B is complete in the admin upload workspace, including drag/drop, localized package review, editable metadata/lyrics prefill, technical audio details, and object-URL cleanup through the existing audio preview lifecycle;
 - Phase C is wired to the existing signed upload and ETag-aware playlist write path. Package/project/checksum provenance is stored in `Song.metadata`; an exact previously deployed package is blocked and a different package from the same project is surfaced as a revision warning;
 - Phase D hides the superseded full-cover recording tab while leaving Creator Note recording intact. The dormant recording implementation is retained temporarily so no saved local recording state is deleted during this transition.
+- Phase E is complete: package manifests may carry backwards-compatible revision metadata; same-project commits append candidates to one stable song; the admin editor provides A/B playback, promotion, rollback, and archive; legacy songs without a ledger are synthesized as a read-only v1 history until a new candidate arrives.
 
 ### Phase A: Parser and Contract Tests
 
@@ -363,7 +364,7 @@ The feature is complete when one real Audacity-produced cover can follow this pa
 1. HuangToolbar builds a v1 `.coverpkg` containing only the allowed files;
 2. HuangToolbar reopens and verifies every checksum before desktop upload, or Sonic IDE parses the same package in the browser review flow;
 3. performer and original artist remain separate;
-4. desktop deployment creates `private + draft`, and the administrator can review/edit metadata and lyrics in the website;
+4. desktop deployment creates or reuses one stable private song and appends a candidate revision; the administrator can A/B review it without changing the current playable version;
 5. deployment uses short-lived signed upload plus the existing playlist/history persistence path;
 6. after explicit website approval, the song plays and timed lyrics render correctly;
 7. repeating or retrying the operation does not silently create an unintended duplicate;
@@ -377,4 +378,5 @@ The feature is complete when one real Audacity-produced cover can follow this pa
 - D-004: The website remains the only holder of deployment authority.
 - D-005: `artist` is the new performer; `originalArtist` is attribution.
 - D-006: Package import adapts to the existing upload flow instead of replacing it.
-- D-007: Desktop deployment is a high-level, authenticated client flow that always creates a private draft; public release remains a website review action.
+- D-007: Desktop deployment is a high-level, authenticated client flow. The first package creates a private draft song; later packages become candidates under that song. Public release remains a website review action.
+- D-008: One Cover Project owns one stable website song. Packages are immutable candidates; promotion is explicit, preserves the song ID and link, and doubles as rollback when an older revision is selected.

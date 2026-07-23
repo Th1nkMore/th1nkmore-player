@@ -38,6 +38,9 @@ export function createCoverDeploySong(
       coverCredit: manifest.source.credit,
       coverSchemaVersion: manifest.schemaVersion,
       coverCreatedAt: manifest.createdAt,
+      coverRevisionId: manifest.revision.revisionId,
+      coverRevisionNumber: manifest.revision.number,
+      coverRevisionKind: manifest.revision.kind,
     },
     language: inferCoverLanguage(
       `${manifest.title}\n${manifest.artist}\n${descriptor.lyricsText}`,

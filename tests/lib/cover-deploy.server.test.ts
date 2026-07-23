@@ -8,7 +8,9 @@ const mocks = vi.hoisted(() => ({
   mutatePlaylist: vi.fn(),
   readPlaylist: vi.fn(),
   r2Send: vi.fn(),
+  readLedger: vi.fn(),
   signIntent: vi.fn(),
+  upsertRevision: vi.fn(),
   verifyIntent: vi.fn(),
 }));
 
@@ -35,6 +37,15 @@ vi.mock("@/lib/r2", () => ({
 vi.mock("@/lib/storage", () => ({
   buildPublicAssetUrl: (key: string) => `https://cdn.example.com/${key}`,
 }));
+vi.mock("@/lib/cover-revisions.server", async (importOriginal) => {
+  const original =
+    await importOriginal<typeof import("@/lib/cover-revisions.server")>();
+  return {
+    ...original,
+    readCoverRevisionLedger: mocks.readLedger,
+    upsertCoverRevision: mocks.upsertRevision,
+  };
+});
 
 function sha(value: string | Uint8Array) {
   return createHash("sha256").update(value).digest("hex");
@@ -108,6 +119,16 @@ function songWithMetadata(id: string, metadata: Song["metadata"]): Song {
 describe("cover deployment service", () => {
   beforeEach(() => {
     for (const mock of Object.values(mocks)) mock.mockReset();
+    mocks.readLedger.mockResolvedValue(null);
+    mocks.upsertRevision.mockImplementation(
+      async (projectId: string, songId: string, revision: unknown) => ({
+        schemaVersion: 1,
+        projectId,
+        songId,
+        updatedAt: "2026-07-23T08:00:00.000Z",
+        revisions: [revision],
+      }),
+    );
   });
 
   it("returns an existing song without allocating another object", async () => {
@@ -142,6 +163,35 @@ describe("cover deployment service", () => {
       state: "revision_required",
       relatedSongId: "older-cover",
     });
+  });
+
+  it("returns an existing candidate from the revision ledger", async () => {
+    const { descriptor } = fixture();
+    mocks.readPlaylist.mockResolvedValueOnce(snapshot([]));
+    mocks.readLedger.mockResolvedValueOnce({
+      schemaVersion: 1,
+      projectId: "project_1",
+      songId: "stable-song",
+      updatedAt: "2026-07-23T08:00:00.000Z",
+      revisions: [
+        {
+          revisionId: "rev_1",
+          packageId: "pkg_1",
+          number: 1,
+          state: "draft",
+        },
+      ],
+    });
+    const { prepareCoverDeployment } = await import(
+      "@/lib/cover-deploy.server"
+    );
+
+    await expect(prepareCoverDeployment(descriptor, true)).resolves.toEqual({
+      state: "already_deployed",
+      songId: "stable-song",
+      adminPath: "/admin",
+    });
+    expect(mocks.r2Send).not.toHaveBeenCalled();
   });
 
   it("creates a deterministic presigned upload with checksum metadata", async () => {
@@ -215,6 +265,58 @@ describe("cover deployment service", () => {
       assetStatus: "draft",
       adminPath: "/admin",
     });
+  });
+
+  it("attaches a confirmed revision to the stable song without adding another song", async () => {
+    const { audio, descriptor } = fixture();
+    const stableSong = songWithMetadata("stable-song", {
+      coverProjectId: "project_1",
+      coverPackageId: "pkg_old",
+    });
+    mocks.verifyIntent.mockResolvedValueOnce({
+      packageId: "pkg_1",
+      projectId: "project_1",
+      audioSha256: descriptor.audioSha256,
+      audioSize: descriptor.audioSize,
+      manifestSha256: descriptor.manifestSha256,
+      lyricsSha256: descriptor.lyricsSha256,
+      objectKey: "audio/covers/pkg.mp3",
+      publicUrl: "https://cdn.example.com/audio/covers/pkg.mp3",
+      revisionConfirmed: true,
+    });
+    mocks.r2Send.mockResolvedValueOnce({
+      ContentLength: audio.byteLength,
+      Body: audio,
+    });
+    mocks.readPlaylist.mockResolvedValueOnce(snapshot([stableSong]));
+    const { commitCoverDeployment } = await import("@/lib/cover-deploy.server");
+
+    const result = await commitCoverDeployment(descriptor, "intent");
+
+    expect(result).toMatchObject({
+      state: "deployed",
+      songId: "stable-song",
+      revisionState: "draft",
+    });
+    expect(mocks.upsertRevision).toHaveBeenCalledWith(
+      "project_1",
+      "stable-song",
+      expect.objectContaining({
+        packageId: "pkg_1",
+        state: "draft",
+      }),
+    );
+    expect(mocks.upsertRevision).toHaveBeenNthCalledWith(
+      1,
+      "project_1",
+      "stable-song",
+      expect.objectContaining({
+        packageId: "pkg_old",
+        state: "active",
+      }),
+    );
+    expect(mocks.upsertRevision).toHaveBeenCalledTimes(2);
+    expect(mocks.mutatePlaylist).not.toHaveBeenCalled();
   });
 
   it("rejects uploaded bytes that do not match the package hash", async () => {

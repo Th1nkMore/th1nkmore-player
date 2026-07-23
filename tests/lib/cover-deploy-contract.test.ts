@@ -54,6 +54,29 @@ describe("cover deployment contract", () => {
     expect(parsed.audioSize).toBe(4_096);
   });
 
+  it("accepts explicit immutable revision metadata", () => {
+    const descriptor = descriptorFixture();
+    const manifest = JSON.parse(descriptor.manifestJson);
+    manifest.revision = {
+      revisionId: "rev_test_02",
+      parentRevisionId: "rev_test_01",
+      number: 2,
+      kind: "mix",
+      note: "更温暖的人声平衡",
+    };
+    const manifestJson = JSON.stringify(manifest);
+    const checksums = JSON.parse(descriptor.checksumsJson);
+    checksums.files["manifest.json"] = hash(manifestJson);
+
+    const parsed = parseCoverDeployDescriptor({
+      ...descriptor,
+      manifestJson,
+      checksumsJson: JSON.stringify(checksums),
+    });
+
+    expect(parsed.manifest.revision).toEqual(manifest.revision);
+  });
+
   it("rejects package text that no longer matches its checksums", () => {
     const descriptor = descriptorFixture();
 

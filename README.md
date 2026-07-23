@@ -107,7 +107,7 @@ pnpm test
 6. Choose Deploy to reuse the signed R2 upload and conflict-aware playlist write path.
 7. Use the playlist workspace for later edits; Creator Note spoken recording remains available inside its own story field.
 
-Cover Studio can also deliver the same verified `.coverpkg` directly. It logs in with the existing owner password using an in-memory Cookie session, calls `prepare`, streams only the MP3 to a five-minute deterministic R2 URL, then calls `commit`. The server re-reads and hashes the object before it idempotently creates `private + draft`; final review and public visibility remain in `/admin`. Cloud credentials, signed URLs, and commit intents are never stored by HuangToolbar.
+Cover Studio can also deliver the same verified `.coverpkg` directly. It logs in with the existing owner password using an in-memory Cookie session, calls `prepare`, streams only the MP3 to a five-minute deterministic R2 URL, then calls `commit`. The server re-reads and hashes the object before it idempotently attaches an immutable candidate revision to one stable song ID. `/admin` provides A/B playback, explicit promotion, rollback, and candidate archiving; uploading alone never changes the current playable audio or visibility. Cloud credentials, signed URLs, and commit intents are never stored by HuangToolbar.
 
 ## Branching Workflow
 

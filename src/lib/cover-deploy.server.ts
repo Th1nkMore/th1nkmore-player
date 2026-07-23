@@ -16,6 +16,12 @@ import {
   verifyCoverDeployIntent,
 } from "@/lib/cover-deploy-intent.server";
 import { createCoverDeploySong } from "@/lib/cover-deploy-song";
+import {
+  readCoverRevisionLedger,
+  revisionFromDescriptor,
+  synthesizeLegacyRevision,
+  upsertCoverRevision,
+} from "@/lib/cover-revisions.server";
 import { R2_BUCKET_NAME, r2Client } from "@/lib/r2";
 import { buildPublicAssetUrl } from "@/lib/storage";
 import type { Song } from "@/types/music";
@@ -60,6 +66,17 @@ export async function prepareCoverDeployment(
   revisionConfirmed: boolean,
 ): Promise<CoverDeployPrepareResult> {
   const snapshot = await readAdminPlaylistSnapshot();
+  const ledger = await readCoverRevisionLedger(descriptor.manifest.projectId);
+  const deployedRevision = ledger?.revisions.find(
+    (revision) => revision.packageId === descriptor.manifest.packageId,
+  );
+  if (deployedRevision && ledger) {
+    return {
+      state: "already_deployed",
+      songId: ledger.songId,
+      adminPath: "/admin",
+    };
+  }
   const duplicate = findPackageSong(
     snapshot.playlist,
     descriptor.manifest.packageId,
@@ -143,6 +160,7 @@ export async function prepareCoverDeployment(
   };
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: commit keeps upload verification, idempotency, stable-song creation, and concurrent revision attachment in one transaction boundary
 export async function commitCoverDeployment(
   descriptor: ValidatedCoverDeployDescriptor,
   intentToken: string,
@@ -153,6 +171,16 @@ export async function commitCoverDeployment(
 
   for (let attempt = 0; attempt < MAX_COMMIT_ATTEMPTS; attempt += 1) {
     const snapshot = await readAdminPlaylistSnapshot();
+    const ledger = await readCoverRevisionLedger(descriptor.manifest.projectId);
+    const existingRevision = ledger?.revisions.find(
+      (revision) => revision.packageId === descriptor.manifest.packageId,
+    );
+    if (existingRevision && ledger) {
+      const existingSong = snapshot.playlist.find(
+        (song) => song.id === ledger.songId,
+      );
+      if (existingSong) return deployedResult(existingSong, existingRevision);
+    }
     const duplicate = findPackageSong(
       snapshot.playlist,
       descriptor.manifest.packageId,
@@ -175,6 +203,16 @@ export async function commitCoverDeployment(
       intent.publicUrl,
       snapshot.playlist,
     );
+    const candidate = revisionFromDescriptor(descriptor, intent.publicUrl);
+    if (related) {
+      await attachCandidateToSong(
+        descriptor,
+        related,
+        candidate,
+        Boolean(ledger),
+      );
+      return deployedResult(related, candidate);
+    }
     try {
       const saved = await mutateAdminPlaylist(snapshot.revision, (playlist) => {
         const concurrentDuplicate = findPackageSong(
@@ -186,22 +224,30 @@ export async function commitCoverDeployment(
           playlist,
           descriptor.manifest.projectId,
         );
-        if (concurrentRelated && !intent.revisionConfirmed) {
-          throw new CoverDeployConflictError(
-            "This project already has a deployed version.",
-            concurrentRelated.id,
-          );
+        if (concurrentRelated) {
+          if (!intent.revisionConfirmed) {
+            throw new CoverDeployConflictError(
+              "This project already has a deployed version.",
+              concurrentRelated.id,
+            );
+          }
+          return playlist;
         }
         return [...playlist, song];
       });
-      const deployed = findPackageSong(
-        saved.playlist,
-        descriptor.manifest.packageId,
-      );
+      const deployed =
+        findPackageSong(saved.playlist, descriptor.manifest.packageId) ||
+        findProjectSong(saved.playlist, descriptor.manifest.projectId);
       if (!deployed) {
         throw new Error("Cover draft was not found after playlist update.");
       }
-      return deployedResult(deployed);
+      await attachCandidateToSong(
+        descriptor,
+        deployed,
+        candidate,
+        Boolean(ledger),
+      );
+      return deployedResult(deployed, candidate);
     } catch (error) {
       if (
         error instanceof PlaylistRevisionConflictError &&
@@ -215,19 +261,68 @@ export async function commitCoverDeployment(
   throw new Error("Could not commit the cover draft after retrying.");
 }
 
-export async function getCoverDeploymentStatus(packageId: string) {
+async function attachCandidateToSong(
+  descriptor: ValidatedCoverDeployDescriptor,
+  song: Song,
+  candidate: ReturnType<typeof revisionFromDescriptor>,
+  ledgerExists: boolean,
+) {
+  if (
+    !ledgerExists &&
+    song.metadata?.coverPackageId !== descriptor.manifest.packageId
+  ) {
+    const legacy = synthesizeLegacyRevision(song);
+    if (legacy?.revisions[0]) {
+      await upsertCoverRevision(
+        descriptor.manifest.projectId,
+        song.id,
+        legacy.revisions[0],
+      );
+    }
+  }
+  await upsertCoverRevision(descriptor.manifest.projectId, song.id, candidate);
+}
+
+export async function getCoverDeploymentStatus(
+  packageId: string,
+  projectId?: string,
+) {
   const snapshot = await readAdminPlaylistSnapshot();
+  if (projectId) {
+    const ledger = await readCoverRevisionLedger(projectId);
+    const revision = ledger?.revisions.find(
+      (item) => item.packageId === packageId,
+    );
+    const song = ledger
+      ? snapshot.playlist.find((item) => item.id === ledger.songId)
+      : undefined;
+    if (revision && song) return deployedResult(song, revision);
+  }
   const song = findPackageSong(snapshot.playlist, packageId);
   return song ? deployedResult(song) : { state: "not_deployed" as const };
 }
 
-function deployedResult(song: Song) {
+function deployedResult(
+  song: Song,
+  revision?: {
+    revisionId: string;
+    number: number;
+    state: string;
+  },
+) {
   return {
     state: "deployed" as const,
     songId: song.id,
     adminPath: "/admin" as const,
     visibility: song.visibility,
     assetStatus: song.assetStatus,
+    ...(revision
+      ? {
+          revisionId: revision.revisionId,
+          revisionNumber: revision.number,
+          revisionState: revision.state,
+        }
+      : {}),
   };
 }
 

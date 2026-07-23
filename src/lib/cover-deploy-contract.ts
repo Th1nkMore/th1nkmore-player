@@ -22,6 +22,13 @@ export type CoverDeployManifest = {
     kind: "cover";
     credit: string;
   };
+  revision: {
+    revisionId: string;
+    parentRevisionId?: string;
+    number: number;
+    kind: "initial" | "mix" | "performance" | "lyrics" | "other";
+    note?: string;
+  };
   createdAt: string;
 };
 
@@ -145,6 +152,7 @@ function parseManifest(value: unknown): CoverDeployManifest {
   const audio = requiredObject(manifest.audio, "manifest.audio");
   const lyrics = requiredObject(manifest.lyrics, "manifest.lyrics");
   const source = requiredObject(manifest.source, "manifest.source");
+  const revision = parseRevision(manifest.revision, manifest);
   const durationSeconds = Number(audio.durationSeconds);
   if (
     !Number.isFinite(durationSeconds) ||
@@ -189,7 +197,49 @@ function parseManifest(value: unknown): CoverDeployManifest {
       kind: "cover",
       credit: requiredText(source.credit, "source.credit", 512),
     },
+    revision,
     createdAt,
+  };
+}
+
+function parseRevision(
+  value: unknown,
+  manifest: Record<string, unknown>,
+): CoverDeployManifest["revision"] {
+  if (value === undefined) {
+    return {
+      revisionId: requiredText(manifest.packageId, "packageId", 128),
+      number: 1,
+      kind: "initial",
+    };
+  }
+  const revision = requiredObject(value, "manifest.revision");
+  const number = Number(revision.number);
+  if (!Number.isSafeInteger(number) || number < 1 || number > 9999) {
+    throw new Error("revision.number must be between 1 and 9999.");
+  }
+  const kind = requiredText(revision.kind, "revision.kind", 32);
+  if (!["initial", "mix", "performance", "lyrics", "other"].includes(kind)) {
+    throw new Error("revision.kind is not supported.");
+  }
+  const parentRevisionId =
+    revision.parentRevisionId === undefined
+      ? undefined
+      : requiredText(
+          revision.parentRevisionId,
+          "revision.parentRevisionId",
+          128,
+        );
+  const note =
+    revision.note === undefined
+      ? undefined
+      : optionalText(revision.note, "revision.note", 500);
+  return {
+    revisionId: requiredText(revision.revisionId, "revision.revisionId", 128),
+    ...(parentRevisionId ? { parentRevisionId } : {}),
+    number,
+    kind: kind as CoverDeployManifest["revision"]["kind"],
+    ...(note ? { note } : {}),
   };
 }
 
@@ -250,6 +300,19 @@ function requiredText(
   if (typeof value !== "string" || !value.trim()) {
     throw new Error(`${label} must be a non-empty string.`);
   }
+  const text = value.trim();
+  if (text.length > maxLength || hasControlCharacters(text)) {
+    throw new Error(`${label} contains unsupported or excessive text.`);
+  }
+  return text;
+}
+
+function optionalText(
+  value: unknown,
+  label: string,
+  maxLength: number,
+): string {
+  if (typeof value !== "string") throw new Error(`${label} must be text.`);
   const text = value.trim();
   if (text.length > maxLength || hasControlCharacters(text)) {
     throw new Error(`${label} contains unsupported or excessive text.`);

@@ -29,7 +29,7 @@ The current codebase is a usable player and publishing baseline. Bottom-navigati
 - Track classification, tags, and visibility fields
 - Browser-local `.coverpkg` parsing with strict path, count, size, encryption, symlink, schema, MIME, UTF-8, and SHA-256 checks
 - Package review that maps performer and original artist separately, preserves package provenance for duplicate detection, and reuses the signed upload/playlist flow
-- Authenticated Cover Studio `prepare/commit/status` delivery with deterministic short-lived R2 uploads, server-side object hashing, idempotent `private + draft` creation, and playlist history reuse
+- Authenticated Cover Studio `prepare/commit/status` delivery with deterministic short-lived R2 uploads, server-side object hashing, one stable song per Cover Project, an admin-only immutable candidate ledger, explicit promotion/rollback/archive, and playlist history reuse
 - Creator Note writing, language, spoken upload or recording, transcript, replacement, and removal
 
 ## Current Delivery And Quality
