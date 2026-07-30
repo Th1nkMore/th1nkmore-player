@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/drawer";
 import { playOrderIcons } from "@/lib/constants/player";
 import { usePlaybackControls } from "@/lib/hooks/usePlaybackControls";
+import { isPlaybackPending } from "@/lib/playback-status";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/utils/audio";
 import { useIDEStore } from "@/store/useIDEStore";
@@ -94,7 +95,8 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
                 ? `${currentTrack.artist} · ${currentTrack.album}`
                 : tPlayer("selectTrack")}
             </DrawerDescription>
-            {(playbackStatus === "loading" || playbackStatus === "error") && (
+            {(isPlaybackPending(playbackStatus) ||
+              playbackStatus === "error") && (
               <p
                 className={cn(
                   "mt-2 text-[12px]",
@@ -105,7 +107,11 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
                 aria-live="polite"
               >
                 {tPlayer(
-                  playbackStatus === "error" ? "playbackError" : "buffering",
+                  playbackStatus === "recovering"
+                    ? "recovering"
+                    : playbackStatus === "error"
+                      ? "playbackError"
+                      : "buffering",
                 )}
               </p>
             )}

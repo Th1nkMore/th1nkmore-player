@@ -2,7 +2,13 @@ import { create } from "zustand";
 import type { Song } from "@/types/music";
 
 export type PlayOrder = "sequential" | "shuffle" | "repeat" | "repeat-one";
-export type PlaybackStatus = "idle" | "loading" | "ready" | "error";
+export type PlaybackStatus =
+  | "idle"
+  | "loading"
+  | "buffering"
+  | "recovering"
+  | "ready"
+  | "error";
 
 function resetPlaybackState(trackId?: string | null) {
   return {

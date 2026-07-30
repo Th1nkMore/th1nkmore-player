@@ -15,6 +15,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useMemo } from "react";
 import { playOrderIcons } from "@/lib/constants/player";
 import { usePlaybackControls } from "@/lib/hooks/usePlaybackControls";
+import { isPlaybackPending } from "@/lib/playback-status";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/utils/audio";
 import { useIDEStore } from "@/store/useIDEStore";
@@ -31,18 +32,22 @@ type MiniPlayerBarProps = {
 function PlaybackStatusMessage({
   status,
   loadingLabel,
+  recoveringLabel,
   errorLabel,
 }: {
   status: PlaybackStatus;
   loadingLabel: string;
+  recoveringLabel: string;
   errorLabel: string;
 }) {
   const label =
-    status === "loading"
-      ? loadingLabel
-      : status === "error"
-        ? errorLabel
-        : null;
+    status === "recovering"
+      ? recoveringLabel
+      : isPlaybackPending(status)
+        ? loadingLabel
+        : status === "error"
+          ? errorLabel
+          : null;
 
   if (!label) return null;
 
@@ -149,7 +154,7 @@ export function MiniPlayerBar({
       {isLandscape ? (
         <div className="flex-1 min-w-0 flex flex-col gap-0.5">
           <span className="flex min-w-0 items-center gap-1.5 text-xs leading-none text-muted-foreground">
-            {playbackStatus === "loading" && (
+            {isPlaybackPending(playbackStatus) && (
               <LoaderCircle
                 className="size-3.5 shrink-0 animate-spin"
                 aria-hidden="true"
@@ -167,6 +172,7 @@ export function MiniPlayerBar({
             <PlaybackStatusMessage
               status={playbackStatus}
               loadingLabel={tPlayer("buffering")}
+              recoveringLabel={tPlayer("recovering")}
               errorLabel={tPlayer("playbackError")}
             />
           </span>
@@ -192,7 +198,7 @@ export function MiniPlayerBar({
           className="flex min-h-10 min-w-0 flex-1 flex-col justify-center gap-0.5 text-left"
         >
           <span className="flex min-w-0 items-center gap-1.5 text-xs leading-none text-muted-foreground">
-            {playbackStatus === "loading" && (
+            {isPlaybackPending(playbackStatus) && (
               <LoaderCircle
                 className="size-3.5 shrink-0 animate-spin"
                 aria-hidden="true"
@@ -210,6 +216,7 @@ export function MiniPlayerBar({
             <PlaybackStatusMessage
               status={playbackStatus}
               loadingLabel={tPlayer("buffering")}
+              recoveringLabel={tPlayer("recovering")}
               errorLabel={tPlayer("playbackError")}
             />
           </span>

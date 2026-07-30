@@ -1,89 +1,37 @@
 "use client";
 
 import { Howl } from "howler";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   registerAudioFocusController,
   requestAudioFocus,
 } from "@/lib/audio-focus";
+import { fixAudioUrl } from "@/lib/audio-url";
+import { listenToHowlerHtml5Media } from "@/lib/howler-html5-media";
+import {
+  getPlaybackRecoveryDelayMs,
+  isRetryableMediaError,
+  MAX_PLAYBACK_RECOVERY_ATTEMPTS,
+  STALL_RECOVERY_TIMEOUT_MS,
+} from "@/lib/playback-recovery";
 import { useIDEStore } from "@/store/useIDEStore";
 import { usePlayerStore } from "@/store/usePlayerStore";
 
-/**
- * Ensures a filename is properly encoded.
- */
-function encodeFilename(filename: string): string {
-  try {
-    const decoded = decodeURIComponent(filename);
-    const reEncoded = encodeURIComponent(decoded);
-    if (reEncoded !== filename) {
-      return reEncoded;
-    }
-  } catch {
-    // If decode fails, filename might not be encoded - encode it
-    const encoded = encodeURIComponent(filename);
-    if (encoded !== filename) {
-      return encoded;
-    }
+function shouldReconcileAsPaused(
+  howl: Howl,
+  autoPlayPending: boolean,
+  lastPlayRequestAt: number,
+) {
+  if (howl.playing() || autoPlayPending || howl.state() === "loading") {
+    return false;
   }
-  return filename;
-}
 
-function getClientAssetBaseUrl(): string | null {
-  const baseUrl = process.env.NEXT_PUBLIC_ASSET_BASE_URL;
-  if (!baseUrl) return null;
-  return baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
-}
-
-/**
- * Fixes audio URL by correcting domain and ensuring proper filename encoding.
- */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: URL fixing logic involves several string and URL manipulations
-function fixAudioUrl(audioUrl: string): string {
-  let fixedUrl = audioUrl;
-
-  // Fix filename encoding
-  try {
-    const url = new URL(fixedUrl);
-
-    // Replace incorrect .space.com domain with .space
-    if (url.hostname.endsWith(".space.com")) {
-      url.hostname = url.hostname.replace(/\.space\.com$/, ".space");
-      fixedUrl = url.toString();
-    }
-
-    const clientAssetBaseUrl = getClientAssetBaseUrl();
-    if (clientAssetBaseUrl && url.hostname === "files.th1nkmore.space") {
-      fixedUrl = `${clientAssetBaseUrl}/${url.pathname.replace(/^\/+/, "")}`;
-    }
-
-    const pathParts = url.pathname.split("/");
-    const filename = pathParts[pathParts.length - 1];
-    if (filename) {
-      const encodedFilename = encodeFilename(filename);
-      if (encodedFilename !== filename) {
-        pathParts[pathParts.length - 1] = encodedFilename;
-        url.pathname = pathParts.join("/");
-        fixedUrl = url.toString();
-      }
-    }
-  } catch (_e) {
-    // If URL parsing fails, try simple string replacement for filename encoding
-    const urlMatch = fixedUrl.match(/^(https?:\/\/[^/]+)(\/.+)$/);
-    if (urlMatch) {
-      const [, base, path] = urlMatch;
-      const pathParts = path.split("/");
-      const filename = pathParts[pathParts.length - 1];
-      if (filename) {
-        const encodedFilename = encodeFilename(filename);
-        if (encodedFilename !== filename) {
-          pathParts[pathParts.length - 1] = encodedFilename;
-          fixedUrl = base + pathParts.join("/");
-        }
-      }
-    }
+  const playbackStatus = usePlayerStore.getState().playbackStatus;
+  if (playbackStatus === "buffering" || playbackStatus === "recovering") {
+    return false;
   }
-  return fixedUrl;
+
+  return Date.now() - lastPlayRequestAt >= 1_200;
 }
 
 /**
@@ -116,10 +64,91 @@ export function GlobalAudioPlayer() {
   const lastSeekRef = useRef<number | null>(null);
   const shouldAutoPlayRef = useRef<boolean>(false);
   const lastPlayRequestAtRef = useRef<number>(0);
+  const lastTrackIdRef = useRef<string | null>(null);
+  const recoveryAttemptRef = useRef(0);
+  const recoveryTimerRef = useRef<number | null>(null);
+  const stallTimerRef = useRef<number | null>(null);
+  const resumePositionRef = useRef<number | null>(null);
+  const [recoveryVersion, setRecoveryVersion] = useState(0);
+
+  const clearRecoveryTimer = useCallback(() => {
+    if (recoveryTimerRef.current !== null) {
+      window.clearTimeout(recoveryTimerRef.current);
+      recoveryTimerRef.current = null;
+    }
+  }, []);
+
+  const clearStallTimer = useCallback(() => {
+    if (stallTimerRef.current !== null) {
+      window.clearTimeout(stallTimerRef.current);
+      stallTimerRef.current = null;
+    }
+  }, []);
+
+  const failPlayback = useCallback(() => {
+    clearRecoveryTimer();
+    clearStallTimer();
+    setPlaybackStatus("error");
+    pauseAction();
+  }, [clearRecoveryTimer, clearStallTimer, pauseAction, setPlaybackStatus]);
+
+  const requestRecovery = useCallback(
+    (immediate = false) => {
+      const playerState = usePlayerStore.getState();
+      if (!(playerState.currentTrackId && playerState.isPlaying)) {
+        return;
+      }
+
+      const nextAttempt = recoveryAttemptRef.current + 1;
+      if (nextAttempt > MAX_PLAYBACK_RECOVERY_ATTEMPTS) {
+        failPlayback();
+        return;
+      }
+
+      const seek = howlRef.current?.seek();
+      resumePositionRef.current =
+        typeof seek === "number" ? seek : playerState.currentTime;
+      recoveryAttemptRef.current = nextAttempt;
+      setPlaybackStatus("recovering");
+      clearRecoveryTimer();
+      clearStallTimer();
+
+      recoveryTimerRef.current = window.setTimeout(
+        () => {
+          recoveryTimerRef.current = null;
+          setRecoveryVersion((version) => version + 1);
+        },
+        immediate ? 0 : getPlaybackRecoveryDelayMs(nextAttempt),
+      );
+    },
+    [clearRecoveryTimer, clearStallTimer, failPlayback, setPlaybackStatus],
+  );
+
+  const handleBuffering = useCallback(() => {
+    if (!usePlayerStore.getState().isPlaying) return;
+    setPlaybackStatus("buffering");
+    clearStallTimer();
+    stallTimerRef.current = window.setTimeout(
+      () => requestRecovery(),
+      STALL_RECOVERY_TIMEOUT_MS,
+    );
+  }, [clearStallTimer, requestRecovery, setPlaybackStatus]);
+
+  const handleMediaReady = useCallback(() => {
+    clearStallTimer();
+    if (usePlayerStore.getState().isPlaying) {
+      setPlaybackStatus("ready");
+    }
+  }, [clearStallTimer, setPlaybackStatus]);
 
   // Handle play logic
   const handlePlay = useCallback(() => {
     if (!howlRef.current || howlRef.current.playing()) return;
+    if (usePlayerStore.getState().playbackStatus === "error") {
+      recoveryAttemptRef.current = 0;
+      requestRecovery(true);
+      return;
+    }
     requestAudioFocus("cover");
     lastPlayRequestAtRef.current = Date.now();
     const state = howlRef.current.state();
@@ -130,7 +159,7 @@ export function GlobalAudioPlayer() {
       setPlaybackStatus("loading");
       shouldAutoPlayRef.current = true;
     }
-  }, [setPlaybackStatus]);
+  }, [requestRecovery, setPlaybackStatus]);
 
   // Handle pause logic
   const handlePause = useCallback(() => {
@@ -139,12 +168,14 @@ export function GlobalAudioPlayer() {
       howlRef.current.pause();
     }
     shouldAutoPlayRef.current = false;
+    clearRecoveryTimer();
+    clearStallTimer();
     if (usePlayerStore.getState().playbackStatus !== "error") {
       setPlaybackStatus(
         howlRef.current?.state() === "loaded" ? "ready" : "idle",
       );
     }
-  }, [setPlaybackStatus]);
+  }, [clearRecoveryTimer, clearStallTimer, setPlaybackStatus]);
 
   useEffect(
     () =>
@@ -163,11 +194,20 @@ export function GlobalAudioPlayer() {
 
   // Initialize or update Howl instance when track changes
   useEffect(() => {
+    if (lastTrackIdRef.current !== currentTrackId) {
+      lastTrackIdRef.current = currentTrackId;
+      recoveryAttemptRef.current = 0;
+      resumePositionRef.current = null;
+      clearRecoveryTimer();
+      clearStallTimer();
+    }
+
     if (!currentTrackId) {
       if (howlRef.current) {
-        howlRef.current.stop();
-        howlRef.current.unload();
+        const previousHowl = howlRef.current;
         howlRef.current = null;
+        previousHowl.stop();
+        previousHowl.unload();
       }
       setDuration(0);
       setCurrentTime(0);
@@ -185,17 +225,19 @@ export function GlobalAudioPlayer() {
 
     // Cleanup previous Howl instance
     if (howlRef.current) {
-      howlRef.current.stop();
-      howlRef.current.unload();
+      const previousHowl = howlRef.current;
       howlRef.current = null;
+      previousHowl.stop();
+      previousHowl.unload();
     }
-    // Reset auto-play flag when track changes
-    shouldAutoPlayRef.current = false;
+    shouldAutoPlayRef.current = usePlayerStore.getState().isPlaying;
 
     // Create new Howl instance
     // Fix URL: correct domain and ensure filename is properly encoded
     const audioUrl = fixAudioUrl(currentTrackAudioUrl);
-    setPlaybackStatus("loading");
+    const isRecoveryAttempt =
+      recoveryVersion > 0 && resumePositionRef.current !== null;
+    setPlaybackStatus(isRecoveryAttempt ? "recovering" : "loading");
     // Get current volume from store (don't use volume from dependency to avoid recreating Howl)
     const currentVolume = usePlayerStore.getState().volume;
     const howl = new Howl({
@@ -207,6 +249,12 @@ export function GlobalAudioPlayer() {
         const duration = howl.duration();
         setDuration(duration);
         setPlaybackStatus("ready");
+        const resumePosition = resumePositionRef.current;
+        if (resumePosition !== null && resumePosition > 0) {
+          howl.seek(resumePosition);
+          setCurrentTime(resumePosition);
+          resumePositionRef.current = null;
+        }
         // Auto-play if requested while loading
         if (shouldAutoPlayRef.current && howl.state() === "loaded") {
           howl.play();
@@ -233,6 +281,9 @@ export function GlobalAudioPlayer() {
       },
       onplay: () => {
         if (howlRef.current !== howl) return;
+        recoveryAttemptRef.current = 0;
+        clearRecoveryTimer();
+        clearStallTimer();
         setPlaybackStatus("ready");
         playAction();
       },
@@ -247,26 +298,42 @@ export function GlobalAudioPlayer() {
       },
       onplayerror: () => {
         if (howlRef.current !== howl) return;
-        // If playback fails (autoplay restriction, device issue, etc.), ensure UI doesn't
-        // remain stuck in a "playing" state.
         setPlaybackStatus("error");
         pauseAction();
+        howl.once("unlock", () => {
+          if (howlRef.current !== howl) return;
+          shouldAutoPlayRef.current = true;
+          playAction();
+          howl.play();
+        });
       },
-      onloaderror: (_id, _error) => {
+      onloaderror: (_id, error) => {
         if (howlRef.current !== howl) return;
-        // Error handling - could log to console or error tracking service
-        setPlaybackStatus("error");
-        pauseAction();
+        if (isRetryableMediaError(error)) {
+          requestRecovery();
+        } else {
+          failPlayback();
+        }
       },
     });
 
     howlRef.current = howl;
+    const removeMediaListeners = listenToHowlerHtml5Media(howl, {
+      onBuffering: handleBuffering,
+      onProgress: () => {
+        if (usePlayerStore.getState().playbackStatus === "buffering") {
+          handleBuffering();
+        }
+      },
+      onReady: handleMediaReady,
+    });
 
     return () => {
-      if (howlRef.current) {
-        howlRef.current.stop();
-        howlRef.current.unload();
+      removeMediaListeners();
+      if (howlRef.current === howl) {
         howlRef.current = null;
+        howl.stop();
+        howl.unload();
       }
     };
   }, [
@@ -278,6 +345,13 @@ export function GlobalAudioPlayer() {
     setCurrentTime,
     setPlaybackStatus,
     playNext,
+    recoveryVersion,
+    clearRecoveryTimer,
+    clearStallTimer,
+    failPlayback,
+    handleBuffering,
+    handleMediaReady,
+    requestRecovery,
     // Note: volume is intentionally excluded - it's handled by a separate useEffect
     // to avoid recreating the Howl instance on every volume change
   ]);
@@ -300,15 +374,15 @@ export function GlobalAudioPlayer() {
     const intervalId = window.setInterval(() => {
       const howl = howlRef.current;
       if (!howl) return;
-      if (howl.playing()) return;
-      if (shouldAutoPlayRef.current) return;
-
-      const state = howl.state();
-      if (state === "loading") return;
-
-      // Give a small grace period after requesting play.
-      const elapsedMs = Date.now() - lastPlayRequestAtRef.current;
-      if (elapsedMs < 1200) return;
+      if (
+        !shouldReconcileAsPaused(
+          howl,
+          shouldAutoPlayRef.current,
+          lastPlayRequestAtRef.current,
+        )
+      ) {
+        return;
+      }
 
       pauseAction();
     }, 500);
@@ -317,6 +391,30 @@ export function GlobalAudioPlayer() {
       window.clearInterval(intervalId);
     };
   }, [isPlaying, pauseAction]);
+
+  useEffect(() => {
+    const handleOnline = () => {
+      const playerState = usePlayerStore.getState();
+      if (
+        playerState.isPlaying &&
+        (playerState.playbackStatus === "buffering" ||
+          playerState.playbackStatus === "recovering")
+      ) {
+        requestRecovery(true);
+      }
+    };
+
+    window.addEventListener("online", handleOnline);
+    return () => window.removeEventListener("online", handleOnline);
+  }, [requestRecovery]);
+
+  useEffect(
+    () => () => {
+      clearRecoveryTimer();
+      clearStallTimer();
+    },
+    [clearRecoveryTimer, clearStallTimer],
+  );
 
   // Handle volume changes
   useEffect(() => {

@@ -169,7 +169,8 @@
     "volumeControl": "音量",
     "progressControl": "再生進捗",
     "buffering": "音声をバッファリング中",
-    "playbackError": "音声を再生できませんでした"
+    "recovering": "再生を復旧しています",
+    "playbackError": "音声を再生できませんでした。再生をタップして再試行"
   },
   "admin": {
     "tabs": {

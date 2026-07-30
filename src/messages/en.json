@@ -169,7 +169,8 @@
     "volumeControl": "Volume",
     "progressControl": "Playback progress",
     "buffering": "Buffering audio",
-    "playbackError": "Audio could not be played"
+    "recovering": "Recovering playback",
+    "playbackError": "Audio could not be played. Tap play to retry"
   },
   "admin": {
     "tabs": {

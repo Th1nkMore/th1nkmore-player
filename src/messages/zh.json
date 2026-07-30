@@ -169,7 +169,8 @@
     "volumeControl": "音量",
     "progressControl": "播放进度",
     "buffering": "正在缓冲音频",
-    "playbackError": "音频播放失败"
+    "recovering": "正在恢复播放",
+    "playbackError": "音频播放失败，点击播放可重试"
   },
   "admin": {
     "tabs": {

@@ -169,7 +169,8 @@
     "volumeControl": "Lautstärke",
     "progressControl": "Wiedergabefortschritt",
     "buffering": "Audio wird gepuffert",
-    "playbackError": "Audio konnte nicht abgespielt werden"
+    "recovering": "Wiedergabe wird wiederhergestellt",
+    "playbackError": "Audio konnte nicht abgespielt werden. Zum Wiederholen abspielen"
   },
   "admin": {
     "tabs": {
