@@ -13,7 +13,9 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useMemo } from "react";
+import { SystemVolumeNotice } from "@/components/ide/SystemVolumeNotice";
 import { playOrderIcons } from "@/lib/constants/player";
+import { useMediaVolumeCapability } from "@/lib/hooks/useMediaVolumeCapability";
 import { usePlaybackControls } from "@/lib/hooks/usePlaybackControls";
 import { isPlaybackPending } from "@/lib/playback-status";
 import { cn } from "@/lib/utils";
@@ -72,6 +74,7 @@ export function MiniPlayerBar({
 }: MiniPlayerBarProps) {
   const tPlayer = useTranslations("player");
   const tControls = useTranslations("controls");
+  const volumeCapability = useMediaVolumeCapability();
   const {
     duration,
     currentTime,
@@ -252,31 +255,38 @@ export function MiniPlayerBar({
 
           <div className="hidden min-[640px]:block h-4 w-px bg-border mx-0.5" />
 
-          <div className="hidden min-[640px]:flex items-center gap-1">
-            <button
-              type="button"
-              onClick={handleVolumeDown}
-              className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
-              aria-label={tControls("decreaseVolume")}
-            >
-              <Minus className="h-3 w-3" />
-            </button>
-            <Volume2
-              className="h-3 w-3 text-muted-foreground/80 shrink-0"
-              aria-hidden="true"
+          {volumeCapability === "system" ? (
+            <SystemVolumeNotice
+              compact
+              className="hidden max-w-36 min-[640px]:flex"
             />
-            <span className="w-8 text-center text-xs leading-none text-muted-foreground tabular-nums">
-              {Math.round(volume * 100)}%
-            </span>
-            <button
-              type="button"
-              onClick={handleVolumeUp}
-              className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
-              aria-label={tControls("increaseVolume")}
-            >
-              <Plus className="h-3 w-3" />
-            </button>
-          </div>
+          ) : (
+            <div className="hidden min-[640px]:flex items-center gap-1">
+              <button
+                type="button"
+                onClick={handleVolumeDown}
+                className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
+                aria-label={tControls("decreaseVolume")}
+              >
+                <Minus className="h-3 w-3" />
+              </button>
+              <Volume2
+                className="h-3 w-3 text-muted-foreground/80 shrink-0"
+                aria-hidden="true"
+              />
+              <span className="w-8 text-center text-xs leading-none text-muted-foreground tabular-nums">
+                {Math.round(volume * 100)}%
+              </span>
+              <button
+                type="button"
+                onClick={handleVolumeUp}
+                className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
+                aria-label={tControls("increaseVolume")}
+              >
+                <Plus className="h-3 w-3" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

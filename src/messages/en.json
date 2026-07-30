@@ -176,6 +176,8 @@
     "openPlayer": "Open player",
     "closePlayer": "Close player",
     "volumeControl": "Volume",
+    "systemVolume": "Volume controlled by device",
+    "systemVolumeHint": "Use your iPhone volume buttons",
     "progressControl": "Playback progress",
     "buffering": "Buffering audio",
     "recovering": "Recovering playback",

@@ -13,8 +13,10 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { SystemVolumeNotice } from "@/components/ide/SystemVolumeNotice";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { playOrderIcons } from "@/lib/constants/player";
+import { useMediaVolumeCapability } from "@/lib/hooks/useMediaVolumeCapability";
 import { usePlaybackControls } from "@/lib/hooks/usePlaybackControls";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/utils/audio";
@@ -66,6 +68,7 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
   } = usePlaybackControls();
   const t = useTranslations("terminal");
   const tControls = useTranslations("controls");
+  const volumeCapability = useMediaVolumeCapability();
 
   const [logs, setLogs] = useState<LogEntry[]>([
     {
@@ -344,51 +347,57 @@ export function TerminalPanel({ className, onClose }: TerminalPanelProps) {
           </div>
 
           {/* Volume */}
-          <div className="flex items-center gap-2 px-3 py-2">
-            <Volume2 className="h-3 w-3 text-muted-foreground/80 shrink-0" />
-            <button
-              type="button"
-              onClick={() => handleVolumeChange(Math.max(0, volume - 0.1))}
-              className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
-              aria-label={tControls("decreaseVolume")}
-            >
-              <Minus className="h-3 w-3" />
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const percent = Math.max(0, Math.min(1, x / rect.width));
-                handleVolumeChange(percent);
-              }}
-              className="group relative flex h-10 flex-1 cursor-pointer items-center"
-              aria-label={tControls("volumePercent", {
-                percent: Math.round(volume * 100),
-              })}
-            >
-              <div
-                className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-full bg-border"
-                aria-hidden="true"
+          {volumeCapability === "system" ? (
+            <div className="px-3 py-2">
+              <SystemVolumeNotice />
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 px-3 py-2">
+              <Volume2 className="h-3 w-3 text-muted-foreground/80 shrink-0" />
+              <button
+                type="button"
+                onClick={() => handleVolumeChange(Math.max(0, volume - 0.1))}
+                className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
+                aria-label={tControls("decreaseVolume")}
+              >
+                <Minus className="h-3 w-3" />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = e.clientX - rect.left;
+                  const percent = Math.max(0, Math.min(1, x / rect.width));
+                  handleVolumeChange(percent);
+                }}
+                className="group relative flex h-10 flex-1 cursor-pointer items-center"
+                aria-label={tControls("volumePercent", {
+                  percent: Math.round(volume * 100),
+                })}
               >
                 <div
-                  className="h-full bg-muted-foreground/60 transition-colors duration-150 ease-out group-hover:bg-muted-foreground"
-                  style={{ width: `${volume * 100}%` }}
-                />
-              </div>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleVolumeChange(Math.min(1, volume + 0.1))}
-              className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
-              aria-label={tControls("increaseVolume")}
-            >
-              <Plus className="h-3 w-3" />
-            </button>
-            <span className="w-8 text-right text-[11px] text-muted-foreground tabular-nums">
-              {Math.round(volume * 100)}%
-            </span>
-          </div>
+                  className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-full bg-border"
+                  aria-hidden="true"
+                >
+                  <div
+                    className="h-full bg-muted-foreground/60 transition-colors duration-150 ease-out group-hover:bg-muted-foreground"
+                    style={{ width: `${volume * 100}%` }}
+                  />
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleVolumeChange(Math.min(1, volume + 0.1))}
+                className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
+                aria-label={tControls("increaseVolume")}
+              >
+                <Plus className="h-3 w-3" />
+              </button>
+              <span className="w-8 text-right text-[11px] text-muted-foreground tabular-nums">
+                {Math.round(volume * 100)}%
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>

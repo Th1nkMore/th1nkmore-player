@@ -176,6 +176,8 @@
     "openPlayer": "プレーヤーを開く",
     "closePlayer": "プレーヤーを閉じる",
     "volumeControl": "音量",
+    "systemVolume": "音量はデバイス側で調整されます",
+    "systemVolumeHint": "iPhone の音量ボタンを使用してください",
     "progressControl": "再生進捗",
     "buffering": "音声をバッファリング中",
     "recovering": "再生を復旧しています",

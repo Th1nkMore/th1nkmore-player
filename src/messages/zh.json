@@ -176,6 +176,8 @@
     "openPlayer": "打开播放器",
     "closePlayer": "关闭播放器",
     "volumeControl": "音量",
+    "systemVolume": "音量由设备控制",
+    "systemVolumeHint": "请使用 iPhone 音量键调节",
     "progressControl": "播放进度",
     "buffering": "正在缓冲音频",
     "recovering": "正在恢复播放",

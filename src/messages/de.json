@@ -176,6 +176,8 @@
     "openPlayer": "Player öffnen",
     "closePlayer": "Player schließen",
     "volumeControl": "Lautstärke",
+    "systemVolume": "Lautstärke wird vom Gerät gesteuert",
+    "systemVolumeHint": "Verwende die Lautstärketasten des iPhones",
     "progressControl": "Wiedergabefortschritt",
     "buffering": "Audio wird gepuffert",
     "recovering": "Wiedergabe wird wiederhergestellt",

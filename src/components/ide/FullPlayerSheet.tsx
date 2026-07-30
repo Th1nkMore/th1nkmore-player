@@ -12,6 +12,7 @@ import {
 import { useTranslations } from "next-intl";
 import { useCallback, useMemo } from "react";
 import { DraggableSlider } from "@/components/ide/DraggableSlider";
+import { SystemVolumeNotice } from "@/components/ide/SystemVolumeNotice";
 import {
   Drawer,
   DrawerContent,
@@ -19,6 +20,7 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { playOrderIcons } from "@/lib/constants/player";
+import { useMediaVolumeCapability } from "@/lib/hooks/useMediaVolumeCapability";
 import { usePlaybackControls } from "@/lib/hooks/usePlaybackControls";
 import { isPlaybackPending } from "@/lib/playback-status";
 import { cn } from "@/lib/utils";
@@ -56,6 +58,7 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
   const t = useTranslations("terminal");
   const tPlayer = useTranslations("player");
   const tControls = useTranslations("controls");
+  const volumeCapability = useMediaVolumeCapability();
 
   const currentTrack = useMemo(
     () => (currentTrackId ? getFileById(currentTrackId) : null),
@@ -178,40 +181,44 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
             </button>
 
             {/* Volume */}
-            <div className="flex w-full min-w-0 items-center gap-1.5 sm:max-w-[220px]">
-              <button
-                type="button"
-                onClick={() => setVolume(Math.max(0, volume - 0.1))}
-                className={cn(
-                  "flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]",
-                )}
-                aria-label={tControls("decreaseVolume")}
-              >
-                <Minus className="h-3 w-3" />
-              </button>
-              <Volume2
-                className="h-3.5 w-3.5 text-muted-foreground shrink-0"
-                aria-hidden="true"
-              />
-              <DraggableSlider
-                value={volume}
-                onChange={handleVolumeChange}
-                ariaLabel={tPlayer("volumeControl")}
-                className="flex-1"
-                fillClassName="bg-muted-foreground/60 group-hover:bg-muted-foreground"
-              />
-              <button
-                type="button"
-                onClick={() => setVolume(Math.min(1, volume + 0.1))}
-                className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
-                aria-label={tControls("increaseVolume")}
-              >
-                <Plus className="h-3 w-3" />
-              </button>
-              <span className="w-8 text-right font-mono text-[10px] text-muted-foreground/80 tabular-nums">
-                {Math.round(volume * 100)}%
-              </span>
-            </div>
+            {volumeCapability === "system" ? (
+              <SystemVolumeNotice className="w-full sm:max-w-[220px]" />
+            ) : (
+              <div className="flex w-full min-w-0 items-center gap-1.5 sm:max-w-[220px]">
+                <button
+                  type="button"
+                  onClick={() => setVolume(Math.max(0, volume - 0.1))}
+                  className={cn(
+                    "flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]",
+                  )}
+                  aria-label={tControls("decreaseVolume")}
+                >
+                  <Minus className="h-3 w-3" />
+                </button>
+                <Volume2
+                  className="h-3.5 w-3.5 text-muted-foreground shrink-0"
+                  aria-hidden="true"
+                />
+                <DraggableSlider
+                  value={volume}
+                  onChange={handleVolumeChange}
+                  ariaLabel={tPlayer("volumeControl")}
+                  className="flex-1"
+                  fillClassName="bg-muted-foreground/60 group-hover:bg-muted-foreground"
+                />
+                <button
+                  type="button"
+                  onClick={() => setVolume(Math.min(1, volume + 0.1))}
+                  className="flex size-10 items-center justify-center rounded text-muted-foreground transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent hover:text-foreground active:scale-[0.96]"
+                  aria-label={tControls("increaseVolume")}
+                >
+                  <Plus className="h-3 w-3" />
+                </button>
+                <span className="w-8 text-right font-mono text-[10px] text-muted-foreground/80 tabular-nums">
+                  {Math.round(volume * 100)}%
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </DrawerContent>
