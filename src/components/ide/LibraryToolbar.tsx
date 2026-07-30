@@ -1,6 +1,6 @@
 "use client";
 
-import { ListMusic, Search, X } from "lucide-react";
+import { ListChecks, ListMusic, Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -9,30 +9,38 @@ type LibraryToolbarProps = {
   activeAlbum: string | null;
   activeTagLabel: string | null;
   albums: string[];
+  canSelect: boolean;
   feedback: string | null;
   onAlbumChange: (album: string | null) => void;
   onClearTag: () => void;
   onOpenQueue: () => void;
   onQueryChange: (query: string) => void;
+  onToggleSelectionMode: () => void;
   query: string;
   queueCount: number;
   showQueue: boolean;
+  showSelection: boolean;
   songCount: number;
+  selectionMode: boolean;
 };
 
 export function LibraryToolbar({
   activeAlbum,
   activeTagLabel,
   albums,
+  canSelect,
   feedback,
   onAlbumChange,
   onClearTag,
   onOpenQueue,
   onQueryChange,
+  onToggleSelectionMode,
   query,
   queueCount,
   showQueue,
+  showSelection,
   songCount,
+  selectionMode,
 }: LibraryToolbarProps) {
   const t = useTranslations("fileExplorer");
 
@@ -55,20 +63,36 @@ export function LibraryToolbar({
           </div>
         </div>
 
-        {showQueue && (
-          <button
-            type="button"
-            onClick={onOpenQueue}
-            className="flex min-h-11 shrink-0 items-center gap-2 rounded-xl bg-accent/55 pl-3 pr-3.5 text-xs font-medium text-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.08)] transition-[scale,background-color,box-shadow] duration-150 ease-out hover:bg-accent active:scale-[0.96] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08)]"
-            aria-label={t("openQueue", { count: queueCount })}
-          >
-            <ListMusic className="size-4" />
-            <span>{t("queue")}</span>
-            <span className="min-w-5 rounded-full bg-primary/15 px-1.5 py-0.5 text-center text-[10px] text-primary tabular-nums">
-              {queueCount}
-            </span>
-          </button>
-        )}
+        <div className="flex shrink-0 items-center gap-2">
+          {showSelection && (
+            <button
+              type="button"
+              onClick={onToggleSelectionMode}
+              disabled={!(selectionMode || canSelect)}
+              className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl bg-accent/55 pl-3 pr-3.5 text-xs font-medium text-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.08)] transition-[scale,background-color,box-shadow,opacity] duration-150 ease-out hover:bg-accent active:scale-[0.96] disabled:pointer-events-none disabled:opacity-40 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08)]"
+              aria-pressed={selectionMode}
+            >
+              <ListChecks className="size-4" aria-hidden="true" />
+              <span>
+                {t(selectionMode ? "cancelSelection" : "selectMultiple")}
+              </span>
+            </button>
+          )}
+          {showQueue && (
+            <button
+              type="button"
+              onClick={onOpenQueue}
+              className="flex min-h-11 shrink-0 items-center gap-2 rounded-xl bg-accent/55 pl-3 pr-3.5 text-xs font-medium text-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.08)] transition-[scale,background-color,box-shadow] duration-150 ease-out hover:bg-accent active:scale-[0.96] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08)]"
+              aria-label={t("openQueue", { count: queueCount })}
+            >
+              <ListMusic className="size-4" />
+              <span>{t("queue")}</span>
+              <span className="min-w-5 rounded-full bg-primary/15 px-1.5 py-0.5 text-center text-[10px] text-primary tabular-nums">
+                {queueCount}
+              </span>
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="relative">
