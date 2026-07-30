@@ -14,6 +14,17 @@ function resetPlaybackState(trackId?: string | null) {
   };
 }
 
+function getUniqueQueueAdditions(queue: Song[], songs: Song[]) {
+  const seenIds = new Set(queue.map((song) => song.id));
+  return songs.filter((song) => {
+    if (seenIds.has(song.id)) {
+      return false;
+    }
+    seenIds.add(song.id);
+    return true;
+  });
+}
+
 function getRandomTrack(queue: Song[], currentTrackId: string): Song | null {
   const availableTracks = queue.filter((song) => song.id !== currentTrackId);
   if (availableTracks.length === 0) {
@@ -235,20 +246,46 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   setPlaybackStatus: (playbackStatus) => set({ playbackStatus }),
   addToQueue: (song) => {
     const state = get();
-    if (!state.queue.find((s) => s.id === song.id)) {
-      set({ queue: [...state.queue, song] });
+    const [nextSong] = getUniqueQueueAdditions(state.queue, [song]);
+    if (!nextSong) {
+      return;
     }
+
+    const queue = [...state.queue, nextSong];
+    if (!state.currentTrackId) {
+      set({
+        queue,
+        currentTrackId: nextSong.id,
+        isPlaying: true,
+        playbackStatus: "loading",
+        playbackContext: [],
+      });
+      return;
+    }
+
+    set({ queue });
   },
   addManyToQueue: (songs) => {
     const state = get();
-    const queuedIds = new Set(state.queue.map((song) => song.id));
-    const nextSongs = songs.filter((song) => !queuedIds.has(song.id));
+    const nextSongs = getUniqueQueueAdditions(state.queue, songs);
 
     if (nextSongs.length === 0) {
       return;
     }
 
-    set({ queue: [...state.queue, ...nextSongs] });
+    const queue = [...state.queue, ...nextSongs];
+    if (!state.currentTrackId) {
+      set({
+        queue,
+        currentTrackId: nextSongs[0].id,
+        isPlaying: true,
+        playbackStatus: "loading",
+        playbackContext: [],
+      });
+      return;
+    }
+
+    set({ queue });
   },
   removeFromQueue: (songId) => {
     const state = get();

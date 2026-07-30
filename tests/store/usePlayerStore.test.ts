@@ -269,6 +269,35 @@ describe("usePlayerStore", () => {
     expect(usePlayerStore.getState().currentTrackId).toBe(songThree.id);
   });
 
+  it("starts the first song added to an idle queue", () => {
+    usePlayerStore.getState().addToQueue(songTwo);
+
+    expect(usePlayerStore.getState()).toMatchObject({
+      queue: [songTwo],
+      currentTrackId: songTwo.id,
+      isPlaying: true,
+      playbackStatus: "loading",
+      playbackContext: [],
+    });
+  });
+
+  it("does not interrupt an existing paused track when queueing a song", () => {
+    usePlayerStore.setState({
+      currentTrackId: songOne.id,
+      isPlaying: false,
+      playbackStatus: "ready",
+    });
+
+    usePlayerStore.getState().addToQueue(songTwo);
+
+    expect(usePlayerStore.getState()).toMatchObject({
+      queue: [songTwo],
+      currentTrackId: songOne.id,
+      isPlaying: false,
+      playbackStatus: "ready",
+    });
+  });
+
   it("adds many songs to the queue without duplicates", () => {
     usePlayerStore.setState({
       queue: [songOne],
@@ -281,5 +310,16 @@ describe("usePlayerStore", () => {
       songTwo,
       songThree,
     ]);
+  });
+
+  it("starts the first unique song from a batch added while idle", () => {
+    usePlayerStore.getState().addManyToQueue([songTwo, songTwo, songThree]);
+
+    expect(usePlayerStore.getState()).toMatchObject({
+      queue: [songTwo, songThree],
+      currentTrackId: songTwo.id,
+      isPlaying: true,
+      playbackStatus: "loading",
+    });
   });
 });

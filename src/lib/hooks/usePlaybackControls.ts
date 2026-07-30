@@ -37,9 +37,9 @@ export function usePlaybackControls() {
     if (isPlaying) {
       pause();
     } else if (!currentTrackId) {
-      const trackToPlay = activeFileId
-        ? files.find((f) => f.id === activeFileId)
-        : files[0];
+      const trackToPlay =
+        queue[0] ??
+        (activeFileId ? files.find((f) => f.id === activeFileId) : files[0]);
 
       if (trackToPlay) {
         play(trackToPlay);
@@ -47,7 +47,7 @@ export function usePlaybackControls() {
     } else {
       play();
     }
-  }, [isPlaying, currentTrackId, activeFileId, files, pause, play]);
+  }, [isPlaying, currentTrackId, activeFileId, files, pause, play, queue]);
 
   const handlePrevious = useCallback(() => {
     if (!currentTrackId) return;
