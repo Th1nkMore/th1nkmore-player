@@ -2,6 +2,7 @@
 
 import { Loader2, Music2, RefreshCcw } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useEffect, useMemo, useState } from "react";
 import { LyricsTools } from "@/components/admin/LyricsTools";
 import { TagInput } from "@/components/admin/TagInput";
 import { AdminStoryFields } from "@/components/admin/workspace/AdminStoryFields";
@@ -14,8 +15,10 @@ import {
 } from "@/components/admin/workspace/AdminWorkspacePrimitives";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { fetchAdminPlaylist } from "@/lib/admin-utils";
 import { formatSongDuration } from "@/lib/admin-workspace";
-import type { Song } from "@/types/music";
+import { buildCatalog, tagIdFor } from "@/lib/catalog";
+import type { Album, LibraryTag, Song } from "@/types/music";
 
 const fieldClassName =
   "border-[var(--border)] bg-[rgba(7,10,15,0.92)] text-gray-200 placeholder:text-gray-600";
@@ -59,6 +62,35 @@ export function AdminSongForm({
   mode,
 }: AdminSongFormProps) {
   const t = useTranslations("admin");
+  const c = useTranslations("catalogManager");
+  const [albums, setAlbums] = useState<Album[]>([]);
+  const [knownTags, setKnownTags] = useState<LibraryTag[]>([]);
+  const [albumQuery, setAlbumQuery] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    void fetchAdminPlaylist()
+      .then((songs) => {
+        if (!active) return;
+        const catalog = buildCatalog(songs);
+        setAlbums(catalog.albums);
+        setKnownTags(catalog.tags);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const filteredAlbums = useMemo(
+    () =>
+      albums.filter((album) =>
+        `${album.title} ${album.artist}`
+          .toLocaleLowerCase()
+          .includes(albumQuery.toLocaleLowerCase()),
+      ),
+    [albums, albumQuery],
+  );
   const OptionalSectionCard =
     mode === "edit" ? AdminCollapsibleSectionCard : AdminSectionCard;
 
@@ -94,10 +126,50 @@ export function AdminSongForm({
             <Input
               id={`${mode}-album`}
               value={draft.album || ""}
-              onChange={(event) => onChange({ album: event.target.value })}
+              onChange={(event) =>
+                onChange({ album: event.target.value, albumId: null })
+              }
               className={fieldClassName}
               placeholder={t("fields.album.placeholder")}
             />
+            <p className="mt-1 text-xs text-gray-500">{c("albumOptional")}</p>
+            {albums.length > 0 ? (
+              <div className="mt-2 space-y-2">
+                <label
+                  htmlFor={`${mode}-album-search`}
+                  className="block text-xs text-gray-400"
+                >
+                  {c("findAlbum")}
+                </label>
+                <Input
+                  id={`${mode}-album-search`}
+                  type="search"
+                  value={albumQuery}
+                  onChange={(event) => setAlbumQuery(event.target.value)}
+                  placeholder={c("findAlbum")}
+                  className={fieldClassName}
+                />
+                <select
+                  value=""
+                  aria-label={c("chooseAlbum")}
+                  onChange={(event) => {
+                    const album = albums.find(
+                      (item) => item.id === event.target.value,
+                    );
+                    if (album)
+                      onChange({ album: album.title, albumId: album.id });
+                  }}
+                  className={selectClassName}
+                >
+                  <option value="">{c("chooseAlbum")}</option>
+                  {filteredAlbums.map((album) => (
+                    <option key={album.id} value={album.id}>
+                      {album.title} · {album.artist}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
           </AdminField>
           <AdminField
             label={t("fields.duration.label")}
@@ -218,10 +290,36 @@ export function AdminSongForm({
           <AdminField
             label={t("fields.tags.label")}
             description={t("fields.tags.description")}
+            htmlFor={`${mode}-tags`}
           >
             <TagInput
+              id={`${mode}-tags`}
               value={draft.tags || []}
-              onChange={(tags) => onChange({ tags })}
+              onChange={(tags) => {
+                const oldTags = draft.tags || [];
+                const oldIds = draft.tagIds || [];
+                onChange({
+                  tags,
+                  tagIds: tags.map((tag) => {
+                    const oldIndex = oldTags.findIndex(
+                      (oldTag) =>
+                        oldTag.toLocaleLowerCase() === tag.toLocaleLowerCase(),
+                    );
+                    return oldIndex >= 0
+                      ? oldIds[oldIndex] || tagIdFor(tag)
+                      : knownTags.find(
+                          (item) =>
+                            item.name.toLocaleLowerCase() ===
+                            tag.toLocaleLowerCase(),
+                        )?.id || tagIdFor(tag);
+                  }),
+                });
+              }}
+              suggestions={
+                knownTags.length > 0
+                  ? knownTags.map((tag) => tag.name)
+                  : undefined
+              }
               label={t("fields.tags.suggestions")}
               placeholder={t("fields.tags.placeholder")}
               emptyHint={t("fields.tags.emptyHint")}

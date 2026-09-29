@@ -41,7 +41,8 @@
     "selectSong": "Select {title}",
     "unselectSong": "Unselect {title}",
     "loadingSongs": "Loading songs…",
-    "noMatchingSongs": "No songs match these filters"
+    "noMatchingSongs": "No songs match these filters",
+    "clearFilters": "Clear filters"
   },
   "codeEditor": {
     "filePath": "lyrics/midnight-refactor.lyr",
@@ -133,7 +134,12 @@
   },
   "explorerNav": {
     "files": "Library",
-    "grid": "Tags"
+    "grid": "Tags",
+    "library": "Library",
+    "albums": "Albums",
+    "tags": "Tags",
+    "queue": "Queue",
+    "navigation": "Library navigation"
   },
   "tagGrid": {
     "title": "Browse by tag",
@@ -187,7 +193,8 @@
     "tabs": {
       "upload": "Upload New",
       "record": "Record Audio",
-      "edit": "Edit Playlist"
+      "edit": "Edit Playlist",
+      "catalog": "Organize"
     },
     "shell": {
       "title": "Admin Workspace",
@@ -610,5 +617,32 @@
         "message": "{filename} is ready as the upload source."
       }
     }
+  },
+  "albumBrowse": {
+    "title": "Albums",
+    "empty": "No albums or singles yet",
+    "singles": "Singles",
+    "playAlbum": "Play",
+    "addAlbum": "Add to queue"
+  },
+  "catalogManager": {
+    "albumsTitle": "Manage albums",
+    "tagsTitle": "Manage tags",
+    "albumsHint": "Album names and track order save immediately. Renaming to an existing album by the same artist merges them.",
+    "tagsHint": "Tag names save immediately across matching tracks. Renaming to an existing tag merges them.",
+    "albumName": "Album name",
+    "tagName": "Tag name",
+    "trackCount": "{count} tracks",
+    "stageRename": "Stage change",
+    "moveUp": "Move {title} up",
+    "moveDown": "Move {title} down",
+    "empty": "Nothing to manage yet",
+    "albumOptional": "Leave blank for a single. Enter a new name to create an album.",
+    "findAlbum": "Search existing albums",
+    "chooseAlbum": "Choose an existing album",
+    "saveChange": "Save change",
+    "loading": "Loading library",
+    "loadError": "Unable to load library",
+    "retry": "Retry"
   }
 }

@@ -119,7 +119,7 @@ export function TrackStory({ className, song }: TrackStoryProps) {
         )}
 
         <dl className="divide-y divide-border/70 border-y border-border/70">
-          <StoryDetail label={t("albumLabel")} value={song.album} />
+          <StoryDetail label={t("albumLabel")} value={song.album || "—"} />
           <StoryDetail
             label={t("durationLabel")}
             value={formatDuration(song.duration)}

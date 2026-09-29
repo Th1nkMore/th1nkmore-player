@@ -41,7 +41,8 @@
     "selectSong": "{title} を選択",
     "unselectSong": "{title} の選択を解除",
     "loadingSongs": "曲を読み込み中…",
-    "noMatchingSongs": "条件に一致する曲がありません"
+    "noMatchingSongs": "条件に一致する曲がありません",
+    "clearFilters": "絞り込みを解除"
   },
   "codeEditor": {
     "filePath": "lyrics/midnight-refactor.lyr",
@@ -133,7 +134,12 @@
   },
   "explorerNav": {
     "files": "ライブラリ",
-    "grid": "タグ"
+    "grid": "タグ",
+    "library": "ライブラリ",
+    "albums": "アルバム",
+    "tags": "タグ",
+    "queue": "キュー",
+    "navigation": "ライブラリ ナビゲーション"
   },
   "tagGrid": {
     "title": "タグから探す",
@@ -187,7 +193,8 @@
     "tabs": {
       "upload": "新規アップロード",
       "record": "音声録音",
-      "edit": "プレイリスト編集"
+      "edit": "プレイリスト編集",
+      "catalog": "整理"
     },
     "shell": {
       "title": "管理ワークスペース",
@@ -610,5 +617,32 @@
         "message": "{filename} をアップロード元として利用できます。"
       }
     }
+  },
+  "albumBrowse": {
+    "title": "アルバム",
+    "empty": "アルバムやシングルはありません",
+    "singles": "シングル",
+    "playAlbum": "再生",
+    "addAlbum": "キューに追加"
+  },
+  "catalogManager": {
+    "albumsTitle": "アルバムを管理",
+    "tagsTitle": "タグを管理",
+    "albumsHint": "アルバム名と曲順はすぐに保存されます。同じアーティストの既存名に変更すると統合されます。",
+    "tagsHint": "タグ名は関連する曲にすぐ反映されます。既存名に変更すると統合されます。",
+    "albumName": "アルバム名",
+    "tagName": "タグ名",
+    "trackCount": "{count} 曲",
+    "stageRename": "変更を準備",
+    "moveUp": "{title} を上へ",
+    "moveDown": "{title} を下へ",
+    "empty": "管理する項目はありません",
+    "albumOptional": "空欄ならシングル。新しい名前を入力するとアルバムを作成します。",
+    "findAlbum": "既存のアルバムを検索",
+    "chooseAlbum": "既存のアルバムを選択",
+    "saveChange": "変更を保存",
+    "loading": "ライブラリを読み込み中",
+    "loadError": "ライブラリを読み込めません",
+    "retry": "再試行"
   }
 }

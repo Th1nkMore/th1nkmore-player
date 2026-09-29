@@ -1,8 +1,10 @@
 "use client";
 
-import { Files, LayoutGrid } from "lucide-react";
+import { Disc3, Library, ListMusic, Tags } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { AlbumExplorer } from "@/components/ide/AlbumExplorer";
 import { FileExplorer } from "@/components/ide/FileExplorer";
+import { RuntimeQueue } from "@/components/ide/RuntimeQueue";
 import { TagGridExplorer } from "@/components/ide/TagGridExplorer";
 import { cn } from "@/lib/utils";
 import { useIDEStore } from "@/store/useIDEStore";
@@ -16,71 +18,62 @@ export function ExplorerWorkspace({
 }) {
   const t = useTranslations("explorerNav");
   const { explorerView, setExplorerView } = useIDEStore();
-
-  const handleViewChange = (view: "files" | "grid") => {
-    if (view !== explorerView) setExplorerView(view);
-  };
-
   const views = [
-    { id: "files" as const, icon: Files, label: t("files") },
-    { id: "grid" as const, icon: LayoutGrid, label: t("grid") },
+    { id: "library" as const, icon: Library, label: t("library") },
+    { id: "albums" as const, icon: Disc3, label: t("albums") },
+    { id: "tags" as const, icon: Tags, label: t("tags") },
+    { id: "queue" as const, icon: ListMusic, label: t("queue") },
   ];
 
   return (
     <div
       className={cn(
-        "flex h-full min-h-0 overflow-hidden bg-sidebar",
+        "flex h-full min-h-0 flex-col overflow-hidden bg-sidebar md:flex-row",
         className,
       )}
     >
-      <div className="hidden w-12 shrink-0 border-r border-border bg-sidebar md:flex md:flex-col md:items-center md:gap-2 md:px-2 md:py-3">
+      <nav
+        aria-label={t("navigation")}
+        className="grid shrink-0 grid-cols-4 border-b border-border md:flex md:w-12 md:flex-col md:items-center md:gap-2 md:border-b-0 md:border-r md:px-1 md:py-3"
+      >
         {views.map(({ id, icon: Icon, label }) => (
           <button
             key={id}
             type="button"
-            onClick={() => handleViewChange(id)}
+            onClick={() => setExplorerView(id)}
+            aria-current={explorerView === id ? "page" : undefined}
             title={label}
-            aria-label={label}
-            aria-pressed={explorerView === id}
             className={cn(
-              "flex size-10 items-center justify-center rounded-lg border transition-[scale,color,background-color,border-color] duration-150 ease-out active:scale-[0.96]",
+              "flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-md px-1 text-[10px] transition-colors focus-visible:outline-2 focus-visible:outline-primary md:h-10 md:w-10 md:text-[9px]",
               explorerView === id
-                ? "border-sky-400/50 bg-sky-400/10 text-sky-200"
-                : "border-transparent text-muted-foreground hover:border-border hover:bg-accent hover:text-foreground",
+                ? "bg-accent text-foreground"
+                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
             )}
           >
-            <Icon className="h-4 w-4" />
+            <Icon className="size-4" aria-hidden="true" />
+            <span>{label}</span>
           </button>
         ))}
-      </div>
-
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div className="flex items-center gap-2 border-b border-border px-3 py-2 md:hidden">
-          {views.map(({ id, label }) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => handleViewChange(id)}
-              aria-pressed={explorerView === id}
-              className={cn(
-                "min-h-10 rounded-full border px-3 py-1.5 text-[11px] font-medium transition-[scale,color,background-color,border-color] duration-150 ease-out active:scale-[0.96]",
-                explorerView === id
-                  ? "border-sky-400/50 bg-sky-400/10 text-sky-200"
-                  : "border-border bg-background text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {label}
-            </button>
-          ))}
+      </nav>
+      <div className="min-h-0 min-w-0 flex-1 overflow-hidden">
+        <div className="h-full" hidden={explorerView !== "library"}>
+          <FileExplorer className="h-full" onFileClick={onFileClick} />
         </div>
-
-        <div className="relative min-h-0 flex-1 overflow-hidden">
-          <div className="h-full" hidden={explorerView !== "files"}>
-            <FileExplorer className="h-full" onFileClick={onFileClick} />
-          </div>
-          <div className="h-full" hidden={explorerView !== "grid"}>
-            <TagGridExplorer className="h-full" />
-          </div>
+        <div className="h-full" hidden={explorerView !== "albums"}>
+          <AlbumExplorer onFileClick={onFileClick} />
+        </div>
+        <div className="h-full" hidden={explorerView !== "tags"}>
+          <TagGridExplorer className="h-full" />
+        </div>
+        <div className="h-full" hidden={explorerView !== "queue"}>
+          <section className="flex h-full min-h-0 flex-col">
+            <h2 className="shrink-0 border-b border-border px-3 py-2 text-sm font-semibold text-foreground">
+              {t("queue")}
+            </h2>
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <RuntimeQueue />
+            </div>
+          </section>
         </div>
       </div>
     </div>

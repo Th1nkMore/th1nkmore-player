@@ -4,6 +4,8 @@ import {
   createPlaylistRevision,
   serializeAdminPlaylist,
 } from "@/lib/admin-playlist.server";
+import { readCatalog, renameAlbum } from "@/lib/catalog";
+import { normalizeSong } from "@/lib/song";
 import type { Song } from "@/types/music";
 
 const cacheMocks = vi.hoisted(() => ({ revalidateTagMock: vi.fn() }));
@@ -78,8 +80,8 @@ describe("admin playlist route", () => {
 
     const response = await GET();
     const normalizedPlaylist = [
-      { ...songOne, language: "ja", tags: ["Rap", "Soul"] },
-      { ...songTwo, language: "zh" },
+      normalizeSong({ ...songOne, language: "ja", tags: ["Rap", "Soul"] }),
+      normalizeSong({ ...songTwo, language: "zh" }),
     ];
 
     expect(response.headers.get("etag")).toBe(
@@ -154,6 +156,21 @@ describe("admin playlist route", () => {
     expect(sendMock).toHaveBeenCalledTimes(1);
   });
 
+  it("accepts a single without an album", async () => {
+    mockSuccessfulMutation([songOne]);
+    const { PUT } = await importRoute();
+    const response = await PUT(
+      playlistRequest(
+        "PUT",
+        [songOne, { ...songTwo, album: "", albumId: null }],
+        revisionFor([songOne]),
+      ) as never,
+    );
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload.playlist[1]).toMatchObject({ album: "", albumId: null });
+  });
+
   it("backs up the prior revision before writing a normalized playlist", async () => {
     mockSuccessfulMutation([songOne]);
     const { PUT } = await importRoute();
@@ -174,7 +191,9 @@ describe("admin playlist route", () => {
       playlist: [{ ...songOne, language: "ja", tags: ["Rock"] }],
     });
     expect(historyCommand.input.Key).toMatch(/^playlist-history\/.+\.json$/);
-    expect(JSON.parse(historyCommand.input.Body as string)).toEqual([songOne]);
+    expect(JSON.parse(historyCommand.input.Body as string)).toEqual([
+      normalizeSong(songOne),
+    ]);
     expect(playlistCommand.input).toMatchObject({
       Bucket: "test-bucket",
       Key: "playlist.json",
@@ -218,6 +237,33 @@ describe("admin playlist route", () => {
         audioDuration: 22,
       },
     });
+  });
+
+  it("saves a batch album rename through the revisioned PATCH", async () => {
+    mockSuccessfulMutation([songOne, songTwo]);
+    const tracks = readCatalog([songOne, songTwo]).tracks;
+    const renamed = renameAlbum(
+      tracks,
+      tracks[0].albumId || "",
+      "Renamed album",
+    );
+    const { PATCH } = await importRoute();
+    const response = await PATCH(
+      playlistRequest(
+        "PATCH",
+        { type: "replaceSongs", songs: renamed },
+        revisionFor([songOne, songTwo]),
+      ) as never,
+    );
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload.playlist.map((song: Song) => song.album)).toEqual([
+      "Renamed album",
+      "Renamed album",
+    ]);
+    expect(sendMock.mock.calls[1]?.[0].input.Key).toMatch(
+      /^playlist-history\//,
+    );
   });
 
   it("rejects unsafe Creator Note URLs and duplicate share slugs", async () => {

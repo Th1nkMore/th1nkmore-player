@@ -14,6 +14,7 @@ import {
   reorderAdminSongs,
   restoreAdminPlaylistHistory,
   updateAdminSong,
+  updateAdminSongs,
   uploadAudioFileToR2,
 } from "@/lib/admin-utils";
 import type { AdminNotice } from "@/lib/admin-workspace";
@@ -353,6 +354,48 @@ export function useAdminPlaylistFlow({
     ],
   );
 
+  const handleCatalogUpdate = useCallback(
+    async (update: (songs: Song[]) => Song[]) => {
+      if (!playlistRevision) return false;
+      const next = update(playlist);
+      const previousById = new Map(playlist.map((song) => [song.id, song]));
+      const changed = next.filter(
+        (song) =>
+          JSON.stringify(song) !== JSON.stringify(previousById.get(song.id)),
+      );
+      if (changed.length === 0) return true;
+      setIsSavingPlaylist(true);
+      try {
+        const result = await updateAdminSongs(changed, playlistRevision);
+        applyWriteResult(result);
+        setEditedSong((current) =>
+          current
+            ? (result.playlist.find((song) => song.id === current.id) ?? null)
+            : null,
+        );
+        setPlaylistNotice({
+          tone: "success",
+          title: t("notices.bulkSaved.title"),
+          message: t("notices.bulkSaved.message", { count: changed.length }),
+        });
+        void loadPlaylistHistory();
+        return true;
+      } catch (error) {
+        return reportSaveError(error);
+      } finally {
+        setIsSavingPlaylist(false);
+      }
+    },
+    [
+      applyWriteResult,
+      loadPlaylistHistory,
+      playlist,
+      playlistRevision,
+      reportSaveError,
+      t,
+    ],
+  );
+
   const handleRestoreHistory = useCallback(
     async (key: string) => {
       if (!playlistRevision) return false;
@@ -407,6 +450,7 @@ export function useAdminPlaylistFlow({
     editedSong,
     editingSongId,
     handleArchiveSong,
+    handleCatalogUpdate,
     handleBulkUpdate,
     handleCancelEdit,
     handleEditSong,

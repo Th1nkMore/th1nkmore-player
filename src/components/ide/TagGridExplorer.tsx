@@ -65,7 +65,7 @@ export function TagGridExplorer({ className }: { className?: string }) {
 
   const selectTag = (tag: string | null) => {
     setActiveTag(tag);
-    setExplorerView("files");
+    setExplorerView("library");
   };
 
   return (

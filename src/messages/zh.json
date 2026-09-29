@@ -41,7 +41,8 @@
     "selectSong": "选择 {title}",
     "unselectSong": "取消选择 {title}",
     "loadingSongs": "正在加载歌曲…",
-    "noMatchingSongs": "没有符合当前条件的歌曲"
+    "noMatchingSongs": "没有符合当前条件的歌曲",
+    "clearFilters": "清除筛选"
   },
   "codeEditor": {
     "filePath": "lyrics/midnight-refactor.lyr",
@@ -133,7 +134,12 @@
   },
   "explorerNav": {
     "files": "曲库",
-    "grid": "标签"
+    "grid": "标签",
+    "library": "曲库",
+    "albums": "专辑",
+    "tags": "标签",
+    "queue": "队列",
+    "navigation": "曲库导航"
   },
   "tagGrid": {
     "title": "按标签浏览",
@@ -187,7 +193,8 @@
     "tabs": {
       "upload": "上传新歌",
       "record": "录制音频",
-      "edit": "编辑歌单"
+      "edit": "编辑歌单",
+      "catalog": "整理"
     },
     "shell": {
       "title": "管理工作区",
@@ -610,5 +617,32 @@
         "message": "{filename} 已作为上传源文件附加。"
       }
     }
+  },
+  "albumBrowse": {
+    "title": "专辑",
+    "empty": "还没有专辑或单曲",
+    "singles": "单曲",
+    "playAlbum": "播放",
+    "addAlbum": "加入队列"
+  },
+  "catalogManager": {
+    "albumsTitle": "管理专辑",
+    "tagsTitle": "管理标签",
+    "albumsHint": "专辑改名和曲序会立即保存，并更新相关歌曲。改成同艺人的已有专辑名会合并。",
+    "tagsHint": "标签改名会立即更新相关歌曲；改成已有标签名会合并。",
+    "albumName": "专辑名称",
+    "tagName": "标签名称",
+    "trackCount": "{count} 首",
+    "stageRename": "暂存更改",
+    "moveUp": "上移 {title}",
+    "moveDown": "下移 {title}",
+    "empty": "还没有可管理的内容",
+    "albumOptional": "留空表示单曲。输入新名称可创建专辑。",
+    "findAlbum": "搜索已有专辑",
+    "chooseAlbum": "选择已有专辑",
+    "saveChange": "保存更改",
+    "loading": "正在加载曲库",
+    "loadError": "无法加载曲库",
+    "retry": "重试"
   }
 }

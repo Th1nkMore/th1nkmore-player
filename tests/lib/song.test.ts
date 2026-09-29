@@ -12,7 +12,8 @@ describe("song story fields", () => {
   it("keeps legacy songs compatible without injecting optional story fields", () => {
     const normalized = normalizeSong(songOne);
 
-    expect(normalized).toEqual(songOne);
+    expect(normalized).toMatchObject(songOne);
+    expect(normalized.albumId).toBe("album:artist:album");
     expect(normalized).not.toHaveProperty("creatorNote");
     expect(normalized).not.toHaveProperty("performanceType");
   });

@@ -148,11 +148,6 @@ export function getUploadReadiness(
       label: "Artist",
       state: draft.artist?.trim() ? "ready" : "missing",
     },
-    {
-      id: "album",
-      label: "Album",
-      state: draft.album?.trim() ? "ready" : "missing",
-    },
   ] as const;
 
   return {
@@ -166,7 +161,10 @@ export function hasSongChanges(original: Song | null, draft: Song | null) {
     return false;
   }
 
-  return JSON.stringify(normalizeSong(original)) !== JSON.stringify(draft);
+  return (
+    JSON.stringify(normalizeSong(original)) !==
+    JSON.stringify(normalizeSong(draft))
+  );
 }
 
 export function formatSongDuration(duration: number) {

@@ -41,7 +41,8 @@
     "selectSong": "{title} auswählen",
     "unselectSong": "Auswahl von {title} aufheben",
     "loadingSongs": "Titel werden geladen…",
-    "noMatchingSongs": "Keine Titel entsprechen diesen Filtern"
+    "noMatchingSongs": "Keine Titel entsprechen diesen Filtern",
+    "clearFilters": "Filter löschen"
   },
   "codeEditor": {
     "filePath": "lyrics/midnight-refactor.lyr",
@@ -133,7 +134,12 @@
   },
   "explorerNav": {
     "files": "Bibliothek",
-    "grid": "Tags"
+    "grid": "Tags",
+    "library": "Bibliothek",
+    "albums": "Alben",
+    "tags": "Tags",
+    "queue": "Warteschlange",
+    "navigation": "Bibliotheksnavigation"
   },
   "tagGrid": {
     "title": "Nach Tag durchsuchen",
@@ -187,7 +193,8 @@
     "tabs": {
       "upload": "Neu hochladen",
       "record": "Audio aufnehmen",
-      "edit": "Playlist bearbeiten"
+      "edit": "Playlist bearbeiten",
+      "catalog": "Ordnen"
     },
     "shell": {
       "title": "Admin-Arbeitsbereich",
@@ -610,5 +617,32 @@
         "message": "{filename} ist jetzt als Upload-Quelle bereit."
       }
     }
+  },
+  "albumBrowse": {
+    "title": "Alben",
+    "empty": "Noch keine Alben oder Singles",
+    "singles": "Singles",
+    "playAlbum": "Abspielen",
+    "addAlbum": "Zur Warteschlange"
+  },
+  "catalogManager": {
+    "albumsTitle": "Alben verwalten",
+    "tagsTitle": "Tags verwalten",
+    "albumsHint": "Albumnamen und Reihenfolge werden sofort gespeichert. Ein vorhandener Name desselben Interpreten führt Alben zusammen.",
+    "tagsHint": "Tagnamen werden sofort für alle passenden Titel gespeichert. Ein vorhandener Name führt Tags zusammen.",
+    "albumName": "Albumname",
+    "tagName": "Tagname",
+    "trackCount": "{count} Titel",
+    "stageRename": "Änderung vormerken",
+    "moveUp": "{title} nach oben",
+    "moveDown": "{title} nach unten",
+    "empty": "Noch nichts zu verwalten",
+    "albumOptional": "Für eine Single leer lassen. Mit einem neuen Namen ein Album anlegen.",
+    "findAlbum": "Vorhandene Alben suchen",
+    "chooseAlbum": "Vorhandenes Album auswählen",
+    "saveChange": "Änderung speichern",
+    "loading": "Bibliothek wird geladen",
+    "loadError": "Bibliothek konnte nicht geladen werden",
+    "retry": "Erneut versuchen"
   }
 }

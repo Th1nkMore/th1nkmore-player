@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { songOne, songTwo } from "@/../tests/fixtures/songs";
+import { normalizeSong } from "@/lib/song";
 
 const routeMocks = vi.hoisted(() => ({
   publicPlaylistUrl: "https://cdn.example.com/playlist.json" as string | null,
@@ -80,8 +81,8 @@ describe("public playlist route", () => {
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual([
-      { ...songOne, language: "ja", tags: ["Rap", "Soul"] },
-      { ...songTwo, language: "zh", tags: [] },
+      normalizeSong({ ...songOne, language: "ja", tags: ["Rap", "Soul"] }),
+      normalizeSong({ ...songTwo, language: "zh", tags: [] }),
     ]);
     expect(response.headers.get("cache-control")).toBe(
       "public, s-maxage=300, stale-while-revalidate=900",
@@ -97,8 +98,12 @@ describe("public playlist route", () => {
     const firstResponse = await GET();
     const secondResponse = await GET();
 
-    await expect(firstResponse.json()).resolves.toEqual([songOne]);
-    await expect(secondResponse.json()).resolves.toEqual([songOne]);
+    await expect(firstResponse.json()).resolves.toEqual([
+      normalizeSong(songOne),
+    ]);
+    await expect(secondResponse.json()).resolves.toEqual([
+      normalizeSong(songOne),
+    ]);
     expect(routeMocks.sendMock).toHaveBeenCalledTimes(1);
     expect(routeMocks.unstableCacheMock).toHaveBeenCalledWith(
       expect.any(Function),
@@ -129,7 +134,7 @@ describe("public playlist route", () => {
 
     const response = await GET();
 
-    await expect(response.json()).resolves.toEqual([songOne]);
+    await expect(response.json()).resolves.toEqual([normalizeSong(songOne)]);
     expect(fetchMock).toHaveBeenCalledWith(
       "https://cdn.example.com/playlist.json",
       { next: { revalidate: 300, tags: ["public-playlist"] } },
@@ -151,8 +156,12 @@ describe("public playlist route", () => {
     const firstResponse = await GET();
     const secondResponse = await GET();
 
-    await expect(firstResponse.json()).resolves.toEqual([songOne]);
-    await expect(secondResponse.json()).resolves.toEqual([songOne]);
+    await expect(firstResponse.json()).resolves.toEqual([
+      normalizeSong(songOne),
+    ]);
+    await expect(secondResponse.json()).resolves.toEqual([
+      normalizeSong(songOne),
+    ]);
     expect(routeMocks.sendMock).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });

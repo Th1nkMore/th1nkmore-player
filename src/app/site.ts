@@ -1,17 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-export const rootFontClassName = `${geistSans.variable} ${geistMono.variable}`;
+export const rootFontClassName = "";
 
 export const siteViewport: Viewport = {
   width: "device-width",

@@ -15,7 +15,7 @@ import { buildTagStats, getSongsByTag } from "@/lib/tags";
 import type { Song } from "@/types/music";
 
 const PLAYLIST_CACHE_KEY = "sonic-ide-playlist";
-const PLAYLIST_CACHE_VERSION = 3;
+const PLAYLIST_CACHE_VERSION = 4;
 
 type CachedPlaylist = {
   songs: Song[];
@@ -77,13 +77,13 @@ export type IDEState = {
   isLoading: boolean;
   openFiles: string[];
   activeFileId: string | null;
-  explorerView: "files" | "grid";
+  explorerView: "library" | "albums" | "tags" | "queue";
   activeTag: string | null;
   fetchSongs: () => Promise<void>;
   openFile: (fileId: string) => void;
   closeFile: (fileId: string) => void;
   setActiveFile: (fileId: string) => void;
-  setExplorerView: (view: "files" | "grid") => void;
+  setExplorerView: (view: "library" | "albums" | "tags" | "queue") => void;
   setActiveTag: (tag: string | null) => void;
   getActiveFile: () => Song | null;
   getFileById: (fileId: string) => Song | null;
@@ -123,7 +123,7 @@ export function createIDEStore({ initialSongs }: IDEStoreInit) {
     isLoading: initialSongs === null,
     openFiles: [],
     activeFileId: null,
-    explorerView: "files",
+    explorerView: "library",
     activeTag: null,
 
     fetchSongs: async () => {

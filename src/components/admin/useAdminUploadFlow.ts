@@ -86,7 +86,10 @@ export function useAdminUploadFlow({
           const updated = { ...current };
           if (common.title) updated.title = common.title;
           if (common.artist) updated.artist = common.artist;
-          if (common.album) updated.album = common.album;
+          if (common.album) {
+            updated.album = common.album;
+            updated.albumId = null;
+          }
           if (format.duration) updated.duration = Math.floor(format.duration);
           return updated;
         });
@@ -313,8 +316,8 @@ export function useAdminUploadFlow({
       return;
     }
 
-    if (!(formData.title && formData.artist && formData.album)) {
-      const message = "Please fill in title, artist, and album";
+    if (!(formData.title && formData.artist)) {
+      const message = "Please fill in title and artist";
       addLog(`> Error: ${message}`);
       setUploadNotice({
         tone: "error",
