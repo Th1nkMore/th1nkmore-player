@@ -1,5 +1,7 @@
 # Tag Grid Explorer
 
+> Historical implementation spec. The current browser uses separate Library, Albums, Tags, and Queue views. Selecting a tag filters the Library; it does not alter the queue. See [Library And Story Model](../product/library-model.md).
+
 ## Goal
 
 Add playlist-backed song tags that are managed in admin and consumed in the public listener UI through a VS Code-style Grid explorer for bulk random queue building.

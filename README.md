@@ -27,7 +27,7 @@ Current planning highlights:
 
 ## Core Features
 
-- IDE-style music browsing with album folders, queue management, inspector metadata, and terminal-like playback controls
+- IDE-style browsing with distinct library, albums, tags, and queue views, inspector metadata, and terminal-like playback controls
 - LRC lyric parsing with active-line highlighting, seeking by line number, and auto-scroll during playback
 - Responsive layouts for desktop, mobile portrait, and mobile landscape, including swipe paging synchronized with mobile bottom navigation
 - Localized routes with `en`, `zh`, `ja`, and `de`
@@ -129,7 +129,7 @@ Detailed process: [`docs/process/branching-release.md`](docs/process/branching-r
 ## Current Gaps
 
 - Public R2 object URLs bypass application-level visibility filtering; true private playback still requires private storage and authenticated delivery.
-- The app still uses a playlist-shaped library model rather than a richer media catalog.
+- The library catalog still uses a revisioned R2 JSON manifest. Direct access to that object and audio URLs needs separate storage access controls for private tracks.
 - Desktop `.coverpkg` delivery is implemented in code; a real Audacity-produced package still needs one production acceptance run through R2, `/admin` playback, and the public player.
 - Track-level share routes, copy-link migration, and per-track social metadata are not yet implemented.
 - Playback session state is not yet restored across visits, and Media Session integration is not implemented.

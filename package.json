@@ -17,6 +17,7 @@
     "lint": "biome check .",
     "format": "biome check --write .",
     "test": "vitest run",
+    "migrate:catalog": "tsx scripts/migrate-playlist-catalog.ts",
     "type-check": "tsc --noEmit",
     "check-file-length": "node scripts/check-file-length.js",
     "prepare": "husky"

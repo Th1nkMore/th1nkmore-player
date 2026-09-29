@@ -446,7 +446,9 @@ export function EditPlaylist({
             </DrawerTitle>
             <DrawerDescription className="mt-1 text-sm text-gray-500">
               {editedSong
-                ? `${editedSong.artist} • ${editedSong.album}`
+                ? [editedSong.artist, editedSong.album]
+                    .filter(Boolean)
+                    .join(" • ")
                 : t("playlist.drawerDescription")}
             </DrawerDescription>
           </div>

@@ -1,10 +1,10 @@
 "use client";
 
-import { AudioLines, Library, LogOut } from "lucide-react";
+import { AudioLines, Library, LogOut, Tags } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
-type AdminTab = "upload" | "edit";
+type AdminTab = "upload" | "edit" | "catalog";
 
 type AdminPageChromeProps = {
   activeTab: AdminTab;
@@ -28,6 +28,7 @@ export function AdminPageChrome({
   const tabs = [
     { id: "upload" as const, icon: AudioLines, label: t("tabs.upload") },
     { id: "edit" as const, icon: Library, label: t("tabs.edit") },
+    { id: "catalog" as const, icon: Tags, label: t("tabs.catalog") },
   ];
 
   return (

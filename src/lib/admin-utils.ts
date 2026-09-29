@@ -63,7 +63,10 @@ export const createSongFromFormData = (
     title: title || "",
     artist: artist || "",
     album: album || "",
+    albumId: formData.albumId ?? null,
+    trackNumber: formData.trackNumber,
     tags: normalizeSongTags(formData.tags),
+    tagIds: formData.tagIds,
     duration: formData.duration || 0,
     lyrics: formData.lyrics || "",
     audioUrl: publicUrl,
@@ -282,8 +285,8 @@ export async function persistSongAssetToLibrary({
   file,
   formData,
 }: PersistSongAssetInput): Promise<Song> {
-  if (!(formData.title && formData.artist && formData.album)) {
-    throw new Error("Please fill in title, artist, and album");
+  if (!(formData.title && formData.artist)) {
+    throw new Error("Please fill in title and artist");
   }
 
   let nextFormData = { ...formData };
@@ -382,7 +385,10 @@ export function mergeFetchedSongInfo<T extends Partial<Song>>(
   const nextDraft = { ...draft };
   if (songInfo.title) nextDraft.title = songInfo.title;
   if (songInfo.artist) nextDraft.artist = songInfo.artist;
-  if (songInfo.album) nextDraft.album = songInfo.album;
+  if (songInfo.album) {
+    nextDraft.album = songInfo.album;
+    nextDraft.albumId = null;
+  }
   if (songInfo.duration) nextDraft.duration = songInfo.duration;
   return nextDraft;
 }

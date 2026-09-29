@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { AdminCatalogWorkspace } from "@/components/admin/AdminCatalogWorkspace";
 import { EditPlaylist } from "@/components/admin/EditPlaylist";
 import { UploadForm } from "@/components/admin/UploadForm";
 import { useAdminPageController } from "@/components/admin/useAdminPageController";
@@ -20,7 +21,7 @@ export default function AdminPage() {
       isSigningOut={controller.isSigningOut}
       logs={controller.logs}
       onLogout={controller.handleLogout}
-      onTabChange={controller.setActiveTab}
+      onTabChange={controller.handleTabChange}
       onToggleTerminal={() =>
         controller.setIsTerminalOpen((open: boolean) => !open)
       }
@@ -61,6 +62,16 @@ export default function AdminPage() {
             handleUploadCreatorNoteAudio={
               controller.upload.handleUploadCreatorNoteAudio
             }
+          />
+        ) : controller.activeTab === "catalog" ? (
+          <AdminCatalogWorkspace
+            playlist={controller.playlist.playlist}
+            isLoading={controller.playlist.isLoadingPlaylist}
+            isSaving={controller.playlist.isSavingPlaylist}
+            error={controller.playlist.playlistError}
+            notice={controller.playlist.playlistNotice}
+            onChange={controller.playlist.handleCatalogUpdate}
+            onReload={controller.playlist.loadPlaylist}
           />
         ) : (
           <EditPlaylist
