@@ -98,7 +98,7 @@ const getCachedR2Playlist = unstable_cache(
     const bodyString = await streamToString(response.Body);
     return normalizePlaylist(JSON.parse(bodyString) as Song[]);
   },
-  ["public-playlist-r2", R2_BUCKET_NAME || "unconfigured"],
+  ["public-playlist-r2-catalog-v2", R2_BUCKET_NAME || "unconfigured"],
   {
     revalidate: PUBLIC_PLAYLIST_REVALIDATE_SECONDS,
     tags: [PUBLIC_PLAYLIST_CACHE_TAG],
@@ -115,7 +115,9 @@ export async function getPublicPlaylist(): Promise<Song[]> {
     try {
       const playlist = await getCachedR2Playlist();
       r2RetryAfter = 0;
-      if (playlist !== null) return getPublicPlayableSongs(playlist);
+      if (playlist !== null) {
+        return getPublicPlayableSongs(normalizePlaylist(playlist));
+      }
     } catch (error) {
       r2RetryAfter = Date.now() + R2_RETRY_DELAY_MS;
       console.warn("R2 playlist read failed, using public fallback:", error);
