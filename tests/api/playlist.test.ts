@@ -107,12 +107,27 @@ describe("public playlist route", () => {
     expect(routeMocks.sendMock).toHaveBeenCalledTimes(1);
     expect(routeMocks.unstableCacheMock).toHaveBeenCalledWith(
       expect.any(Function),
-      ["public-playlist-r2", "test-bucket"],
+      ["public-playlist-r2-catalog-v2", "test-bucket"],
       {
         revalidate: 300,
         tags: ["public-playlist"],
       },
     );
+  });
+
+  it("normalizes a legacy value returned by an older server cache", async () => {
+    routeMocks.unstableCacheMock.mockImplementationOnce(() => async () => [
+      { ...songOne, album: "Rap Cover", tags: ["Rap"] },
+    ]);
+    const { GET } = await importRoute();
+    const response = await GET();
+    const songs = await response.json();
+    expect(songs[0]).toMatchObject({
+      album: "",
+      albumId: null,
+      tags: ["Rap", "Cover"],
+      metadata: { legacyAlbum: "Rap Cover" },
+    });
   });
 
   it("applies the public playable filter to the external fallback", async () => {
