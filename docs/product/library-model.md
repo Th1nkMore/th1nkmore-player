@@ -78,4 +78,10 @@ The first version should not accept arbitrary CSS or JavaScript. Every preset ne
 
 The flat R2 `playlist.json` remains adequate for the current catalog size. A database should only be introduced when editing, querying, or asset lifecycle requirements clearly exceed the manifest model.
 
+Tracks now carry optional `albumId`, `trackNumber`, and `tagIds`. The app derives album and tag lists from those fields while keeping the revisioned song array as the persisted source. Library, Albums, Tags, and Queue are separate browsing views; queue membership does not remove songs from Library. Album and tag edits use the existing revision check and playlist history so conflicts and rollback remain available.
+
+The legacy values `Cover`, `Rap Cover`, and `Guitar Cover` described folders rather than releases. For rows without an `albumId`, normalization moves them to Singles, adds `Cover` plus `Rap` or `Guitar` tags where appropriate, and retains the original text in `metadata.legacyAlbum`. A newly created album with an explicit ID may still use one of those names.
+
+Before replacing an exported manifest, `pnpm migrate:catalog input-playlist.json output-playlist.json` writes a source backup and a normalized song array. The admin save path also records the prior revision in playlist history. Public browsing continues to filter by visibility and ready status; direct access to the R2 object or audio URLs needs separate storage access controls for true privacy.
+
 Deleting a playlist entry and deleting its R2 audio objects are separate operations and should remain explicit. Creator Note audio must eventually participate in backup, replacement, orphan detection, and deletion workflows.

@@ -286,7 +286,7 @@ export function CodeEditor({ className }: CodeEditorProps) {
                         {song.title}
                       </span>
                       <span className="block truncate text-[12px] text-muted-foreground">
-                        {song.artist} · {song.album}
+                        {[song.artist, song.album].filter(Boolean).join(" · ")}
                       </span>
                     </span>
                     <span className="tabular-nums text-[11px] text-muted-foreground">
@@ -302,7 +302,7 @@ export function CodeEditor({ className }: CodeEditorProps) {
     );
   }
 
-  const filePath = `${currentTrack.album}/${currentTrack.title}`;
+  const filePath = `${currentTrack.album || "Singles"}/${currentTrack.title}`;
   const effectiveDuration = duration > 0 ? duration : currentTrack.duration;
 
   return (
