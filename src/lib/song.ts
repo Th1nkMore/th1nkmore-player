@@ -1,3 +1,4 @@
+import { withCatalogIds } from "@/lib/catalog";
 import { normalizeSongTags } from "@/lib/tags";
 import { normalizeLanguage } from "@/lib/utils";
 import type {
@@ -99,7 +100,10 @@ export function createEmptySongDraft(): Partial<Song> {
     title: "",
     artist: "",
     album: "",
+    albumId: null,
+    trackNumber: null,
     tags: [],
+    tagIds: [],
     duration: 0,
     lyrics: "",
     language: "en",
@@ -128,7 +132,7 @@ export function normalizeSong(song: Song): Song {
   const shareSlug = normalizeShareSlug(rawShareSlug);
   const creatorNote = normalizeCreatorNote(rawCreatorNote);
 
-  return {
+  return withCatalogIds({
     ...baseSong,
     audioUrl: normalizeMediaUrl(song.audioUrl) || "",
     language: normalizeLanguage(song.language),
@@ -142,7 +146,7 @@ export function normalizeSong(song: Song): Song {
     ...(originalArtist ? { originalArtist } : {}),
     ...(shareSlug ? { shareSlug } : {}),
     ...(creatorNote ? { creatorNote } : {}),
-  };
+  });
 }
 
 export function normalizePlaylistSongs(songs: Song[]): Song[] {

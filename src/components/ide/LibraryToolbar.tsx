@@ -113,48 +113,52 @@ export function LibraryToolbar({
         />
       </div>
 
-      <div className="mt-2 flex touch-pan-x touch-pinch-zoom gap-2 overflow-x-auto pb-0.5 scrollbar-none">
-        <button
-          type="button"
-          onClick={() => onAlbumChange(null)}
-          aria-pressed={activeAlbum === null}
-          className={cn(
-            "min-h-10 shrink-0 rounded-full px-3 text-xs font-medium transition-[scale,color,background-color,box-shadow] duration-150 ease-out active:scale-[0.96]",
-            activeAlbum === null
-              ? "bg-primary/12 text-primary shadow-[0_0_0_1px_rgba(56,189,248,0.28)]"
-              : "bg-background text-muted-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.08)] hover:text-foreground dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08)]",
+      {(albums.length > 0 || activeTagLabel) && (
+        <div className="mt-2 flex touch-pan-x touch-pinch-zoom gap-2 overflow-x-auto pb-0.5 scrollbar-none">
+          {albums.length > 0 && (
+            <button
+              type="button"
+              onClick={() => onAlbumChange(null)}
+              aria-pressed={activeAlbum === null}
+              className={cn(
+                "min-h-10 shrink-0 rounded-full px-3 text-xs font-medium transition-[scale,color,background-color,box-shadow] duration-150 ease-out active:scale-[0.96]",
+                activeAlbum === null
+                  ? "bg-primary/12 text-primary shadow-[0_0_0_1px_rgba(56,189,248,0.28)]"
+                  : "bg-background text-muted-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.08)] hover:text-foreground dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08)]",
+              )}
+            >
+              {t("allSongs")}
+            </button>
           )}
-        >
-          {t("allSongs")}
-        </button>
-        {albums.map((album) => (
-          <button
-            key={album}
-            type="button"
-            onClick={() => onAlbumChange(album)}
-            aria-pressed={activeAlbum === album}
-            className={cn(
-              "min-h-10 shrink-0 rounded-full px-3 text-xs font-medium transition-[scale,color,background-color,box-shadow] duration-150 ease-out active:scale-[0.96]",
-              activeAlbum === album
-                ? "bg-primary/12 text-primary shadow-[0_0_0_1px_rgba(56,189,248,0.28)]"
-                : "bg-background text-muted-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.08)] hover:text-foreground dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08)]",
-            )}
-          >
-            {album}
-          </button>
-        ))}
-        {activeTagLabel && (
-          <button
-            type="button"
-            onClick={onClearTag}
-            className="flex min-h-10 shrink-0 items-center gap-1.5 rounded-full bg-sky-400/10 pl-3 pr-2.5 text-xs font-medium text-sky-200 shadow-[0_0_0_1px_rgba(56,189,248,0.28)] transition-[scale,background-color] duration-150 ease-out active:scale-[0.96]"
-            aria-label={t("clearTag", { tag: activeTagLabel })}
-          >
-            #{activeTagLabel}
-            <X className="size-3.5" />
-          </button>
-        )}
-      </div>
+          {albums.map((album) => (
+            <button
+              key={album}
+              type="button"
+              onClick={() => onAlbumChange(album)}
+              aria-pressed={activeAlbum === album}
+              className={cn(
+                "min-h-10 shrink-0 rounded-full px-3 text-xs font-medium transition-[scale,color,background-color,box-shadow] duration-150 ease-out active:scale-[0.96]",
+                activeAlbum === album
+                  ? "bg-primary/12 text-primary shadow-[0_0_0_1px_rgba(56,189,248,0.28)]"
+                  : "bg-background text-muted-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.08)] hover:text-foreground dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08)]",
+              )}
+            >
+              {album}
+            </button>
+          ))}
+          {activeTagLabel && (
+            <button
+              type="button"
+              onClick={onClearTag}
+              className="flex min-h-10 shrink-0 items-center gap-1.5 rounded-full bg-sky-400/10 pl-3 pr-2.5 text-xs font-medium text-sky-200 shadow-[0_0_0_1px_rgba(56,189,248,0.28)] transition-[scale,background-color] duration-150 ease-out active:scale-[0.96]"
+              aria-label={t("clearTag", { tag: activeTagLabel })}
+            >
+              #{activeTagLabel}
+              <X className="size-3.5" />
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

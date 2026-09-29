@@ -6,6 +6,7 @@ import { DEFAULT_TAG_SUGGESTIONS } from "@/lib/tags";
 import { cn } from "@/lib/utils";
 
 type TagInputProps = {
+  id?: string;
   value: string[];
   onChange: (tags: string[]) => void;
   suggestions?: readonly string[];
@@ -22,6 +23,7 @@ function normalizeTag(input: string) {
 }
 
 export function TagInput({
+  id,
   value,
   onChange,
   suggestions = DEFAULT_TAG_SUGGESTIONS,
@@ -130,6 +132,7 @@ export function TagInput({
           ))}
 
           <input
+            id={id}
             type="text"
             value={draft}
             onChange={(event) => {

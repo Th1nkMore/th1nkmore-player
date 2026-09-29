@@ -23,7 +23,10 @@ export interface Song {
   title: string;
   artist: string;
   album: string;
+  albumId?: string | null;
+  trackNumber?: number | null;
   tags: string[];
+  tagIds?: string[];
   duration: number;
   lyrics: string;
   audioUrl: string;
@@ -37,4 +40,23 @@ export interface Song {
   originalArtist?: string;
   shareSlug?: string;
   creatorNote?: CreatorNote;
+}
+
+export interface Album {
+  id: string;
+  title: string;
+  artist: string;
+  trackIds: string[];
+}
+
+export interface LibraryTag {
+  id: string;
+  name: string;
+}
+
+export interface Catalog {
+  schemaVersion: 2;
+  tracks: Song[];
+  albums: Album[];
+  tags: LibraryTag[];
 }

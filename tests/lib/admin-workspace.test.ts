@@ -11,7 +11,7 @@ import {
   patchPlaylistSongs,
   reorderPlaylistSongs,
 } from "@/lib/admin-workspace";
-import { createEmptySongDraft } from "@/lib/song";
+import { createEmptySongDraft, normalizeSong } from "@/lib/song";
 
 describe("admin workspace helpers", () => {
   it("marks upload as ready only when required fields and audio exist", () => {
@@ -21,7 +21,7 @@ describe("admin workspace helpers", () => {
           ...createEmptySongDraft(),
           title: "Track",
           artist: "Artist",
-          album: "Album",
+          album: "",
         },
         new File(["demo"], "demo.mp3", { type: "audio/mpeg" }),
       ).canDeploy,
@@ -134,7 +134,10 @@ describe("admin workspace helpers", () => {
       patchPlaylistSongs(playlist, [songOne.id], {
         assetStatus: "archived",
       }),
-    ).toEqual([{ ...songOne, assetStatus: "archived" }, secondSong]);
+    ).toEqual([
+      normalizeSong({ ...songOne, assetStatus: "archived" }),
+      secondSong,
+    ]);
     expect(playlist[0].assetStatus).toBe("ready");
   });
 });

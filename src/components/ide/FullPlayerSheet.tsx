@@ -95,7 +95,9 @@ export function FullPlayerSheet({ open, onOpenChange }: FullPlayerSheetProps) {
             </DrawerTitle>
             <DrawerDescription className="text-sm text-muted-foreground mt-1">
               {currentTrack
-                ? `${currentTrack.artist} · ${currentTrack.album}`
+                ? [currentTrack.artist, currentTrack.album]
+                    .filter(Boolean)
+                    .join(" · ")
                 : tPlayer("selectTrack")}
             </DrawerDescription>
             {(isPlaybackPending(playbackStatus) ||

@@ -111,9 +111,7 @@ export function validateAdminPlaylist(playlist: Song[]) {
   const shareSlugs = new Set<string>();
 
   for (const song of playlist) {
-    if (
-      !(song.id && song.title && song.artist && song.album && song.audioUrl)
-    ) {
+    if (!(song.id && song.title && song.artist && song.audioUrl)) {
       throw new PlaylistValidationError(
         "Invalid song data: missing required fields",
       );

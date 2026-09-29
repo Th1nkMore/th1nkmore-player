@@ -84,7 +84,7 @@ export function AdminSongListRow({
               {song.title}
             </div>
             <div className="mt-0.5 truncate text-xs text-gray-500">
-              {song.artist} • {song.album}
+              {[song.artist, song.album].filter(Boolean).join(" • ")}
             </div>
           </div>
           {isDirty ? (
