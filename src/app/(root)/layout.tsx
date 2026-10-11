@@ -18,6 +18,7 @@ export default async function RootLayout({
   const {
     admin: _adminMessages,
     loading: _loadingMessages,
+    repertoire: _repertoireMessages,
     ...messages
   } = await getMessages({ locale });
 

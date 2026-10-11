@@ -194,7 +194,8 @@
       "upload": "Song hinzufügen",
       "record": "Audio aufnehmen",
       "edit": "Songs",
-      "catalog": "Alben & Tags"
+      "catalog": "Alben & Tags",
+      "repertoire": "Repertoire"
     },
     "shell": {
       "title": "Musik-Workspace",
@@ -636,7 +637,8 @@
       "descriptions": {
         "edit": "Musik finden, bearbeiten und veröffentlichen.",
         "upload": "Audio oder ein Cover-Paket hinzufügen.",
-        "catalog": "Alben und Tags übersichtlich organisieren."
+        "catalog": "Alben und Tags übersichtlich organisieren.",
+        "repertoire": "Songs erfassen, Aufnahmen verknüpfen und das Repertoire auswerten."
       }
     },
     "form": {
@@ -701,7 +703,14 @@
       "language": {
         "zh": "Chinesisch",
         "en": "Englisch",
-        "ja": "Japanisch"
+        "ja": "Japanisch",
+        "yue": "Kantonesisch",
+        "ko": "Koreanisch",
+        "es": "Spanisch",
+        "fr": "Französisch",
+        "de": "Deutsch",
+        "other": "Andere Sprachen",
+        "unknown": "Nicht angegeben"
       },
       "visibility": {
         "public": "Öffentlich",
@@ -824,12 +833,145 @@
     "language": {
       "zh": "Chinesisch",
       "en": "Englisch",
-      "ja": "Japanisch"
+      "ja": "Japanisch",
+      "unknown": "Nicht angegeben",
+      "yue": "Kantonesisch",
+      "ko": "Koreanisch",
+      "es": "Spanisch",
+      "fr": "Französisch",
+      "de": "Deutsch",
+      "other": "Andere Sprachen"
     },
     "performance": {
       "cover": "Cover",
       "original": "Originale",
       "listening": "Hörnotizen"
-    }
+    },
+    "recordingCount": "{count, plural, one {# Version} other {# Versionen}}",
+    "countingMode": "Zählweise",
+    "mode": {
+      "songs": "Nach Song",
+      "recordings": "Nach Aufnahme"
+    },
+    "songScope": "Einmalig gezählte veröffentlichte Songs mit {count} Aufnahmeversionen.",
+    "recordingScope": "Jede veröffentlichte Aufnahme zählt einzeln: {count} Versionen.",
+    "dimension": "Verteilung",
+    "dimensionNames": {
+      "artists": "Original- / Quellkünstler",
+      "styles": "Stile",
+      "languages": "Gesangssprachen",
+      "tags": "Tags",
+      "performances": "Werkarten"
+    },
+    "unfilled": "Nicht angegeben",
+    "artistNote": "Künstler beziehen sich auf Original- oder Quellangaben. Kooperationen können bei mehreren Künstlern zählen.",
+    "distributionNote": "Anteile verwenden den gewählten Bereich. Ein Song kann mehrere Stile, Tags oder Sprachversionen haben.",
+    "searchDistribution": "Verteilung durchsuchen",
+    "noDistribution": "Keine passenden Daten",
+    "showLessRows": "Weniger anzeigen",
+    "showAllRows": "Alle {count} Einträge anzeigen"
+  },
+  "repertoire": {
+    "description": "Kenntnisstand und persönliche Notizen bleiben in der Verwaltung. Künstler- und Stildaten veröffentlichter Aufnahmen erscheinen in der öffentlichen Statistik.",
+    "known": "Bekannt",
+    "learning": "In Arbeit",
+    "recorded": "Aufgenommen",
+    "published": "Veröffentlicht",
+    "all": "Alle",
+    "unrecorded": "Noch aufnehmen",
+    "archived": "Archiviert",
+    "new": "Song erfassen",
+    "bulk": "Mehrere erfassen",
+    "export": "Liste exportieren",
+    "reload": "Neu laden",
+    "view": "Ansicht",
+    "list": "Songs",
+    "insights": "Statistik",
+    "history": "Verlauf",
+    "loading": "Repertoire wird geladen…",
+    "saving": "Wird gespeichert…",
+    "save": "Song speichern",
+    "saved": "Repertoire gespeichert",
+    "close": "Repertoire schließen",
+    "cancel": "Abbrechen",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "empty": "Keine passenden Songs. Filter ändern oder einen Song erfassen.",
+    "search": "Titel, Originalkünstler, Stil oder Tag suchen",
+    "filter": "Aufnahmestatus",
+    "artists": "Original- / Quellkünstler",
+    "styles": "Stile",
+    "tags": "Tags",
+    "language": "Sprache beim Singen",
+    "languages": {
+      "unknown": "Nicht angegeben",
+      "zh": "Chinesisch",
+      "en": "Englisch",
+      "ja": "Japanisch",
+      "yue": "Kantonesisch",
+      "ko": "Koreanisch",
+      "es": "Spanisch",
+      "fr": "Französisch",
+      "de": "Deutsch",
+      "other": "Andere Sprachen"
+    },
+    "knowledge": "Kenntnisstand",
+    "proficiency": "Sicherheit",
+    "unassessed": "Nicht bewertet",
+    "comfortable": "Sicher",
+    "review": "Wiederholen",
+    "learnedOn": "Gelernt am (optional)",
+    "note": "Persönliche Notiz",
+    "privateNote": "Nur in der Verwaltung gespeichert; wird nicht an den öffentlichen Player gesendet.",
+    "versions": "Verknüpfte Aufnahmen",
+    "noRecording": "Noch keine Aufnahme. Später beim Hochladen verknüpfen.",
+    "archiveEntry": "Im Repertoire archivieren (wiederherstellbar; Veröffentlichung unverändert)",
+    "stylesHint": "Künstler, Stile oder Tags mit Kommas trennen. Instrumente wie Guitar gehören zu Tags.",
+    "editorHint": "Ein Song kann mehrere Aufnahmen haben und zählt trotzdem einmal.",
+    "titleField": "Songtitel (Pflichtfeld)",
+    "edit": "Song bearbeiten",
+    "titleRequired": "Zuerst einen Songtitel eingeben.",
+    "bulkHint": "Ein Song pro Zeile oder tabulatorgetrennte Spalten: Titel, Originalkünstler, Stil, Sprache. Codes wie zh, yue, en, ja oder ko; leer bedeutet unbekannt.",
+    "bulkPreview": "{count} Songs hinzufügen; {duplicates} doppelte Einträge übersprungen.",
+    "bulkDescription": "Vorschau vor dem Speichern prüfen. Eine Aufnahme ist optional.",
+    "importConfirm": "{count} Songs erfassen",
+    "entryCount": "{count, plural, one {# Song} other {# Songs}}",
+    "versionCount": "{count, plural, one {# Aufnahme} other {# Aufnahmen}}",
+    "unknownArtist": "Originalkünstler unbekannt",
+    "insightsScope": "{count} Einträge aus „{scope}“. Bekannte Songs verwenden Repertoiredaten; Aufnahmen verwenden ihre eigene Sprache und ihren Stil.",
+    "scope": "Statistikbereich",
+    "historyHint": "Vor jedem Speichern bleibt die vorige Version erhalten. Wiederherstellen sichert auch die aktuelle Liste.",
+    "restore": "Version wiederherstellen",
+    "restoreTitle": "Repertoire wiederherstellen",
+    "restoreDescription": "Die ausgewählte Version ersetzt die Liste. Die aktuelle Version bleibt im Verlauf erhalten.",
+    "discardTitle": "Änderungen speichern?",
+    "discardDescription": "Es gibt ungespeicherte Einträge oder Änderungen. Speichern oder Änderungen verwerfen.",
+    "discard": "Änderungen verwerfen",
+    "linkedEntry": "Verknüpfter Repertoire-Song",
+    "linkSearch": "Repertoire nach Titel oder Originalkünstler durchsuchen",
+    "unlinked": "Nicht verknüpft (neue Aufnahmen werden automatisch erfasst)",
+    "linkHint": "Versionen eines Songs mit einem Eintrag verknüpfen. Künstler- und Stilstatistik verwenden die Repertoiredaten.",
+    "linkUnavailable": "Repertoire nicht verfügbar. Aufnahme speichern und später verknüpfen.",
+    "errors": {
+      "conflict": "Die Liste wurde anderswo geändert. Entwurf sichern, Editor schließen und vor dem Speichern neu laden.",
+      "invalid": "Titel, Datum und Verknüpfungen prüfen. Eine Aufnahme darf nur zu einem Song gehören.",
+      "revisionRequired": "Repertoire vor dem Speichern neu laden.",
+      "storageError": "Repertoire kann nicht gelesen oder gespeichert werden. Später erneut laden."
+    },
+    "backupFile": "Repertoire-JSON importieren (zusammenführen)",
+    "backupInvalid": "Backup nicht lesbar. Eine hier exportierte JSON-Datei wählen.",
+    "backupPreview": "{count} Backup-Einträge zusammenführen; andere vorhandene Songs bleiben erhalten.",
+    "recordingStyles": "Stil dieser Aufnahme",
+    "inheritStyles": "Stile des verknüpften Songs übernehmen",
+    "developmentHint": "Lokale Vorschau; dauerhaft erfassen in",
+    "productionAdmin": "Online-Verwaltung",
+    "advancedFilters": "Nach Künstler, Stil und Sprache filtern",
+    "bulkUncertain": "Für {count} bestehende Titel vor dem Hinzufügen Originalkünstler angeben: {titles}",
+    "saveChanges": "Änderungen speichern"
+  },
+  "playerSession": {
+    "previous": "Zuletzt: {title} · {position}",
+    "continue": "Weiterhören",
+    "dismiss": "Fortsetzungshinweis schließen"
   }
 }

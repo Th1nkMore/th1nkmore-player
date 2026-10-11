@@ -98,7 +98,7 @@ export function normalizeCreatorNote(value: unknown): CreatorNote | undefined {
 export function createEmptySongDraft(): Partial<Song> {
   return {
     title: "",
-    artist: "",
+    artist: "Huang",
     album: "",
     albumId: null,
     trackNumber: null,
@@ -106,7 +106,7 @@ export function createEmptySongDraft(): Partial<Song> {
     tagIds: [],
     duration: 0,
     lyrics: "",
-    language: "en",
+    language: "unknown",
     metadata: {},
     trackType: DEFAULT_TRACK_TYPE,
     sourceType: DEFAULT_SOURCE_TYPE,
@@ -134,6 +134,15 @@ export function normalizeSong(song: Song): Song {
 
   return withCatalogIds({
     ...baseSong,
+    ...(baseSong.repertoireId
+      ? { repertoireId: normalizeOptionalText(baseSong.repertoireId) }
+      : {}),
+    ...(baseSong.styles !== undefined
+      ? { styles: normalizeSongTags(baseSong.styles) }
+      : {}),
+    ...(baseSong.originalArtists !== undefined
+      ? { originalArtists: normalizeSongTags(baseSong.originalArtists) }
+      : {}),
     audioUrl: normalizeMediaUrl(song.audioUrl) || "",
     language: normalizeLanguage(song.language),
     metadata: song.metadata || {},

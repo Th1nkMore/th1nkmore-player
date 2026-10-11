@@ -15,7 +15,7 @@ import { buildTagStats, getSongsByTag } from "@/lib/tags";
 import type { Song } from "@/types/music";
 
 const PLAYLIST_CACHE_KEY = "sonic-ide-playlist";
-const PLAYLIST_CACHE_VERSION = 4;
+const PLAYLIST_CACHE_VERSION = 5;
 
 type CachedPlaylist = {
   songs: Song[];
@@ -76,6 +76,7 @@ export type IDEState = {
   files: Song[];
   isLoading: boolean;
   loadError: boolean;
+  remoteLoaded: boolean;
   openFiles: string[];
   activeFileId: string | null;
   explorerView: "library" | "albums" | "tags" | "queue";
@@ -123,6 +124,7 @@ export function createIDEStore({ initialSongs }: IDEStoreInit) {
     files: normalizedInitialSongs,
     isLoading: initialSongs === null,
     loadError: false,
+    remoteLoaded: false,
     openFiles: [],
     activeFileId: null,
     explorerView: "library",
@@ -134,7 +136,12 @@ export function createIDEStore({ initialSongs }: IDEStoreInit) {
       try {
         const songs = await requestPlaylist();
         setCachedPlaylist(songs);
-        set({ files: songs, isLoading: false, loadError: false });
+        set({
+          files: songs,
+          isLoading: false,
+          loadError: false,
+          remoteLoaded: true,
+        });
       } catch (error) {
         console.error("Error fetching playlist:", error);
         set({

@@ -70,6 +70,7 @@ export default async function RootLayout(props: RootLayoutProps) {
   const {
     admin: _adminMessages,
     loading: _loadingMessages,
+    repertoire: _repertoireMessages,
     ...messages
   } = await getMessages({ locale });
 
