@@ -23,14 +23,14 @@ export function AdminAppearanceControls({
           document.cookie = `NEXT_LOCALE=${event.target.value};path=/;max-age=31536000;SameSite=Lax`;
           router.refresh();
         }}
-        className="max-w-24 rounded-lg border border-[var(--border)] bg-[var(--admin-surface)] px-2 text-xs"
+        className="max-w-24 rounded border border-[var(--border)] bg-[var(--admin-surface)] px-2 text-xs"
       >
         <option value="zh">中文</option>
         <option value="en">English</option>
         <option value="ja">日本語</option>
         <option value="de">Deutsch</option>
       </select>
-      <ThemeSwitcher className="rounded-lg" />
+      <ThemeSwitcher />
     </>
   );
 }

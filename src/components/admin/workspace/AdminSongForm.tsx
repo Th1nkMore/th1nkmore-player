@@ -28,9 +28,9 @@ import type { Album, LibraryTag, Song } from "@/types/music";
 const fieldClassName =
   "border-[var(--border)] bg-[var(--admin-inset)] text-[var(--admin-text)] placeholder:text-[var(--admin-subtle)]";
 const selectClassName =
-  "flex h-9 w-full rounded-md border border-[var(--border)] bg-[var(--admin-inset)] px-3 py-1 text-sm text-[var(--admin-text)] outline-none transition-[border-color,box-shadow] duration-150 ease-out focus:border-sky-400/60";
+  "flex h-9 w-full rounded-md border border-[var(--border)] bg-[var(--admin-inset)] px-3 py-1 text-sm text-[var(--admin-text)] outline-none transition-[border-color,box-shadow] duration-150 ease-out focus-visible:border-primary/60";
 const textareaClassName =
-  "flex min-h-[11rem] w-full rounded-xl border border-[var(--border)] bg-[var(--admin-inset)] px-3 py-3 text-sm text-[var(--admin-text)] outline-none transition-[border-color,box-shadow] duration-150 ease-out focus:border-sky-400/60";
+  "flex min-h-[11rem] w-full rounded-xl border border-[var(--border)] bg-[var(--admin-inset)] px-3 py-3 text-sm text-[var(--admin-text)] outline-none transition-[border-color,box-shadow] duration-150 ease-out focus-visible:border-primary/60";
 
 type SongDraft = Partial<Song> | Song;
 

@@ -166,7 +166,7 @@ export function CoverRevisionPanel({
                 }}
                 className={`w-full rounded-xl px-3 py-3 text-left shadow-[0_0_0_1px_rgba(255,255,255,0.08)] transition-[background-color,box-shadow,scale] duration-150 ease-out active:scale-[0.99] ${
                   selectedRevision
-                    ? "bg-sky-400/[0.1] shadow-[0_0_0_1px_rgba(56,189,248,0.36)]"
+                    ? "bg-accent/55 shadow-[0_0_0_1px_var(--border)]"
                     : "bg-black/20 hover:bg-white/[0.045]"
                 }`}
               >

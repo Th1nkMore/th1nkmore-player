@@ -117,7 +117,7 @@ export function TagInput({
           {value.map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center gap-1 rounded-full border border-sky-500/30 bg-sky-500/10 px-2.5 py-1 text-xs text-[var(--admin-accent)]"
+              className="inline-flex items-center gap-1 rounded-full border border-border bg-accent/50 px-2.5 py-1 text-xs text-[var(--admin-accent)]"
             >
               <span>{tag}</span>
               <button
@@ -182,8 +182,8 @@ export function TagInput({
                 className={cn(
                   "inline-flex min-h-10 items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-[scale,color,background-color,border-color] duration-150 ease-out active:scale-[0.96]",
                   isSelected
-                    ? "border-emerald-500/40 bg-emerald-500/10 text-[var(--admin-success)]"
-                    : "border-[var(--border)] bg-[var(--admin-inset)] text-[var(--admin-muted)] hover:border-sky-500/30 hover:text-[var(--admin-text)]",
+                    ? "border-border bg-accent text-foreground"
+                    : "border-[var(--border)] bg-[var(--admin-inset)] text-[var(--admin-muted)] hover:border-primary/30 hover:text-[var(--admin-text)]",
                 )}
               >
                 <Plus className="h-3 w-3" />
