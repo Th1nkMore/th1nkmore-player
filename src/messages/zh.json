@@ -791,5 +791,45 @@
     "loading": "正在加载曲库",
     "loadError": "无法加载曲库",
     "retry": "重试"
+  },
+  "libraryStats": {
+    "collected": "已收录",
+    "songCount": "{count} 首",
+    "open": "曲库统计，已收录 {count} 首，点击查看详情",
+    "title": "曲库统计",
+    "description": "记录每一首，也慢慢看见自己的曲库。",
+    "ongoing": "按已公开的歌曲累计，随着新作品收录持续更新。",
+    "duration": "总时长",
+    "tagCount": "Tag 数量",
+    "withLyrics": "附有歌词",
+    "tags": "Tag 分布",
+    "tagNote": "占比以全部收录歌曲为基数；一首歌可以有多个 Tag。",
+    "languages": "主要演唱语言",
+    "performances": "作品类型",
+    "searchTags": "搜索 Tag",
+    "noMatchingTags": "没有匹配的 Tag",
+    "noTags": "还没有添加 Tag",
+    "showAll": "展开全部 {count} 个 Tag",
+    "showLess": "收起 Tag",
+    "untagged": "另有 {count} 首尚未添加 Tag",
+    "hoursMinutes": "{hours} 小时 {minutes} 分",
+    "minutes": "{minutes} 分钟",
+    "durationNote": "总时长仅计入已填写时长的 {count} 首歌曲。",
+    "empty": "曲库刚刚开始，收录第一首后就会显示分布。",
+    "loading": "正在加载曲库统计…",
+    "unavailable": "暂时无法读取曲库统计",
+    "refreshError": "更新暂时失败，当前展示上次读取的曲库统计。",
+    "retry": "重新加载",
+    "close": "关闭曲库统计",
+    "language": {
+      "zh": "中文",
+      "en": "英语",
+      "ja": "日语"
+    },
+    "performance": {
+      "cover": "翻唱",
+      "original": "原创",
+      "listening": "聆听手记"
+    }
   }
 }

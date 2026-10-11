@@ -80,6 +80,10 @@ The first version should not accept arbitrary CSS or JavaScript. Every preset ne
 
 ## Storage Boundary
 
+The public homepage includes a compact, clickable library total. Its statistics panel aggregates unique public, ready, playable song IDs across the entire library, independently of search filters and the runtime queue. It reports total duration, attached lyric coverage, tags, primary singing languages, and performance types. Tag shares use the song total as their denominator; a song can contribute to multiple tags, with case and whitespace variants deduplicated per song. Unknown durations are omitted from the duration sum and identified in the panel.
+
+This total records published library entries, not every song the owner knows or an estimated target. It updates when the library is loaded again and has no 1,000-song cap. Aggregation makes one pass over the library, with distribution sorting afterward; tag details initially show eight rows and support search and expansion. Failed reads display an unavailable state or retain the previous total with a refresh notice, rather than implying an empty library.
+
 The flat R2 `playlist.json` remains adequate for the current catalog size. A database should only be introduced when editing, querying, or asset lifecycle requirements clearly exceed the manifest model.
 
 Tracks now carry optional `albumId`, `trackNumber`, and `tagIds`. The app derives album and tag lists from those fields while keeping the revisioned song array as the persisted source. Library, Albums, Tags, and Queue are separate browsing views; queue membership does not remove songs from Library. Album and tag edits use the existing revision check and playlist history so conflicts and rollback remain available.
