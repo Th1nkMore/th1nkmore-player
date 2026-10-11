@@ -55,12 +55,12 @@ export function AdminSongListRow({
         transition,
       }}
       className={cn(
-        "flex w-full items-stretch rounded-xl border border-transparent p-1 transition-[background-color,border-color,opacity] duration-150 ease-out",
+        "relative flex w-full items-stretch rounded-md border border-transparent p-1 before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-primary transition-[background-color,border-color,opacity] duration-150 ease-out",
         disabled && "cursor-wait opacity-60",
         isDragging && "z-20 opacity-70 shadow-[0_12px_32px_rgba(0,0,0,0.45)]",
         isActive
-          ? "border-[var(--admin-accent)] bg-[var(--admin-accent-soft)]"
-          : "hover:bg-[var(--admin-inset)]",
+          ? "bg-accent/55 before:opacity-100"
+          : "before:opacity-0 hover:bg-accent/30",
       )}
     >
       <label className="relative flex min-h-10 min-w-10 cursor-pointer items-center justify-center rounded-xl hover:bg-[var(--admin-inset)]">
@@ -70,7 +70,7 @@ export function AdminSongListRow({
           checked={isSelected}
           disabled={disabled}
           onChange={onToggleSelected}
-          className="h-4 w-4 rounded border-gray-600 bg-[var(--admin-inset)] accent-sky-400"
+          className="h-4 w-4 rounded border-border bg-background accent-[var(--primary)]"
         />
       </label>
 
@@ -118,7 +118,7 @@ export function AdminSongListRow({
             {song.tags.slice(0, 3).map((tag) => (
               <span
                 key={tag}
-                className="rounded-full bg-sky-500/8 px-2 py-0.5 text-xs text-[var(--admin-accent)] shadow-[0_0_0_1px_rgba(14,165,233,0.18)]"
+                className="rounded-full border border-border bg-accent/50 px-2 py-0.5 text-xs text-foreground"
               >
                 {tag}
               </span>

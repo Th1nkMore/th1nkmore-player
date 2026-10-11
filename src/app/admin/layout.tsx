@@ -35,7 +35,7 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
+          defaultTheme="dark"
           enableSystem={false}
         >
           <NextIntlClientProvider locale={locale} messages={messages}>

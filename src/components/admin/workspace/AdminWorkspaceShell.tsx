@@ -38,7 +38,7 @@ export function AdminWorkspaceShell({
   const t = useTranslations("admin");
   const [collapsed, setCollapsed] = useState(false);
   return (
-    <div className="flex h-[100dvh] min-h-0 w-full flex-col bg-[var(--editor-bg)] text-sm antialiased lg:flex-row">
+    <div className="flex h-[100dvh] min-h-0 w-full flex-col bg-[var(--editor-bg)] font-mono text-sm antialiased lg:flex-row">
       <a
         href="#admin-main"
         className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:rounded-lg focus:bg-[var(--admin-surface)] focus:p-3"

@@ -8,6 +8,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Tags,
+  Terminal,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { AdminAppearanceControls } from "@/components/admin/AdminAppearanceControls";
@@ -41,13 +42,13 @@ export function AdminNavigation({
         collapsed ? "lg:w-[72px]" : "lg:w-[208px]",
       )}
     >
-      <div className="hidden h-[88px] items-center gap-3 px-5 lg:flex">
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-[var(--admin-accent)] text-white">
-          <AudioLines size={19} aria-hidden="true" />
+      <div className="hidden h-[64px] items-center gap-3 px-5 lg:flex">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded border border-border bg-background text-muted-foreground">
+          <Terminal size={18} aria-hidden="true" />
         </span>
         {!collapsed && (
           <div className="block">
-            <p className="font-semibold tracking-tight">Sonic</p>
+            <p className="font-semibold tracking-tight">Sonic IDE</p>
             <p className="text-xs text-[var(--admin-subtle)]">
               {t("shell.title")}
             </p>
@@ -67,9 +68,9 @@ export function AdminNavigation({
             disabled={disabled}
             onClick={() => onTabChange(id)}
             className={cn(
-              "flex min-h-11 flex-1 items-center justify-center gap-3 rounded-xl px-3 text-sm font-medium lg:flex-none lg:justify-start",
+              "flex min-h-11 flex-1 items-center justify-center gap-3 rounded-md px-3 text-xs font-medium lg:flex-none lg:justify-start",
               activeTab === id
-                ? "bg-[var(--admin-accent-soft)] text-[var(--admin-accent)]"
+                ? "bg-accent text-foreground"
                 : "text-[var(--admin-muted)] hover:bg-[var(--admin-inset)]",
               collapsed && "lg:justify-center",
             )}
@@ -88,7 +89,7 @@ export function AdminNavigation({
           aria-label={t(
             collapsed ? "navigation.expand" : "navigation.collapse",
           )}
-          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl text-[var(--admin-subtle)] hover:bg-[var(--admin-inset)]"
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-md text-[var(--admin-subtle)] hover:bg-[var(--admin-inset)]"
         >
           {collapsed ? (
             <PanelLeftOpen size={18} />
@@ -117,12 +118,12 @@ export function AdminPageChrome({
 }) {
   const t = useTranslations("admin");
   return (
-    <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--admin-surface)] px-4 py-4 lg:min-h-[88px] lg:px-6">
+    <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--admin-surface)] px-4 py-2 lg:min-h-[64px] lg:px-6">
       <div className="min-w-0">
-        <h1 className="text-xl font-semibold tracking-tight">
+        <h1 className="text-base font-semibold tracking-tight">
           {t(`tabs.${activeTab}`)}
         </h1>
-        <p className="mt-1 hidden text-sm text-[var(--admin-muted)] sm:block">
+        <p className="mt-1 hidden text-xs text-[var(--admin-muted)] sm:block">
           {t(`navigation.descriptions.${activeTab}`)}
         </p>
       </div>
@@ -131,7 +132,7 @@ export function AdminPageChrome({
           href="/"
           target="_blank"
           rel="noreferrer"
-          className="hidden min-h-10 items-center gap-2 rounded-lg px-3 text-sm text-[var(--admin-muted)] hover:bg-[var(--admin-inset)] md:inline-flex"
+          className="hidden min-h-10 items-center gap-2 rounded border border-border bg-sidebar px-3 text-xs text-[var(--admin-muted)] hover:bg-[var(--admin-inset)] md:inline-flex"
         >
           <ExternalLink size={16} />
           {t("navigation.viewSite")}
@@ -142,7 +143,7 @@ export function AdminPageChrome({
           onClick={onLogout}
           disabled={isSigningOut || disabled}
           title={t("actions.logout")}
-          className="flex size-10 items-center justify-center rounded-lg text-[var(--admin-muted)] hover:bg-[var(--admin-inset)]"
+          className="flex size-10 items-center justify-center rounded border border-border bg-sidebar text-[var(--admin-muted)] hover:bg-[var(--admin-inset)]"
           aria-label={t(isSigningOut ? "actions.signingOut" : "actions.logout")}
         >
           <LogOut size={17} />
