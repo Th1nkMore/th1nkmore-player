@@ -75,6 +75,7 @@ async function requestPlaylist(): Promise<Song[]> {
 export type IDEState = {
   files: Song[];
   isLoading: boolean;
+  loadError: boolean;
   openFiles: string[];
   activeFileId: string | null;
   explorerView: "library" | "albums" | "tags" | "queue";
@@ -121,6 +122,7 @@ export function createIDEStore({ initialSongs }: IDEStoreInit) {
   return createStore<IDEState>((set, get) => ({
     files: normalizedInitialSongs,
     isLoading: initialSongs === null,
+    loadError: false,
     openFiles: [],
     activeFileId: null,
     explorerView: "library",
@@ -132,12 +134,13 @@ export function createIDEStore({ initialSongs }: IDEStoreInit) {
       try {
         const songs = await requestPlaylist();
         setCachedPlaylist(songs);
-        set({ files: songs, isLoading: false });
+        set({ files: songs, isLoading: false, loadError: false });
       } catch (error) {
         console.error("Error fetching playlist:", error);
         set({
           files: get().files.length > 0 ? get().files : (cached ?? []),
           isLoading: false,
+          loadError: true,
         });
       }
     },

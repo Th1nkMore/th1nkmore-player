@@ -791,5 +791,45 @@
     "loading": "ライブラリを読み込み中",
     "loadError": "ライブラリを読み込めません",
     "retry": "再試行"
+  },
+  "libraryStats": {
+    "collected": "収録済み",
+    "songCount": "{count} 曲",
+    "open": "ライブラリ統計、{count} 曲収録済み。詳細を見る",
+    "title": "ライブラリ統計",
+    "description": "一曲ずつ、自分のレパートリーを記録。",
+    "ongoing": "公開済みの曲を集計し、新しい作品の収録に合わせて更新します。",
+    "duration": "合計再生時間",
+    "tagCount": "タグ数",
+    "withLyrics": "歌詞あり",
+    "tags": "タグの分布",
+    "tagNote": "割合は収録済みの全曲を基準に計算します。一曲に複数のタグを設定できます。",
+    "languages": "主な歌唱言語",
+    "performances": "作品の種類",
+    "searchTags": "タグを検索",
+    "noMatchingTags": "該当するタグはありません",
+    "noTags": "タグはまだありません",
+    "showAll": "全 {count} タグを表示",
+    "showLess": "タグを折りたたむ",
+    "untagged": "タグ未設定の曲が {count} 曲あります",
+    "hoursMinutes": "{hours} 時間 {minutes} 分",
+    "minutes": "{minutes} 分",
+    "durationNote": "再生時間が登録されている {count} 曲のみを合計しています。",
+    "empty": "ここから始まるライブラリ。最初の曲を収録すると分布が表示されます。",
+    "loading": "ライブラリ統計を読み込み中…",
+    "unavailable": "ライブラリ統計を読み込めません",
+    "refreshError": "更新できませんでした。前回読み込んだ統計を表示しています。",
+    "retry": "再読み込み",
+    "close": "ライブラリ統計を閉じる",
+    "language": {
+      "zh": "中国語",
+      "en": "英語",
+      "ja": "日本語"
+    },
+    "performance": {
+      "cover": "カバー",
+      "original": "オリジナル",
+      "listening": "リスニングノート"
+    }
   }
 }
