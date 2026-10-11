@@ -44,7 +44,7 @@ import {
 import type { Song } from "@/types/music";
 
 const selectClassName =
-  "h-10 rounded-xl border border-[var(--border)] bg-[var(--admin-inset)] px-3 text-sm text-[var(--admin-text)] outline-none transition-[border-color,box-shadow] duration-150 ease-out focus:border-sky-400/60";
+  "h-10 rounded-xl border border-[var(--border)] bg-[var(--admin-inset)] px-3 text-sm text-[var(--admin-text)] outline-none transition-[border-color,box-shadow] duration-150 ease-out focus-visible:border-primary/60";
 
 type BulkPatch = Partial<Pick<Song, "assetStatus" | "visibility">>;
 
@@ -227,7 +227,7 @@ export function AdminPlaylistSidebar({
           <button
             type="button"
             onClick={toggleVisible}
-            className="min-h-10 rounded-xl px-2 text-[var(--admin-accent)] transition-[scale,color,background-color] duration-150 ease-out hover:bg-sky-400/8 hover:text-[var(--admin-accent)] active:scale-[0.96]"
+            className="min-h-10 rounded-xl px-2 text-[var(--admin-accent)] transition-[scale,color,background-color] duration-150 ease-out hover:bg-accent/30 hover:text-[var(--admin-accent)] active:scale-[0.96]"
           >
             {allVisibleSelected
               ? t("playlist.bulk.clear")
@@ -236,7 +236,7 @@ export function AdminPlaylistSidebar({
         </div>
 
         {selectedIds.size > 0 ? (
-          <div className="rounded-2xl bg-sky-400/8 p-2 shadow-[0_0_0_1px_rgba(56,189,248,0.2)]">
+          <div className="rounded-md border border-border bg-accent/40 p-2">
             <div className="mb-2 flex items-center justify-between gap-2 px-1 text-xs text-[var(--admin-accent)] tabular-nums">
               {t("playlist.bulk.selected", { count: selectedIds.size })}
               <button

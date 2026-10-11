@@ -18,7 +18,7 @@ import { formatSongDuration } from "@/lib/admin-workspace";
 import type { CreatorNote, LegacyLanguage } from "@/types/music";
 
 const textareaClassName =
-  "flex w-full rounded-xl border border-[var(--border)] bg-[var(--admin-inset)] px-3 py-3 text-sm text-[var(--admin-text)] outline-none transition-[border-color,box-shadow] duration-150 ease-out focus:border-sky-400/60";
+  "flex w-full rounded-xl border border-[var(--border)] bg-[var(--admin-inset)] px-3 py-3 text-sm text-[var(--admin-text)] outline-none transition-[border-color,box-shadow] duration-150 ease-out focus-visible:border-primary/60";
 
 export function CreatorNoteEditor({
   note,

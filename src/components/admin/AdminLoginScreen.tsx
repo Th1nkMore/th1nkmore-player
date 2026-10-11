@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, AudioLines, Eye, EyeOff, Loader2 } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2, Terminal } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { type FormEvent, useState } from "react";
 import { AdminAppearanceControls } from "@/components/admin/AdminAppearanceControls";
@@ -76,12 +76,14 @@ export function AdminLoginScreen({
       </div>
       <div className="m-auto w-full max-w-[420px] py-10">
         <div className="mb-8 flex items-center justify-center gap-3">
-          <span className="flex size-10 items-center justify-center rounded-xl bg-[var(--admin-accent)] text-white">
-            <AudioLines size={24} />
+          <span className="flex size-10 items-center justify-center rounded border border-border bg-sidebar text-foreground">
+            <Terminal size={21} />
           </span>
-          <span className="text-xl font-semibold tracking-tight">Sonic</span>
+          <span className="text-xl font-semibold tracking-tight">
+            Sonic IDE
+          </span>
         </div>
-        <div className="admin-panel rounded-3xl p-6 shadow-sm sm:p-8">
+        <div className="admin-panel rounded-md p-6 sm:p-8">
           <h1 className="text-2xl font-semibold tracking-tight">
             {t("title")}
           </h1>
@@ -105,7 +107,7 @@ export function AdminLoginScreen({
                   disabled={isSubmitting}
                   aria-invalid={Boolean(errorMessage)}
                   aria-describedby={errorMessage ? "login-error" : undefined}
-                  className="h-12 rounded-xl border-[var(--border)] bg-[var(--admin-inset)] pr-12"
+                  className="h-12 rounded-md border-[var(--border)] bg-[var(--admin-inset)] pr-12"
                   required
                 />
                 <button
@@ -122,14 +124,14 @@ export function AdminLoginScreen({
               <p
                 id="login-error"
                 role="alert"
-                className="rounded-xl bg-rose-500/10 p-3 text-sm text-[var(--admin-danger)]"
+                className="rounded-md bg-rose-500/10 p-3 text-sm text-[var(--admin-danger)]"
               >
                 {errorMessage}
               </p>
             )}
             <Button
               type="submit"
-              className="min-h-12 w-full rounded-xl"
+              className="min-h-12 w-full rounded-md"
               disabled={isSubmitting}
             >
               {isSubmitting && <Loader2 size={16} className="animate-spin" />}

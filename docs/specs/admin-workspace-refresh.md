@@ -43,3 +43,9 @@ The existing Tailwind, next-intl, Radix Dialog, and resizable-panel primitives a
 ### Acceptance scope
 
 Browser acceptance covers the loaded library, search empties, editing required fields, upload file selection and draft retention, publication review, clearing drafts, unsaved-change confirmation, dialog Escape/focus restoration, keyboard tabs and panel resizing, catalog search/rename cancellation, desktop/mobile reflow, and theme/language switching. Local synthetic audio is used for upload review; acceptance does not publish test content to R2 or modify the owner's saved songs. Real microphone capture and external storage writes remain covered by their existing implementations and tests, rather than being exercised against the owner's live library.
+
+### Player design-language alignment
+
+The admin now inherits the player's `background`, `sidebar`, `foreground`, `primary`, `accent`, `border`, and semantic log colors through aliases. It uses the same monospace typography and defaults to the same dark theme. Muted and warning text blends the shared colors toward foreground for form readability. No independent blue palette remains.
+
+Navigation and editor tabs use neutral selection backgrounds, library rows use the player's narrow active marker, and toolbars, form panels, buttons, and the Sonic IDE wordmark follow the existing editor surfaces. The three-step upload workflow, draft protections, keyboard paths, and fixed save controls are retained. Browser checks cover 1440px desktop and 320px mobile layouts in light/dark and Chinese/English.

@@ -26,14 +26,14 @@ export function AdminSectionCard({
   className?: string;
 }) {
   return (
-    <section className={cn("admin-panel rounded-2xl p-4 md:p-5", className)}>
+    <section className={cn("admin-panel rounded-md p-4 md:p-5", className)}>
       <div className="mb-4 flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h2 className="text-balance text-base font-semibold text-[var(--admin-text)]">
+          <h2 className="text-balance text-sm font-semibold text-[var(--admin-text)]">
             {title}
           </h2>
           {description ? (
-            <p className="mt-1 text-pretty text-sm text-[var(--admin-muted)]">
+            <p className="mt-1 text-pretty text-xs leading-5 text-[var(--admin-muted)]">
               {description}
             </p>
           ) : null}
@@ -66,20 +66,20 @@ export function AdminCollapsibleSectionCard({
       onToggle={(event) => setIsOpen(event.currentTarget.open)}
       className={cn("admin-panel group rounded-2xl", className)}
     >
-      <summary className="flex min-h-14 cursor-pointer list-none items-center gap-4 rounded-2xl px-4 py-3 transition-[background-color] duration-150 ease-out hover:bg-white/[0.03] md:px-5 [&::-webkit-details-marker]:hidden">
+      <summary className="flex min-h-14 cursor-pointer list-none items-center gap-4 rounded-md px-4 py-3 transition-[background-color] duration-150 ease-out hover:bg-accent/30 md:px-5 [&::-webkit-details-marker]:hidden">
         <div className="min-w-0 flex-1">
-          <h2 className="text-balance text-base font-semibold text-[var(--admin-text)]">
+          <h2 className="text-balance text-sm font-semibold text-[var(--admin-text)]">
             {title}
           </h2>
           {description ? (
-            <p className="mt-1 text-pretty text-sm text-[var(--admin-muted)]">
+            <p className="mt-1 text-pretty text-xs leading-5 text-[var(--admin-muted)]">
               {description}
             </p>
           ) : null}
         </div>
         <ChevronDown className="h-4 w-4 shrink-0 text-[var(--admin-muted)] transition-transform duration-150 ease-out group-open:rotate-180" />
       </summary>
-      <div className="border-t border-white/[0.06] p-4 md:p-5">{children}</div>
+      <div className="border-t border-border p-4 md:p-5">{children}</div>
     </details>
   );
 }
@@ -101,7 +101,7 @@ export function AdminField({
     <div className="space-y-1.5">
       <label
         htmlFor={htmlFor}
-        className="block text-sm font-medium text-[var(--admin-text)]"
+        className="block text-xs font-medium text-[var(--admin-text)]"
       >
         {label}
       </label>
@@ -150,26 +150,30 @@ const toneStyles: Record<
   }
 > = {
   neutral: {
-    border: "border-sky-500/30",
-    background: "bg-sky-500/8",
-    icon: "text-[var(--admin-accent)]",
+    border: "border-[color-mix(in_oklab,var(--log-action)_25%,transparent)]",
+    background:
+      "bg-[color-mix(in_oklab,var(--log-action)_6%,var(--admin-surface))]",
+    icon: "text-log-action",
     Icon: Sparkles,
   },
   success: {
-    border: "border-emerald-500/30",
-    background: "bg-emerald-500/10",
+    border: "border-[color-mix(in_oklab,var(--admin-success)_25%,transparent)]",
+    background:
+      "bg-[color-mix(in_oklab,var(--admin-success)_6%,var(--admin-surface))]",
     icon: "text-[var(--admin-success)]",
     Icon: CheckCircle2,
   },
   warning: {
-    border: "border-amber-500/30",
-    background: "bg-amber-500/10",
+    border: "border-[color-mix(in_oklab,var(--admin-warning)_25%,transparent)]",
+    background:
+      "bg-[color-mix(in_oklab,var(--admin-warning)_6%,var(--admin-surface))]",
     icon: "text-[var(--admin-warning)]",
     Icon: AlertTriangle,
   },
   error: {
-    border: "border-rose-500/30",
-    background: "bg-rose-500/10",
+    border: "border-[color-mix(in_oklab,var(--admin-danger)_25%,transparent)]",
+    background:
+      "bg-[color-mix(in_oklab,var(--admin-danger)_6%,var(--admin-surface))]",
     icon: "text-[var(--admin-danger)]",
     Icon: AlertTriangle,
   },
@@ -194,7 +198,7 @@ export function AdminStatusBanner({
     <div
       role={tone === "error" ? "alert" : "status"}
       className={cn(
-        "rounded-2xl border p-3",
+        "rounded-md border p-3",
         style.border,
         style.background,
         className,
@@ -206,7 +210,7 @@ export function AdminStatusBanner({
           <div className="text-sm font-semibold text-[var(--admin-text)]">
             {title}
           </div>
-          <p className="mt-1 text-pretty text-sm text-[var(--admin-muted)]">
+          <p className="mt-1 text-pretty text-xs leading-5 text-[var(--admin-muted)]">
             {message}
           </p>
         </div>
@@ -228,7 +232,7 @@ export function AdminActionBar({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--admin-surface)] p-3",
+        "flex flex-wrap items-center gap-3 rounded-md border border-[var(--border)] bg-[var(--admin-surface)] p-3",
         sticky && "sticky bottom-0 z-10 shadow-[0_-8px_24px_rgba(0,0,0,0.24)]",
         className,
       )}
@@ -299,7 +303,7 @@ export function AdminLoadingCard({
     <div
       aria-live="polite"
       className={cn(
-        "rounded-2xl border border-[var(--border)] bg-[var(--admin-surface)] p-4",
+        "rounded-md border border-[var(--border)] bg-[var(--admin-surface)] p-4",
         className,
       )}
     >

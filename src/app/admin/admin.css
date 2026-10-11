@@ -1,55 +1,22 @@
-/* Admin tokens are scoped so the public player keeps its own design. */
+/* Alias the player's shared theme; the admin does not define a second palette. */
 .admin-ui {
-  --editor-bg: #f5f6f8;
-  --admin-surface: #fdfdfd;
-  --admin-inset: #f0f2f5;
-  --admin-text: #202936;
-  --admin-muted: #526173;
-  --admin-subtle: #5e6c80;
-  --admin-accent: #2456c5;
-  --admin-accent-soft: #e9effc;
-  --admin-success: #16704d;
-  --admin-warning: #916009;
-  --admin-danger: #b6324c;
-  --border: #dce1e8;
-  --background: var(--editor-bg);
-  --foreground: var(--admin-text);
-  --card: var(--admin-surface);
-  --card-foreground: var(--admin-text);
-  --popover: var(--admin-surface);
-  --popover-foreground: var(--admin-text);
-  --primary: var(--admin-accent);
-  --primary-foreground: #fafcff;
-  --secondary: var(--admin-inset);
-  --secondary-foreground: var(--admin-text);
-  --muted: var(--admin-inset);
-  --muted-foreground: var(--admin-muted);
-  --accent: var(--admin-accent-soft);
-  --accent-foreground: var(--admin-accent);
-  --ring: var(--admin-accent);
-  --input: var(--border);
-  color: var(--admin-text);
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --editor-bg: var(--background);
+  --admin-surface: var(--sidebar);
+  --admin-inset: var(--accent);
+  --admin-text: var(--foreground);
+  --admin-muted: color-mix(in oklab, var(--muted-foreground) 88%, var(--foreground));
+  --admin-subtle: var(--admin-muted);
+  --admin-accent: var(--primary);
+  --admin-accent-soft: var(--accent);
+  --admin-success: var(--log-success);
+  --admin-warning: color-mix(in oklab, var(--log-warning) 70%, var(--foreground));
+  --admin-danger: color-mix(in oklab, var(--destructive) 85%, var(--foreground));
+  color: var(--foreground);
   color-scheme: light;
 }
-.dark .admin-ui {
-  --editor-bg: #151920;
-  --admin-surface: #1d232d;
-  --admin-inset: #171c24;
-  --admin-text: #e6ebf2;
-  --admin-muted: #b3bfce;
-  --admin-subtle: #96a5b8;
-  --admin-accent: #91b4ff;
-  --admin-accent-soft: #283853;
-  --admin-success: #82d6ad;
-  --admin-warning: #efc378;
-  --admin-danger: #ff9daf;
-  --border: #333e4e;
-  --primary: #3566d4;
-  color-scheme: dark;
-}
+.dark .admin-ui { color-scheme: dark; }
 .admin-ui :is(button, a, input, select, textarea, summary):focus-visible {
-  outline: 2px solid var(--admin-accent);
+  outline: 2px solid var(--primary);
   outline-offset: 3px;
 }
 .admin-ui :is(input:not([type=checkbox]):not([type=radio]):not([type=file]), select) {
@@ -58,8 +25,12 @@
 .admin-ui button:disabled { cursor: not-allowed; }
 .admin-ui audio { max-width: 100%; }
 .admin-ui summary::marker { content: ""; }
-.admin-ui .admin-panel { border: 1px solid var(--border); background: var(--admin-surface); }
-.admin-ui .admin-kicker { font-size: 12px; font-weight: 600; color: var(--admin-subtle); }
+.admin-ui .admin-panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--sidebar);
+}
+.admin-ui .admin-kicker { font-size: 12px; font-weight: 600; color: var(--admin-muted); }
 @media (prefers-reduced-motion: reduce) {
   .admin-ui *, .admin-ui *::before, .admin-ui *::after {
     animation-duration: 0.01ms !important;

@@ -69,10 +69,10 @@ export function CoverPackageImportCard({
         className={[
           "flex w-full min-h-28 text-left cursor-pointer items-center gap-4 rounded-2xl border border-dashed px-4 py-4 transition-[background-color,border-color,box-shadow,scale] duration-150 ease-out active:scale-[0.99]",
           isDragging
-            ? "border-sky-400/70 bg-sky-400/8 shadow-[0_0_0_1px_rgba(56,189,248,0.2)]"
+            ? "border-primary/60 bg-accent/40"
             : review
               ? "border-emerald-500/35 bg-emerald-500/5 hover:border-emerald-400/50"
-              : "border-[var(--border)] bg-[var(--admin-inset)] hover:border-sky-400/40 hover:bg-[var(--admin-inset)]",
+              : "border-[var(--border)] bg-[var(--admin-inset)] hover:border-primary/40 hover:bg-[var(--admin-inset)]",
         ].join(" ")}
       >
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--admin-inset)] text-[var(--admin-accent)] shadow-[0_0_0_1px_rgba(255,255,255,0.08)]">
