@@ -31,7 +31,7 @@ export function AdminFormNavigation({
     <div
       role="tablist"
       aria-label={t("label")}
-      className="flex gap-1 border-b border-[var(--border)]"
+      className="flex gap-1 border-b border-border bg-sidebar"
     >
       {sections.map((section, index) => (
         <button
@@ -61,9 +61,9 @@ export function AdminFormNavigation({
             buttons.current[next]?.focus();
           }}
           className={cn(
-            "min-h-11 flex-1 border-b-2 px-2 text-sm font-medium transition-[color,border-color]",
+            "min-h-11 flex-1 border-b-2 px-2 text-xs font-medium transition-[color,border-color]",
             value === section
-              ? "border-[var(--admin-accent)] text-[var(--admin-accent)]"
+              ? "border-primary bg-accent/30 text-foreground"
               : "border-transparent text-[var(--admin-muted)] hover:text-[var(--admin-text)]",
           )}
         >

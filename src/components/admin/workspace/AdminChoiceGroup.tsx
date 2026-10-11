@@ -22,14 +22,14 @@ export function AdminChoiceGroup({
       <legend className="mb-2 text-sm font-medium text-[var(--admin-text)]">
         {label}
       </legend>
-      <div className="flex flex-wrap gap-1 rounded-xl bg-[var(--admin-inset)] p-1">
+      <div className="flex flex-wrap gap-1 rounded-md bg-[var(--admin-inset)] p-1">
         {options.map((option) => (
           <label
             key={option.value}
             className={cn(
-              "relative flex min-h-10 min-w-0 flex-1 cursor-pointer items-center justify-center rounded-lg px-3 text-center text-sm",
+              "relative flex min-h-10 min-w-0 flex-1 cursor-pointer items-center justify-center rounded px-3 text-center text-sm",
               value === option.value
-                ? "bg-[var(--admin-surface)] font-medium text-[var(--admin-accent)] shadow-sm"
+                ? "bg-[var(--admin-surface)] font-medium text-[var(--admin-text)] shadow-xs"
                 : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]",
             )}
           >
@@ -41,7 +41,7 @@ export function AdminChoiceGroup({
               onChange={() => onChange(option.value)}
               className="peer sr-only"
             />
-            <span className="pointer-events-none absolute inset-0 rounded-lg peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--admin-accent)]" />
+            <span className="pointer-events-none absolute inset-0 rounded peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--admin-accent)]" />
             {option.label}
           </label>
         ))}
