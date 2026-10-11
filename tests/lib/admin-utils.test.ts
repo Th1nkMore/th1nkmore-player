@@ -3,6 +3,7 @@ import { songOne } from "@/../tests/fixtures/songs";
 import {
   AdminPlaylistConflictError,
   createSongFromFormData,
+  mergeFetchedSongInfo,
   persistSongAssetToLibrary,
   saveAdminPlaylist,
 } from "@/lib/admin-utils";
@@ -146,5 +147,48 @@ describe("admin song creation", () => {
     ).rejects.toThrow("already deployed as");
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledWith("/api/admin/playlist");
+  });
+});
+
+describe("lyrics source credit merging", () => {
+  const source = {
+    title: "Track",
+    artist: "Original Artist",
+    album: "Source album",
+    duration: 180,
+  };
+
+  it("keeps the cover performer and records the fetched artist as original credit", () => {
+    const draft = {
+      ...songOne,
+      artist: "Huang",
+      performanceType: "cover" as const,
+    };
+    const result = mergeFetchedSongInfo(draft, source);
+    expect(result.artist).toBe("Huang");
+    expect(result.originalArtist).toBe("Original Artist");
+    expect(draft.artist).toBe("Huang");
+    expect(draft.originalArtist).toBeUndefined();
+  });
+
+  it("uses the cover credit contract for legacy drafts without a performance type", () => {
+    const result = mergeFetchedSongInfo(
+      { ...songOne, artist: "Huang" },
+      source,
+    );
+    expect(result.artist).toBe("Huang");
+    expect(result.originalArtist).toBe("Original Artist");
+  });
+
+  it.each([
+    "original",
+    "listening",
+  ] as const)("imports the source performer for %s tracks", (performanceType) => {
+    const result = mergeFetchedSongInfo(
+      { ...songOne, performanceType },
+      source,
+    );
+    expect(result.artist).toBe("Original Artist");
+    expect(result.originalArtist).toBeUndefined();
   });
 });

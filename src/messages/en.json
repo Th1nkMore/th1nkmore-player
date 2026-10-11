@@ -27,7 +27,7 @@
     "openQueue": "Open up next, {count} songs",
     "queueDescription": "{count} songs ready to play",
     "closeQueue": "Close up next",
-    "searchPlaceholder": "Search songs, artists, albums, or tags",
+    "searchPlaceholder": "Search songs, performers, original artists, albums, or tags",
     "allSongs": "All",
     "clearTag": "Clear {tag} filter",
     "addedToQueue": "Added {title}",
@@ -272,8 +272,8 @@
         "placeholder": "Song title"
       },
       "artist": {
-        "label": "Artist",
-        "placeholder": "Artist name"
+        "label": "Performer",
+        "placeholder": "Current performer, e.g. Huang"
       },
       "album": {
         "label": "Album",
@@ -413,7 +413,7 @@
       "title": "Playlist ({count} songs)",
       "subtitle": "Review and save each track directly to the library.",
       "autosaveHint": "One track, one save",
-      "searchPlaceholder": "Search title, artist, album, or tag",
+      "searchPlaceholder": "Search title, performer, original artist, album, or tag",
       "badges": {
         "dirty": "Dirty",
         "attention": "Optional"
@@ -429,7 +429,7 @@
         "label": "Sort tracks",
         "manual": "Manual order",
         "title": "Title A–Z",
-        "artist": "Artist A–Z"
+        "artist": "Performer A–Z"
       },
       "showing": "Showing {count} of {total}",
       "selectLabel": "Select {title}",

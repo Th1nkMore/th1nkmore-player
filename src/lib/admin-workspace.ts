@@ -75,7 +75,13 @@ export function filterAndSortAdminPlaylist(
     if (filter === "archived" && song.assetStatus !== "archived") return false;
     if (!normalizedQuery) return true;
 
-    return [song.title, song.artist, song.album, ...song.tags]
+    return [
+      song.title,
+      song.artist,
+      song.originalArtist,
+      song.album,
+      ...song.tags,
+    ]
       .join(" ")
       .toLocaleLowerCase()
       .includes(normalizedQuery);
