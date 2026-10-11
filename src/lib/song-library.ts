@@ -30,6 +30,8 @@ export function filterLibrarySongs(
       song.title,
       song.artist,
       song.originalArtist,
+      ...(song.originalArtists ?? []),
+      ...(song.styles ?? []),
       song.album,
       ...song.tags,
     ]

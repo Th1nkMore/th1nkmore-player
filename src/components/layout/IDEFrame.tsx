@@ -7,9 +7,12 @@ import { useEffect, useRef, useState } from "react";
 import type { PanelImperativeHandle } from "react-resizable-panels";
 import { Group, Panel, Separator } from "react-resizable-panels";
 import { GlobalAudioPlayer } from "@/components/audio/GlobalAudioPlayer";
+import { MediaSessionControls } from "@/components/audio/MediaSessionControls";
+import { PlayerSessionMemory } from "@/components/audio/PlayerSessionMemory";
 import { FullPlayerSheet } from "@/components/ide/FullPlayerSheet";
 import { LibraryStats } from "@/components/ide/LibraryStats";
 import { MiniPlayerBar } from "@/components/ide/MiniPlayerBar";
+import { ResumePlaybackNotice } from "@/components/ide/ResumePlaybackNotice";
 import {
   HeaderControls,
   MobileHeaderTitle,
@@ -302,6 +305,8 @@ export function IDEFrame({
 
   return (
     <>
+      <PlayerSessionMemory />
+      <MediaSessionControls />
       <GlobalAudioPlayer />
       <div
         className={cn(
@@ -336,6 +341,8 @@ export function IDEFrame({
             terminalVisible={terminalVisible}
           />
         </header>
+
+        <ResumePlaybackNotice />
 
         {/* Mobile Portrait Layout */}
         {isPortrait && (

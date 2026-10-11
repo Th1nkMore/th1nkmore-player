@@ -6,6 +6,7 @@ import {
   PUBLIC_PLAYLIST_REVALIDATE_SECONDS,
 } from "@/lib/public-playlist";
 import { R2_BUCKET_NAME, r2Client } from "@/lib/r2";
+import { enrichPublicRepertoire } from "@/lib/repertoire.server";
 import { normalizeSong } from "@/lib/song";
 import { getPublicPlaylistUrl } from "@/lib/storage";
 import type { Song } from "@/types/music";
@@ -116,7 +117,9 @@ export async function getPublicPlaylist(): Promise<Song[]> {
       const playlist = await getCachedR2Playlist();
       r2RetryAfter = 0;
       if (playlist !== null) {
-        return getPublicPlayableSongs(normalizePlaylist(playlist));
+        return enrichPublicRepertoire(
+          getPublicPlayableSongs(normalizePlaylist(playlist)),
+        );
       }
     } catch (error) {
       r2RetryAfter = Date.now() + R2_RETRY_DELAY_MS;
@@ -138,7 +141,9 @@ export async function getPublicPlaylist(): Promise<Song[]> {
     throw new Error(`Failed to fetch playlist: ${response.statusText}`);
   }
 
-  return getPublicPlayableSongs(
-    normalizePlaylist((await response.json()) as Song[]),
+  return enrichPublicRepertoire(
+    getPublicPlayableSongs(
+      normalizePlaylist((await response.json()) as Song[]),
+    ),
   );
 }

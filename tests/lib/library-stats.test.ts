@@ -3,6 +3,36 @@ import { songOne } from "@/../tests/fixtures/songs";
 import { buildLibraryStats } from "@/lib/library-stats";
 
 describe("buildLibraryStats", () => {
+  it("deduplicates linked versions and supports recording-weighted artist/style rankings", () => {
+    const songs = [
+      {
+        ...songOne,
+        repertoireId: "work",
+        originalArtists: ["Singer", "Guest"],
+        styles: ["Rap"],
+      },
+      {
+        ...songOne,
+        id: "second-version",
+        repertoireId: "work",
+        originalArtists: ["Singer"],
+        styles: ["Rap"],
+        language: "zh" as const,
+      },
+    ];
+    const bySong = buildLibraryStats(songs);
+    expect(bySong.total).toBe(1);
+    expect(bySong.recordings).toBe(2);
+    expect(bySong.artists.find((row) => row.label === "Singer")?.count).toBe(1);
+    expect(bySong.languages).toHaveLength(2);
+    const byRecording = buildLibraryStats(songs, "recordings");
+    expect(byRecording.total).toBe(2);
+    expect(
+      byRecording.artists.find((row) => row.label === "Singer")?.count,
+    ).toBe(2);
+    expect(byRecording.styles[0].count).toBe(2);
+  });
+
   it("counts published playable songs once and excludes hidden or incomplete work", () => {
     const stats = buildLibraryStats([
       songOne,
@@ -93,6 +123,9 @@ describe("buildLibraryStats", () => {
   it("returns a genuine empty library without invalid totals", () => {
     expect(buildLibraryStats([])).toEqual({
       total: 0,
+      recordings: 0,
+      artists: [],
+      styles: [],
       durationSeconds: 0,
       durationKnown: 0,
       withLyrics: 0,

@@ -14,6 +14,7 @@ import {
   MAX_PLAYBACK_RECOVERY_ATTEMPTS,
   STALL_RECOVERY_TIMEOUT_MS,
 } from "@/lib/playback-recovery";
+import { safeResumePosition } from "@/lib/player-session";
 import { useIDEStore } from "@/store/useIDEStore";
 import { usePlayerStore } from "@/store/usePlayerStore";
 
@@ -249,12 +250,19 @@ export function GlobalAudioPlayer() {
         const duration = howl.duration();
         setDuration(duration);
         setPlaybackStatus("ready");
-        const resumePosition = resumePositionRef.current;
+        const savedPosition = usePlayerStore.getState().resumePosition;
+        const resumePosition = resumePositionRef.current ?? savedPosition;
         if (resumePosition !== null && resumePosition > 0) {
-          howl.seek(resumePosition);
-          setCurrentTime(resumePosition);
+          const actualDuration = howl.duration();
+          const safePosition = safeResumePosition(
+            resumePosition,
+            actualDuration,
+          );
+          howl.seek(safePosition);
+          setCurrentTime(safePosition);
           resumePositionRef.current = null;
         }
+        usePlayerStore.setState({ resumePosition: null });
         // Auto-play if requested while loading
         if (shouldAutoPlayRef.current && howl.state() === "loaded") {
           howl.play();

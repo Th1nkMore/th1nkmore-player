@@ -15,6 +15,8 @@ function resetPlaybackState(trackId?: string | null) {
     isPlaying: false,
     playbackStatus: "idle" as PlaybackStatus,
     currentTime: 0,
+    resumePosition: null,
+    restoredSession: false,
     duration: 0,
     ...(trackId !== undefined ? { currentTrackId: trackId } : {}),
   };
@@ -139,6 +141,8 @@ export function getPlaybackNavigationState({
 }
 
 type PlayerState = {
+  resumePosition: number | null;
+  restoredSession: boolean;
   isPlaying: boolean;
   volume: number;
   duration: number;
@@ -169,6 +173,8 @@ type PlayerState = {
 };
 
 export const usePlayerStore = create<PlayerState>((set, get) => ({
+  resumePosition: null,
+  restoredSession: false,
   isPlaying: false,
   volume: 0.8,
   duration: 0,
