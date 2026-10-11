@@ -8,6 +8,7 @@ import type { PanelImperativeHandle } from "react-resizable-panels";
 import { Group, Panel, Separator } from "react-resizable-panels";
 import { GlobalAudioPlayer } from "@/components/audio/GlobalAudioPlayer";
 import { FullPlayerSheet } from "@/components/ide/FullPlayerSheet";
+import { LibraryStats } from "@/components/ide/LibraryStats";
 import { MiniPlayerBar } from "@/components/ide/MiniPlayerBar";
 import {
   HeaderControls,
@@ -310,17 +311,17 @@ export function IDEFrame({
       >
         {/* Header */}
         <header className="flex items-center justify-between gap-2 border-b border-border bg-sidebar px-4 py-2 pt-[calc(0.5rem+env(safe-area-inset-top))]">
-          {isPortrait && (
-            <MobileHeaderTitle activeFileTitle={activeFile?.title} />
-          )}
-
-          {isLandscape && (
-            <div className="flex min-w-0 flex-1 items-center gap-3">
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
+            {isPortrait && (
+              <MobileHeaderTitle activeFileTitle={activeFile?.title} />
+            )}
+            {!isPortrait && (
               <span className="min-w-0 flex-1 truncate text-[11px] text-muted-foreground">
-                {activeFile?.title || tCommon("appTitle")}
+                {(isLandscape && activeFile?.title) || tCommon("appTitle")}
               </span>
-            </div>
-          )}
+            )}
+            <LibraryStats />
+          </div>
 
           <HeaderControls
             handleHiddenAdminEntry={handleHiddenAdminEntry}

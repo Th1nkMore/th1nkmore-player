@@ -791,5 +791,45 @@
     "loading": "Loading library",
     "loadError": "Unable to load library",
     "retry": "Retry"
+  },
+  "libraryStats": {
+    "collected": "Collected",
+    "songCount": "{count, plural, one {# song} other {# songs}}",
+    "open": "Library stats, {count, plural, one {# song collected} other {# songs collected}}. View details",
+    "title": "Library stats",
+    "description": "One song at a time, a repertoire takes shape.",
+    "ongoing": "Counts published songs and updates as new work is added.",
+    "duration": "Total duration",
+    "tagCount": "Tags",
+    "withLyrics": "With lyrics",
+    "tags": "Tag distribution",
+    "tagNote": "Shares are based on all collected songs. A song can have multiple tags.",
+    "languages": "Main singing language",
+    "performances": "Work types",
+    "searchTags": "Search tags",
+    "noMatchingTags": "No matching tags",
+    "noTags": "No tags added yet",
+    "showAll": "Show all {count} tags",
+    "showLess": "Show fewer tags",
+    "untagged": "{count, plural, one {# song has no tags yet} other {# songs have no tags yet}}",
+    "hoursMinutes": "{hours}h {minutes}m",
+    "minutes": "{minutes} min",
+    "durationNote": "Total duration includes only the {count, plural, one {# song with a known duration} other {# songs with a known duration}}.",
+    "empty": "A new beginning. Distributions will appear after the first song is added.",
+    "loading": "Loading library stats…",
+    "unavailable": "Library stats are temporarily unavailable",
+    "refreshError": "Could not refresh. Showing the last loaded library stats.",
+    "retry": "Reload",
+    "close": "Close library stats",
+    "language": {
+      "zh": "Chinese",
+      "en": "English",
+      "ja": "Japanese"
+    },
+    "performance": {
+      "cover": "Covers",
+      "original": "Originals",
+      "listening": "Listening notes"
+    }
   }
 }

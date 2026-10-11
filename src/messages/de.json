@@ -791,5 +791,45 @@
     "loading": "Bibliothek wird geladen",
     "loadError": "Bibliothek konnte nicht geladen werden",
     "retry": "Erneut versuchen"
+  },
+  "libraryStats": {
+    "collected": "Erfasst",
+    "songCount": "{count, plural, one {# Song} other {# Songs}}",
+    "open": "Bibliotheksstatistik, {count, plural, one {# erfasster Song} other {# erfasste Songs}}. Details ansehen",
+    "title": "Bibliotheksstatistik",
+    "description": "Song für Song wächst das Repertoire.",
+    "ongoing": "Zählt veröffentlichte Songs und wird mit neuen Werken aktualisiert.",
+    "duration": "Gesamtdauer",
+    "tagCount": "Tags",
+    "withLyrics": "Mit Liedtext",
+    "tags": "Tag-Verteilung",
+    "tagNote": "Anteile beziehen sich auf alle erfassten Songs. Ein Song kann mehrere Tags haben.",
+    "languages": "Hauptsprache des Gesangs",
+    "performances": "Werkarten",
+    "searchTags": "Tags suchen",
+    "noMatchingTags": "Keine passenden Tags",
+    "noTags": "Noch keine Tags vorhanden",
+    "showAll": "Alle {count} Tags anzeigen",
+    "showLess": "Weniger Tags anzeigen",
+    "untagged": "{count, plural, one {# Song hat noch keine Tags} other {# Songs haben noch keine Tags}}",
+    "hoursMinutes": "{hours} Std. {minutes} Min.",
+    "minutes": "{minutes} Min.",
+    "durationNote": "Die Gesamtdauer umfasst nur die {count, plural, one {# Aufnahme mit bekannter Dauer} other {# Aufnahmen mit bekannter Dauer}}.",
+    "empty": "Ein neuer Anfang. Nach dem ersten Song erscheinen die Verteilungen.",
+    "loading": "Bibliotheksstatistik wird geladen…",
+    "unavailable": "Bibliotheksstatistik ist derzeit nicht verfügbar",
+    "refreshError": "Aktualisierung fehlgeschlagen. Die zuletzt geladene Statistik wird angezeigt.",
+    "retry": "Neu laden",
+    "close": "Bibliotheksstatistik schließen",
+    "language": {
+      "zh": "Chinesisch",
+      "en": "Englisch",
+      "ja": "Japanisch"
+    },
+    "performance": {
+      "cover": "Cover",
+      "original": "Originale",
+      "listening": "Hörnotizen"
+    }
   }
 }
