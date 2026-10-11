@@ -1,4 +1,16 @@
-export type Language = "en" | "zh" | "ja";
+export const SONG_LANGUAGES = [
+  "zh",
+  "yue",
+  "en",
+  "ja",
+  "ko",
+  "es",
+  "fr",
+  "de",
+  "other",
+  "unknown",
+] as const;
+export type Language = (typeof SONG_LANGUAGES)[number];
 export type LegacyLanguage = Language | "jp";
 export type TrackType = "portfolio" | "personal";
 export type SourceType = "upload" | "recording" | "external-upload";
@@ -38,6 +50,9 @@ export interface Song {
   assetStatus: AssetStatus;
   performanceType?: PerformanceType;
   originalArtist?: string;
+  originalArtists?: string[];
+  styles?: string[];
+  repertoireId?: string;
   shareSlug?: string;
   creatorNote?: CreatorNote;
 }

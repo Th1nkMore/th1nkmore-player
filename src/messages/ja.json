@@ -194,7 +194,8 @@
       "upload": "楽曲を追加",
       "record": "音声録音",
       "edit": "楽曲管理",
-      "catalog": "アルバムとタグ"
+      "catalog": "アルバムとタグ",
+      "repertoire": "歌える曲"
     },
     "shell": {
       "title": "音楽ワークスペース",
@@ -636,7 +637,8 @@
       "descriptions": {
         "edit": "楽曲の検索、編集、公開。",
         "upload": "音声ファイルやカバーパッケージを追加。",
-        "catalog": "アルバムとタグを整理。"
+        "catalog": "アルバムとタグを整理。",
+        "repertoire": "歌える曲の登録、録音の関連付け、統計の確認。"
       }
     },
     "form": {
@@ -701,7 +703,14 @@
       "language": {
         "zh": "中国語",
         "en": "英語",
-        "ja": "日本語"
+        "ja": "日本語",
+        "yue": "広東語",
+        "ko": "韓国語",
+        "es": "スペイン語",
+        "fr": "フランス語",
+        "de": "ドイツ語",
+        "other": "その他の言語",
+        "unknown": "未指定"
       },
       "visibility": {
         "public": "公開",
@@ -824,12 +833,145 @@
     "language": {
       "zh": "中国語",
       "en": "英語",
-      "ja": "日本語"
+      "ja": "日本語",
+      "unknown": "未指定",
+      "yue": "広東語",
+      "ko": "韓国語",
+      "es": "スペイン語",
+      "fr": "フランス語",
+      "de": "ドイツ語",
+      "other": "その他の言語"
     },
     "performance": {
       "cover": "カバー",
       "original": "オリジナル",
       "listening": "リスニングノート"
-    }
+    },
+    "recordingCount": "{count} バージョン",
+    "countingMode": "集計方法",
+    "mode": {
+      "songs": "曲別",
+      "recordings": "録音別"
+    },
+    "songScope": "公開済みの曲を重複なしで集計。録音は {count} バージョン。",
+    "recordingScope": "公開済みの録音をそれぞれ集計：{count} バージョン。",
+    "dimension": "分布",
+    "dimensionNames": {
+      "artists": "原唱／原作アーティスト",
+      "styles": "スタイル",
+      "languages": "歌唱言語",
+      "tags": "タグ",
+      "performances": "作品の種類"
+    },
+    "unfilled": "未指定",
+    "artistNote": "原唱／原作アーティストを集計。共同作品は複数のアーティストに集計されます。",
+    "distributionNote": "割合は選択した範囲を基準に計算。一曲に複数のスタイル、タグ、言語版がある場合は重複します。",
+    "searchDistribution": "項目を検索",
+    "noDistribution": "該当するデータはありません",
+    "showLessRows": "折りたたむ",
+    "showAllRows": "全 {count} 項目を表示"
+  },
+  "repertoire": {
+    "description": "曲の習得数、習熟度、個人メモは管理画面のみ。公開録音のアーティストとスタイル情報はホームの統計に使われます。",
+    "known": "歌える",
+    "learning": "練習中",
+    "recorded": "録音済み",
+    "published": "公開済み",
+    "all": "すべて",
+    "unrecorded": "未録音",
+    "archived": "アーカイブ",
+    "new": "曲を登録",
+    "bulk": "一括登録",
+    "export": "一覧を出力",
+    "reload": "再読み込み",
+    "view": "表示",
+    "list": "曲一覧",
+    "insights": "統計",
+    "history": "履歴",
+    "loading": "曲一覧を読み込み中…",
+    "saving": "保存中…",
+    "save": "曲を保存",
+    "saved": "曲一覧を保存しました",
+    "close": "曲一覧を閉じる",
+    "cancel": "キャンセル",
+    "previous": "前へ",
+    "next": "次へ",
+    "empty": "該当する曲はありません。条件を変更するか曲を登録してください。",
+    "search": "曲名、原唱者、スタイル、タグを検索",
+    "filter": "録音の状態",
+    "artists": "原唱／原作アーティスト",
+    "styles": "スタイル",
+    "tags": "タグ",
+    "language": "歌える言語",
+    "languages": {
+      "unknown": "未指定",
+      "zh": "中国語",
+      "en": "英語",
+      "ja": "日本語",
+      "yue": "広東語",
+      "ko": "韓国語",
+      "es": "スペイン語",
+      "fr": "フランス語",
+      "de": "ドイツ語",
+      "other": "その他の言語"
+    },
+    "knowledge": "習得状態",
+    "proficiency": "習熟度",
+    "unassessed": "未評価",
+    "comfortable": "得意",
+    "review": "要復習",
+    "learnedOn": "習得日（任意）",
+    "note": "個人メモ",
+    "privateNote": "管理画面のみに保存され、公開プレーヤーには送信されません。",
+    "versions": "関連する録音",
+    "noRecording": "まだ録音はありません。後でアップロード時に関連付けできます。",
+    "archiveEntry": "曲一覧からアーカイブ（復元可能、公開状態は変更しません）",
+    "stylesHint": "複数の名前やタグはカンマで区切ります。Guitar などの楽器はタグに登録してください。",
+    "editorHint": "一曲に複数の録音を関連付けても曲数は一曲です。",
+    "titleField": "曲名（必須）",
+    "edit": "曲を編集",
+    "titleRequired": "曲名を入力してください。",
+    "bulkHint": "一行に一曲。または曲名・原唱者・スタイル・言語をタブ区切りで貼り付けます。言語コードは zh、yue、en、ja、ko など。空欄は未指定。",
+    "bulkPreview": "{count} 曲を追加します。重複 {duplicates} 件を除外しました。",
+    "bulkDescription": "プレビューを確認して保存してください。録音は任意です。",
+    "importConfirm": "{count} 曲を登録",
+    "entryCount": "{count} 曲",
+    "versionCount": "{count} 録音",
+    "unknownArtist": "原唱者は未指定",
+    "insightsScope": "「{scope}」の {count} 件を集計。習得曲は登録情報、録音・公開範囲は録音の言語とスタイルを使用。",
+    "scope": "集計範囲",
+    "historyHint": "保存前の状態を履歴に残します。復元時も現在の一覧を保存します。",
+    "restore": "この版を復元",
+    "restoreTitle": "曲一覧の履歴を復元",
+    "restoreDescription": "選択した版で一覧を置き換えます。現在の版も履歴に残ります。",
+    "discardTitle": "変更を保存しますか？",
+    "discardDescription": "未保存の登録内容や変更があります。保存するか破棄してください。",
+    "discard": "変更を破棄",
+    "linkedEntry": "関連する曲",
+    "linkSearch": "登録済みの曲名や原唱者を検索",
+    "unlinked": "未関連（新しい録音は自動登録）",
+    "linkHint": "同じ曲の録音を一つの項目に関連付けます。アーティストとスタイルの分布には登録済み情報を使います。",
+    "linkUnavailable": "曲一覧を読み込めません。録音を先に保存し、後で関連付けできます。",
+    "errors": {
+      "conflict": "別の場所で一覧が変更されました。下書きを保管し、編集を閉じて再読み込みしてください。",
+      "invalid": "曲名、日付、録音の関連付けを確認してください。一つの録音は一曲だけに関連付けできます。",
+      "revisionRequired": "一覧を再読み込みしてから保存してください。",
+      "storageError": "一覧の読み込みまたは保存に失敗しました。後で再読み込みしてください。"
+    },
+    "backupFile": "曲一覧の JSON バックアップを読み込む（統合）",
+    "backupInvalid": "このバックアップを読み込めません。ここで出力した JSON ファイルを選んでください。",
+    "backupPreview": "既存の他の曲を残し、{count} 件のバックアップを統合します。",
+    "recordingStyles": "この録音のスタイル",
+    "inheritStyles": "関連する曲のスタイルを使う",
+    "developmentHint": "ローカルのプレビュー。正式な記録：",
+    "productionAdmin": "公開サイトの管理画面",
+    "advancedFilters": "原唱者・スタイル・言語で絞り込む",
+    "bulkUncertain": "同名の {count} 件は原唱者の確認が必要です。未追加：{titles}",
+    "saveChanges": "変更を保存"
+  },
+  "playerSession": {
+    "previous": "前回：{title} · {position}",
+    "continue": "再生を続ける",
+    "dismiss": "再開のお知らせを閉じる"
   }
 }

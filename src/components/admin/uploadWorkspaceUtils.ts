@@ -14,7 +14,7 @@ export function mergeAudioMetadata(
 ) {
   const updated = { ...draft };
   if (common.title) updated.title = common.title;
-  if (common.artist) updated.artist = common.artist;
+  if (!draft.artist?.trim() && common.artist) updated.artist = common.artist;
   if (common.album) {
     updated.album = common.album;
     updated.albumId = null;

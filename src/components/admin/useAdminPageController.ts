@@ -1,15 +1,18 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import type { RepertoireDraftGuard } from "@/components/admin/repertoire/RepertoireWorkspace";
 import { hasSongChanges } from "@/lib/admin-workspace";
 import { useAdminLogs } from "@/lib/hooks/useAdminLogs";
 import { useAdminPlaylistFlow } from "./useAdminPlaylistFlow";
 import { useAdminUploadFlow } from "./useAdminUploadFlow";
 
-type Tab = "upload" | "edit" | "catalog";
+type Tab = "upload" | "edit" | "catalog" | "repertoire";
 
 export function useAdminPageController() {
   const [activeTab, setActiveTab] = useState<Tab>("edit");
+  const [repertoireGuard, setRepertoireGuard] =
+    useState<RepertoireDraftGuard | null>(null);
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
@@ -43,30 +46,49 @@ export function useAdminPageController() {
   const handleTabChange = useCallback(
     (tab: Tab) => {
       if (tab === activeTab || isBusy) return;
-      if (activeTab === "edit" && hasEditedDraft) {
+      if (
+        (activeTab === "edit" && hasEditedDraft) ||
+        (activeTab === "repertoire" && repertoireGuard?.dirty)
+      ) {
         setPendingTab(tab);
         return;
       }
       setActiveTab(tab);
     },
-    [activeTab, hasEditedDraft, isBusy],
+    [activeTab, hasEditedDraft, isBusy, repertoireGuard],
   );
   const confirmTabChange = async (save: boolean) => {
     if (isBusy || !pendingTab) return;
-    if (save && !(await playlist.handleSaveEdit())) return;
-    if (!save) playlist.handleCancelEdit();
+    const saved =
+      !save ||
+      (activeTab === "repertoire"
+        ? await repertoireGuard?.save()
+        : await playlist.handleSaveEdit());
+    if (save && !saved) return;
+    if (!save) {
+      playlist.handleCancelEdit();
+      repertoireGuard?.discard();
+    }
     setActiveTab(pendingTab);
     setPendingTab(null);
   };
   useEffect(() => {
     const protectDraft = (event: BeforeUnloadEvent) => {
-      if (!(hasEditedDraft || upload.audioFile || isBusy)) return;
+      if (
+        !(
+          hasEditedDraft ||
+          repertoireGuard?.dirty ||
+          upload.audioFile ||
+          isBusy
+        )
+      )
+        return;
       event.preventDefault();
       event.returnValue = "";
     };
     window.addEventListener("beforeunload", protectDraft);
     return () => window.removeEventListener("beforeunload", protectDraft);
-  }, [hasEditedDraft, upload.audioFile, isBusy]);
+  }, [hasEditedDraft, repertoireGuard, upload.audioFile, isBusy]);
 
   const handleLogout = useCallback(async () => {
     setIsSigningOut(true);
@@ -81,16 +103,19 @@ export function useAdminPageController() {
   }, []);
 
   const requestLogout = () => {
-    if (hasEditedDraft || upload.audioFile) setLogoutOpen(true);
+    if (hasEditedDraft || repertoireGuard?.dirty || upload.audioFile)
+      setLogoutOpen(true);
     else void handleLogout();
   };
   const confirmLogout = async () => {
     playlist.handleCancelEdit();
     upload.resetDraft();
+    repertoireGuard?.discard();
     setLogoutOpen(false);
     await handleLogout();
   };
   return {
+    setRepertoireGuard,
     logoutOpen,
     setLogoutOpen,
     requestLogout,

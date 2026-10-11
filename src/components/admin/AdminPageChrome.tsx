@@ -4,6 +4,7 @@ import {
   AudioLines,
   ExternalLink,
   Library,
+  ListChecks,
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
@@ -14,11 +15,12 @@ import { useTranslations } from "next-intl";
 import { AdminAppearanceControls } from "@/components/admin/AdminAppearanceControls";
 import { cn } from "@/lib/utils";
 
-export type AdminTab = "upload" | "edit" | "catalog";
+export type AdminTab = "upload" | "edit" | "catalog" | "repertoire";
 const tabs = [
   { id: "edit" as const, icon: Library },
   { id: "upload" as const, icon: AudioLines },
   { id: "catalog" as const, icon: Tags },
+  { id: "repertoire" as const, icon: ListChecks },
 ];
 
 export function AdminNavigation({
@@ -57,7 +59,7 @@ export function AdminNavigation({
       </div>
       <nav
         aria-label={t("navigation.label")}
-        className="flex gap-1 p-2 lg:flex-col lg:gap-2 lg:px-3 lg:py-4"
+        className="grid grid-cols-4 gap-1 p-2 lg:flex lg:flex-col lg:gap-2 lg:px-3 lg:py-4"
       >
         {tabs.map(({ id, icon: Icon }) => (
           <button
@@ -68,7 +70,7 @@ export function AdminNavigation({
             disabled={disabled}
             onClick={() => onTabChange(id)}
             className={cn(
-              "flex min-h-11 flex-1 items-center justify-center gap-3 rounded-md px-3 text-xs font-medium lg:flex-none lg:justify-start",
+              "flex min-h-11 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-md px-1 py-1 text-[11px] font-medium lg:flex-none lg:flex-row lg:justify-start lg:gap-3 lg:px-3 lg:text-xs",
               activeTab === id
                 ? "bg-accent text-foreground"
                 : "text-[var(--admin-muted)] hover:bg-[var(--admin-inset)]",
