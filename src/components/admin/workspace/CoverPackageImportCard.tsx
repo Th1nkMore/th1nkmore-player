@@ -36,7 +36,7 @@ export function CoverPackageImportCard({
   const t = useTranslations("admin.upload.packageImport");
   const [isDragging, setIsDragging] = useState(false);
 
-  const handleDrop = (event: DragEvent<HTMLLabelElement>) => {
+  const handleDrop = (event: DragEvent<HTMLButtonElement>) => {
     event.preventDefault();
     setIsDragging(false);
     const file = event.dataTransfer.files?.[0];
@@ -53,8 +53,10 @@ export function CoverPackageImportCard({
         onChange={onSelect}
         className="hidden"
       />
-      <label
-        htmlFor="admin-cover-package"
+      <button
+        type="button"
+        disabled={isImporting}
+        onClick={() => inputRef.current?.click()}
         onDragOver={(event) => {
           event.preventDefault();
           setIsDragging(true);
@@ -65,36 +67,36 @@ export function CoverPackageImportCard({
         }}
         onDrop={handleDrop}
         className={[
-          "flex min-h-28 cursor-pointer items-center gap-4 rounded-2xl border border-dashed px-4 py-4 transition-[background-color,border-color,box-shadow,scale] duration-150 ease-out active:scale-[0.99]",
+          "flex w-full min-h-28 text-left cursor-pointer items-center gap-4 rounded-2xl border border-dashed px-4 py-4 transition-[background-color,border-color,box-shadow,scale] duration-150 ease-out active:scale-[0.99]",
           isDragging
             ? "border-sky-400/70 bg-sky-400/8 shadow-[0_0_0_1px_rgba(56,189,248,0.2)]"
             : review
               ? "border-emerald-500/35 bg-emerald-500/5 hover:border-emerald-400/50"
-              : "border-[var(--border)] bg-[rgba(7,10,15,0.76)] hover:border-sky-400/40 hover:bg-[rgba(14,18,26,0.94)]",
+              : "border-[var(--border)] bg-[var(--admin-inset)] hover:border-sky-400/40 hover:bg-[var(--admin-inset)]",
         ].join(" ")}
       >
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[rgba(17,24,35,0.92)] text-sky-300 shadow-[0_0_0_1px_rgba(255,255,255,0.08)]">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--admin-inset)] text-[var(--admin-accent)] shadow-[0_0_0_1px_rgba(255,255,255,0.08)]">
           {isImporting ? (
             <Loader2 className="h-5 w-5 animate-spin" />
           ) : review ? (
-            <PackageCheck className="h-5 w-5 text-emerald-300" />
+            <PackageCheck className="h-5 w-5 text-[var(--admin-success)]" />
           ) : (
             <FileArchive className="h-5 w-5" />
           )}
         </span>
         <span className="min-w-0">
-          <span className="block text-sm font-semibold text-gray-200">
+          <span className="block text-sm font-semibold text-[var(--admin-text)]">
             {isImporting
               ? t("inspecting")
               : isDragging
                 ? t("dropActive")
                 : review?.packageFileName || t("choose")}
           </span>
-          <span className="mt-1 block text-xs leading-5 text-gray-500">
+          <span className="mt-1 block text-xs leading-5 text-[var(--admin-muted)]">
             {t("localOnly")}
           </span>
         </span>
-      </label>
+      </button>
 
       {review ? <PackageReview review={review} /> : null}
     </AdminSectionCard>
@@ -135,7 +137,7 @@ function PackageReview({ review }: { review: CoverPackageReview }) {
         />
       ) : null}
 
-      <div className="grid gap-2 rounded-xl border border-[var(--border)] bg-[rgba(7,10,15,0.82)] p-3 text-sm sm:grid-cols-2">
+      <div className="grid gap-2 rounded-xl border border-[var(--border)] bg-[var(--admin-inset)] p-3 text-sm sm:grid-cols-2">
         <ReviewValue label={t("performer")} value={review.manifest.artist} />
         <ReviewValue
           label={t("originalArtist")}
@@ -154,8 +156,8 @@ function PackageReview({ review }: { review: CoverPackageReview }) {
       </div>
 
       {review.warnings.length > 0 ? (
-        <div className="rounded-xl border border-amber-400/25 bg-amber-400/5 px-3 py-3 text-xs text-amber-100/80">
-          <p className="mb-2 flex items-center gap-2 font-semibold text-amber-200">
+        <div className="rounded-xl border border-amber-400/25 bg-amber-400/5 px-3 py-3 text-xs text-[var(--admin-warning)]">
+          <p className="mb-2 flex items-center gap-2 font-semibold text-[var(--admin-warning)]">
             <AlertTriangle className="h-3.5 w-3.5" /> {t("warnings")}
           </p>
           <ul className="space-y-1 pl-5">
@@ -167,7 +169,7 @@ function PackageReview({ review }: { review: CoverPackageReview }) {
           </ul>
         </div>
       ) : (
-        <p className="flex items-center gap-2 text-xs text-emerald-300/80">
+        <p className="flex items-center gap-2 text-xs text-[var(--admin-success)]">
           <ShieldCheck className="h-3.5 w-3.5" /> {t("noWarnings")}
         </p>
       )}
@@ -186,10 +188,12 @@ function ReviewValue({
 }) {
   return (
     <div className={wide ? "min-w-0 sm:col-span-2" : "min-w-0"}>
-      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-600">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--admin-subtle)]">
         {label}
       </p>
-      <p className="mt-1 break-all text-xs leading-5 text-gray-300">{value}</p>
+      <p className="mt-1 break-all text-xs leading-5 text-[var(--admin-text)]">
+        {value}
+      </p>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { FileText, Wand2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 
 type LyricsToolsProps = {
@@ -18,11 +19,13 @@ export function LyricsTools({
   onConvert,
   onNormalize,
 }: LyricsToolsProps) {
+  const t = useTranslations("admin.lyricTools");
   return (
     <div className="space-y-2">
-      <div className="flex flex-wrap gap-2 text-[10px] text-gray-500 font-mono">
-        <span>format:{format}</span>
-        <span className="tabular-nums">lines:{lineCount}</span>
+      <div className="flex flex-wrap gap-2 text-xs text-[var(--admin-muted)]">
+        <span>
+          {format === "empty" ? t("empty") : t("lines", { count: lineCount })}
+        </span>
       </div>
       <div className="flex flex-wrap gap-2">
         <Button
@@ -30,10 +33,10 @@ export function LyricsTools({
           onClick={onNormalize}
           variant="outline"
           size="sm"
-          className="font-mono text-[10px] h-6 px-2"
+          className="min-h-10"
         >
           <Wand2 className="h-2.5 w-2.5" />
-          Normalize
+          {t("normalize")}
         </Button>
         <Button
           type="button"
@@ -41,12 +44,15 @@ export function LyricsTools({
           disabled={!canConvert}
           variant="outline"
           size="sm"
-          className="font-mono text-[10px] h-6 px-2"
+          className="min-h-10"
         >
           <FileText className="h-2.5 w-2.5" />
-          Plain To LRC
+          {t("convert")}
         </Button>
       </div>
+      {canConvert && (
+        <p className="text-xs text-[var(--admin-muted)]">{t("estimateHint")}</p>
+      )}
     </div>
   );
 }

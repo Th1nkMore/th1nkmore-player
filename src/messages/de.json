@@ -191,13 +191,13 @@
   },
   "admin": {
     "tabs": {
-      "upload": "Neu hochladen",
+      "upload": "Song hinzufügen",
       "record": "Audio aufnehmen",
-      "edit": "Playlist bearbeiten",
-      "catalog": "Ordnen"
+      "edit": "Songs",
+      "catalog": "Alben & Tags"
     },
     "shell": {
-      "title": "Admin-Arbeitsbereich",
+      "title": "Musik-Workspace",
       "subtitle": "Modernisierte Oberfläche für Upload, Tags und Playlist-Steuerung.",
       "logCount": "{count} Laufzeitprotokolle"
     },
@@ -207,8 +207,8 @@
       "retry": "Erneut versuchen",
       "fetchLyrics": "Songtext laden",
       "fetching": "Wird geladen...",
-      "deploy": "Track bereitstellen",
-      "deploying": "Wird bereitgestellt...",
+      "deploy": "Song veröffentlichen",
+      "deploying": "Wird veröffentlicht…",
       "reset": "Entwurf zurücksetzen",
       "saveSong": "Änderungen speichern",
       "archive": "Titel archivieren",
@@ -232,8 +232,8 @@
         "description": "Grunddaten des Tracks und zeitbezogene Metadaten."
       },
       "classification": {
-        "title": "Klassifizierung",
-        "description": "Bibliothekssemantik, Sichtbarkeit und Tag-Zuordnung."
+        "title": "Veröffentlichung",
+        "description": "Sichtbarkeit, Status und Sammlung wählen."
       },
       "lyrics": {
         "title": "Songtext",
@@ -318,7 +318,7 @@
     },
     "creatorNote": {
       "spokenTitle": "Sprachnotiz",
-      "spokenDescription": "Vorhandene Aufnahme hochladen oder hier eine kurze Notiz aufnehmen. Dies bleibt vom vollständigen Cover-Recorder getrennt.",
+      "spokenDescription": "Aufnahme hochladen oder eine kurze Sprachnotiz aufnehmen.",
       "uploadAudio": "Audio hochladen",
       "replaceAudio": "Audio ersetzen",
       "uploading": "Wird hochgeladen …",
@@ -351,7 +351,7 @@
     "upload": {
       "packageImport": {
         "title": "Cover-Paket importieren",
-        "description": "Ein HuangToolbar-.coverpkg lokal prüfen und in den vorhandenen Upload-Ablauf übernehmen.",
+        "description": ".coverpkg importieren, um Audio, Text und Details auszufüllen.",
         "choose": ".coverpkg ablegen oder zum Prüfen auswählen",
         "dropActive": "Cover-Paket zum Prüfen ablegen",
         "inspecting": "Paket wird lokal geprüft…",
@@ -370,7 +370,9 @@
         "relatedTitle": "Vorhandene Projektversion gefunden",
         "relatedMessage": "Titel {id} stammt aus demselben Cover-Projekt. Bitte als bewusste Revision prüfen.",
         "warnings": "Hinweise prüfen",
-        "noWarnings": "Keine Paketwarnungen vorhanden."
+        "noWarnings": "Keine Paketwarnungen vorhanden.",
+        "summary": "{title} · {artist} · {count} Textzeilen",
+        "invalid": "Paket konnte nicht importiert werden"
       },
       "fileCard": {
         "title": "Audioquelle",
@@ -414,12 +416,12 @@
       "searchPlaceholder": "Titel, Interpret, Album oder Tag suchen",
       "badges": {
         "dirty": "Geändert",
-        "attention": "Offen"
+        "attention": "Optional"
       },
       "filters": {
         "label": "Tracks filtern",
         "all": "Alle Tracks",
-        "needsAttention": "Zu prüfen ({count})",
+        "needsAttention": "Weitere Details möglich ({count})",
         "ready": "Bereit",
         "archived": "Archiviert"
       },
@@ -459,7 +461,7 @@
       },
       "emptyList": {
         "title": "Keine passenden Songs",
-        "description": "Versuchen Sie einen anderen Suchbegriff oder fügen Sie Songs im Upload-Bereich hinzu."
+        "description": "Andere Suche versuchen oder Filter löschen."
       },
       "mobilePrompt": {
         "title": "Detail-Editor öffnen",
@@ -479,7 +481,7 @@
       }
     },
     "confirm": {
-      "discardTitle": "Ungespeicherte Änderungen verwerfen?",
+      "discardTitle": "Ungespeicherte Änderungen",
       "discardDescription": "Beim Wechsel des Songs gehen ungespeicherte Änderungen am aktuellen Entwurf verloren.",
       "discardConfirm": "Verwerfen und fortfahren",
       "saveAndContinue": "Speichern und fortfahren",
@@ -492,7 +494,14 @@
       "deleteTitle": "Diesen Track löschen?",
       "deleteDescription": "Der Track wird aus der vorgemerkten Playlist entfernt, bis Sie speichern oder neu laden.",
       "deleteConfirm": "Track löschen",
-      "cancel": "Abbrechen"
+      "cancel": "Abbrechen",
+      "leaveDescription": "Dieser Song hat ungespeicherte Änderungen. Vor dem Wechsel speichern oder verwerfen.",
+      "logoutTitle": "Abmelden und Entwürfe verwerfen?",
+      "logoutDescription": "Es gibt Änderungen oder einen Upload-Entwurf. Abbrechen, um die Arbeit zu speichern.",
+      "logoutConfirm": "Abmelden und Entwürfe verwerfen",
+      "reloadTitle": "Neu laden und Änderungen verwerfen?",
+      "reloadDescription": "Die neueste Bibliothek ersetzt den ungespeicherten Song-Entwurf.",
+      "reloadConfirm": "Neu laden und Änderungen verwerfen"
     },
     "status": {
       "ready": "Bereit",
@@ -616,6 +625,144 @@
         "title": "Aufnahme angehängt",
         "message": "{filename} ist jetzt als Upload-Quelle bereit."
       }
+    },
+    "navigation": {
+      "label": "Admin-Navigation",
+      "collapse": "Navigation einklappen",
+      "expand": "Navigation ausklappen",
+      "viewSite": "Website ansehen",
+      "language": "Anzeigesprache",
+      "skip": "Zum Arbeitsbereich",
+      "descriptions": {
+        "edit": "Musik finden, bearbeiten und veröffentlichen.",
+        "upload": "Audio oder ein Cover-Paket hinzufügen.",
+        "catalog": "Alben und Tags übersichtlich organisieren."
+      }
+    },
+    "form": {
+      "label": "Song-Bereiche",
+      "basic": "Details",
+      "lyrics": "Songtext",
+      "story": "Persönliche Notiz",
+      "publishing": "Veröffentlichung",
+      "required": "Bitte dieses Pflichtfeld ausfüllen.",
+      "requiredMetadata": "Titel und Künstler eingeben, dann erneut speichern."
+    },
+    "wizard": {
+      "label": "Song hinzufügen",
+      "source": "Datei wählen",
+      "details": "Song-Details",
+      "publish": "Prüfen & speichern",
+      "sourceTitle": "Mit einer Audiodatei beginnen",
+      "sourceHint": "Datei wählen und Details prüfen, bevor der Song zur Bibliothek hinzugefügt wird.",
+      "sourceType": "Dateityp",
+      "audio": "Audiodatei",
+      "detailsHint": "Titel und Künstler sind erforderlich. Songtext und persönliche Notiz sind optional.",
+      "reviewTitle": "Song überprüfen",
+      "reviewHint": "Details und Sichtbarkeit prüfen.",
+      "back": "Zurück",
+      "next": "Weiter",
+      "hints": {
+        "source": "Dateien bleiben bis zum Speichern lokal.",
+        "details": "Eingaben bleiben beim Schrittwechsel erhalten.",
+        "publish": "Audio und Song-Details werden gespeichert."
+      },
+      "clearDraft": "Entwurf löschen",
+      "clearDraftTitle": "Diesen Entwurf löschen?",
+      "clearDraftHint": "Dateiauswahl und Eingaben werden entfernt. Gespeicherte Songs bleiben erhalten.",
+      "saveToLibrary": "In Bibliothek speichern"
+    },
+    "activity": {
+      "title": "Aktivität",
+      "idle": "Noch keine Aktivität",
+      "processing": "Wird verarbeitet…"
+    },
+    "overview": {
+      "total": "{count} Songs",
+      "public": "{count} öffentlich",
+      "drafts": "{count} Entwürfe"
+    },
+    "editor": {
+      "tools": "Audio, Revisionen & Bibliotheksverlauf",
+      "archiveHint": "Archivieren blendet den Song aus und behält die Audiodatei.",
+      "backToList": "Zur Songliste",
+      "clearFilters": "Filter löschen",
+      "clearSelection": "Auswahl löschen",
+      "emptyLibraryTitle": "Hier beginnt deine Musik",
+      "emptyLibraryHint": "Audiodatei oder Cover-Paket hinzufügen.",
+      "searchLabel": "Songs suchen",
+      "reload": "Bibliothek aktualisieren",
+      "changesHint": "Änderungen werden erst nach Speichern übernommen.",
+      "searchCatalog": "Alben oder Tags suchen",
+      "noCatalogResults": "Keine Treffer. Andere Suche versuchen.",
+      "resizeList": "Songliste vergrößern"
+    },
+    "options": {
+      "language": {
+        "zh": "Chinesisch",
+        "en": "Englisch",
+        "ja": "Japanisch"
+      },
+      "visibility": {
+        "public": "Öffentlich",
+        "unlisted": "Nicht gelistet",
+        "private": "Privat"
+      },
+      "visibilityHints": {
+        "public": "Bereite Songs erscheinen im öffentlichen Player.",
+        "unlisted": "Nicht in der öffentlichen Bibliothek sichtbar.",
+        "private": "Nur in diesem Admin-Bereich verfügbar."
+      },
+      "assetStatus": {
+        "ready": "Bereit",
+        "draft": "Entwurf",
+        "archived": "Archiviert"
+      },
+      "trackType": {
+        "portfolio": "Eigene Werke",
+        "personal": "Sammlung"
+      },
+      "sourceType": {
+        "upload": "Upload",
+        "external-upload": "Extern",
+        "recording": "Aufnahme"
+      },
+      "performanceType": {
+        "cover": "Cover",
+        "original": "Original",
+        "listening": "Sammlung"
+      }
+    },
+    "lyricTools": {
+      "normalize": "Songtext bereinigen",
+      "convert": "Geschätzte Zeitmarken",
+      "lines": "{count} Textzeilen",
+      "empty": "Kein Songtext",
+      "estimateHint": "Zeitmarken werden aus der Dauer geschätzt. Vor Veröffentlichung prüfen."
+    },
+    "login": {
+      "title": "Willkommen zurück",
+      "description": "Anmelden, um Musik, Alben und Geschichten zu verwalten.",
+      "password": "Admin-Passwort",
+      "submit": "Anmelden",
+      "submitting": "Anmeldung läuft…",
+      "failed": "Anmeldung fehlgeschlagen. Passwort prüfen und erneut versuchen.",
+      "session": "Deine Sitzung gilt {hours} Stunden.",
+      "home": "Zur Musik zurück",
+      "show": "Passwort anzeigen",
+      "hide": "Passwort verbergen",
+      "rateLimited": "Zu viele Versuche. Bitte später erneut versuchen.",
+      "unavailable": "Anmeldung ist derzeit nicht verfügbar. Bitte später versuchen."
+    },
+    "rename": {
+      "action": "Umbenennen",
+      "label": "„{name}“ umbenennen",
+      "hint": "Zugehörige Songs werden aktualisiert. Gleichnamige Tags werden zusammengeführt.",
+      "save": "Name speichern",
+      "saving": "Wird gespeichert…",
+      "cancel": "Abbrechen",
+      "required": "Name eingeben.",
+      "failed": "Speichern fehlgeschlagen. Erneut versuchen."
     }
   },
   "albumBrowse": {

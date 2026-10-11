@@ -2,7 +2,8 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { AlertCircle, GripVertical } from "lucide-react";
+import { CircleDashed, GripVertical } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { formatSongDuration } from "@/lib/admin-workspace";
 import { cn } from "@/lib/utils";
 import type { Song } from "@/types/music";
@@ -36,6 +37,7 @@ export function AdminSongListRow({
   onSelect: () => void;
   onToggleSelected: () => void;
 }) {
+  const t = useTranslations("admin.options");
   const {
     attributes,
     listeners,
@@ -53,56 +55,57 @@ export function AdminSongListRow({
         transition,
       }}
       className={cn(
-        "flex w-full items-stretch rounded-2xl bg-[rgba(11,15,22,0.88)] p-1.5 shadow-[0_0_0_1px_rgba(255,255,255,0.08)] transition-[background-color,box-shadow,opacity] duration-150 ease-out",
+        "flex w-full items-stretch rounded-xl border border-transparent p-1 transition-[background-color,border-color,opacity] duration-150 ease-out",
         disabled && "cursor-wait opacity-60",
         isDragging && "z-20 opacity-70 shadow-[0_12px_32px_rgba(0,0,0,0.45)]",
         isActive
-          ? "bg-sky-400/10 shadow-[0_0_0_1px_rgba(56,189,248,0.42)]"
-          : "hover:bg-[rgba(18,22,30,0.96)] hover:shadow-[0_0_0_1px_rgba(56,189,248,0.24)]",
+          ? "border-[var(--admin-accent)] bg-[var(--admin-accent-soft)]"
+          : "hover:bg-[var(--admin-inset)]",
       )}
     >
-      <label className="relative flex min-h-10 min-w-10 cursor-pointer items-center justify-center rounded-xl hover:bg-white/[0.04]">
+      <label className="relative flex min-h-10 min-w-10 cursor-pointer items-center justify-center rounded-xl hover:bg-[var(--admin-inset)]">
         <span className="sr-only">{selectLabel}</span>
         <input
           type="checkbox"
           checked={isSelected}
           disabled={disabled}
           onChange={onToggleSelected}
-          className="h-4 w-4 rounded border-gray-600 bg-black/40 accent-sky-400"
+          className="h-4 w-4 rounded border-gray-600 bg-[var(--admin-inset)] accent-sky-400"
         />
       </label>
 
       <button
         type="button"
         onClick={onSelect}
+        aria-current={isActive ? "true" : undefined}
         disabled={disabled}
         className="min-w-0 flex-1 rounded-xl px-2 py-2 text-left transition-transform duration-150 ease-out active:scale-[0.96]"
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <div className="truncate text-sm font-semibold text-gray-200">
+            <div className="truncate text-sm font-semibold text-[var(--admin-text)]">
               {song.title}
             </div>
-            <div className="mt-0.5 truncate text-xs text-gray-500">
+            <div className="mt-0.5 truncate text-xs text-[var(--admin-muted)]">
               {[song.artist, song.album].filter(Boolean).join(" • ")}
             </div>
           </div>
           {isDirty ? (
-            <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-amber-200 shadow-[0_0_0_1px_rgba(245,158,11,0.28)]">
+            <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-xs text-[var(--admin-warning)] shadow-[0_0_0_1px_rgba(245,158,11,0.28)]">
               {dirtyLabel}
             </span>
           ) : null}
         </div>
 
-        <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-gray-500">
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[var(--admin-muted)]">
           <span className="tabular-nums">
             {formatSongDuration(song.duration)}
           </span>
-          <span>{song.visibility}</span>
-          <span>{song.assetStatus}</span>
+          <span>{t(`visibility.${song.visibility}`)}</span>
+          <span>{t(`assetStatus.${song.assetStatus}`)}</span>
           {attentionCount > 0 ? (
-            <span className="inline-flex items-center gap-1 text-amber-300/80">
-              <AlertCircle className="h-3 w-3" />
+            <span className="inline-flex items-center gap-1 text-[var(--admin-subtle)]">
+              <CircleDashed className="h-3 w-3" />
               <span className="tabular-nums">
                 {attentionLabel} {attentionCount}
               </span>
@@ -115,13 +118,13 @@ export function AdminSongListRow({
             {song.tags.slice(0, 3).map((tag) => (
               <span
                 key={tag}
-                className="rounded-full bg-sky-500/8 px-2 py-0.5 text-[10px] text-sky-100 shadow-[0_0_0_1px_rgba(14,165,233,0.18)]"
+                className="rounded-full bg-sky-500/8 px-2 py-0.5 text-xs text-[var(--admin-accent)] shadow-[0_0_0_1px_rgba(14,165,233,0.18)]"
               >
                 {tag}
               </span>
             ))}
             {song.tags.length > 3 ? (
-              <span className="rounded-full px-2 py-0.5 text-[10px] text-gray-500 shadow-[0_0_0_1px_rgba(255,255,255,0.08)]">
+              <span className="rounded-full px-2 py-0.5 text-xs text-[var(--admin-muted)] shadow-[0_0_0_1px_rgba(255,255,255,0.08)]">
                 +{song.tags.length - 3}
               </span>
             ) : null}
@@ -133,7 +136,7 @@ export function AdminSongListRow({
         type="button"
         disabled={dragDisabled || disabled}
         aria-label={dragLabel}
-        className="flex min-h-10 min-w-10 touch-none items-center justify-center rounded-xl text-gray-600 transition-[scale,color,background-color] duration-150 ease-out hover:bg-white/[0.04] hover:text-gray-300 active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-30"
+        className="flex min-h-10 min-w-10 touch-none items-center justify-center rounded-xl text-[var(--admin-subtle)] transition-[scale,color,background-color] duration-150 ease-out hover:bg-[var(--admin-inset)] hover:text-[var(--admin-text)] active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-30"
         {...attributes}
         {...listeners}
       >

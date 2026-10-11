@@ -5,6 +5,7 @@ import { AdminCatalogWorkspace } from "@/components/admin/AdminCatalogWorkspace"
 import { EditPlaylist } from "@/components/admin/EditPlaylist";
 import { UploadForm } from "@/components/admin/UploadForm";
 import { useAdminPageController } from "@/components/admin/useAdminPageController";
+import { AdminConfirmDialog } from "@/components/admin/workspace/AdminConfirmDialog";
 import { AdminWorkspaceErrorBoundary } from "@/components/admin/workspace/AdminWorkspaceErrorBoundary";
 import { AdminWorkspaceShell } from "@/components/admin/workspace/AdminWorkspaceShell";
 
@@ -15,12 +16,11 @@ export default function AdminPage() {
   return (
     <AdminWorkspaceShell
       activeTab={controller.activeTab}
-      currentTime={controller.currentTime}
-      isBusy={controller.upload.isDeploying}
+      isBusy={controller.isBusy}
       isExpanded={controller.isTerminalOpen}
       isSigningOut={controller.isSigningOut}
       logs={controller.logs}
-      onLogout={controller.handleLogout}
+      onLogout={controller.requestLogout}
       onTabChange={controller.handleTabChange}
       onToggleTerminal={() =>
         controller.setIsTerminalOpen((open: boolean) => !open)
@@ -33,6 +33,9 @@ export default function AdminPage() {
       >
         {controller.activeTab === "upload" ? (
           <UploadForm
+            onBusyChange={controller.setIsWorkspaceBusy}
+            onResetDraft={controller.upload.resetDraft}
+            isExtractingMetadata={controller.upload.isExtractingMetadata}
             formData={controller.upload.formData}
             setFormData={controller.upload.setFormData}
             audioFile={controller.upload.audioFile}
@@ -75,6 +78,8 @@ export default function AdminPage() {
           />
         ) : (
           <EditPlaylist
+            onCreateSong={() => controller.handleTabChange("upload")}
+            onBusyChange={controller.setIsWorkspaceBusy}
             playlist={controller.playlist.playlist}
             isLoadingPlaylist={controller.playlist.isLoadingPlaylist}
             isSavingPlaylist={controller.playlist.isSavingPlaylist}
@@ -126,6 +131,36 @@ export default function AdminPage() {
           />
         )}
       </AdminWorkspaceErrorBoundary>
+      <AdminConfirmDialog
+        open={Boolean(controller.pendingTab)}
+        title={t("confirm.discardTitle")}
+        description={t("confirm.leaveDescription")}
+        confirmLabel={t("confirm.saveAndContinue")}
+        cancelLabel={t("confirm.cancel")}
+        secondaryLabel={t("confirm.discardConfirm")}
+        disabled={controller.isBusy}
+        onCancel={() => controller.setPendingTab(null)}
+        onConfirm={() => controller.confirmTabChange(true)}
+        onSecondary={() => {
+          void controller.confirmTabChange(false);
+        }}
+      >
+        {controller.playlist.playlistNotice?.tone === "error" && (
+          <p role="alert" className="text-sm text-[var(--admin-danger)]">
+            {controller.playlist.playlistNotice.message}
+          </p>
+        )}
+      </AdminConfirmDialog>
+      <AdminConfirmDialog
+        open={controller.logoutOpen}
+        title={t("confirm.logoutTitle")}
+        description={t("confirm.logoutDescription")}
+        confirmLabel={t("confirm.logoutConfirm")}
+        cancelLabel={t("confirm.cancel")}
+        disabled={controller.isSigningOut}
+        onCancel={() => controller.setLogoutOpen(false)}
+        onConfirm={controller.confirmLogout}
+      />
     </AdminWorkspaceShell>
   );
 }

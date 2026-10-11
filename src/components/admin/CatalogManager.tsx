@@ -1,8 +1,9 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Save } from "lucide-react";
+import { ArrowDown, ArrowUp, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
+import { AdminRenameButton } from "@/components/admin/workspace/AdminRenameButton";
 import {
   buildCatalog,
   moveAlbumTrack,
@@ -30,80 +31,76 @@ function AlbumRow({
   onChange: Props["onChange"];
 }) {
   const t = useTranslations("catalogManager");
-  const [title, setTitle] = useState(album.title);
   const songsById = useMemo(
     () => new Map(playlist.map((song) => [song.id, song])),
     [playlist],
   );
   return (
-    <section className="rounded-xl border border-[var(--border)] p-4">
-      <div className="flex flex-wrap items-end gap-2">
-        <label className="min-w-0 flex-1 text-xs text-gray-400">
-          {t("albumName")}
-          <input
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            className="mt-1 h-10 w-full rounded-md border border-[var(--border)] bg-transparent px-3 text-sm text-gray-200 focus-visible:outline-2 focus-visible:outline-sky-400"
-          />
-        </label>
-        <button
-          type="button"
-          disabled={disabled || !title.trim() || title.trim() === album.title}
-          onClick={() =>
-            void onChange((songs) => renameAlbum(songs, album.id, title))
+    <section className="admin-panel rounded-2xl p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 className="min-w-0 break-words text-base font-semibold">
+          {album.title}
+        </h3>
+        <AdminRenameButton
+          value={album.title}
+          label={t("albumName")}
+          disabled={disabled}
+          onSave={(title) =>
+            onChange((songs) => renameAlbum(songs, album.id, title))
           }
-          className="inline-flex h-10 items-center gap-1 rounded-md border border-sky-400/40 px-3 text-xs text-sky-100 disabled:opacity-50"
-        >
-          <Save className="h-3.5 w-3.5" />
-          {t("saveChange")}
-        </button>
+        />
       </div>
-      <p className="mt-2 text-xs text-gray-500">
+      <p className="mt-2 text-xs text-[var(--admin-muted)]">
         {album.artist} · {t("trackCount", { count: album.trackIds.length })}
       </p>
-      <ol className="mt-3 space-y-1">
-        {album.trackIds.map((id, index) => {
-          const song = songsById.get(id);
-          if (!song) return null;
-          return (
-            <li
-              key={id}
-              className="flex items-center gap-2 rounded-md bg-white/3 px-2 py-1.5 text-xs text-gray-300"
-            >
-              <span className="w-5 text-right tabular-nums text-gray-500">
-                {index + 1}
-              </span>
-              <span className="min-w-0 flex-1 truncate">{song.title}</span>
-              <button
-                type="button"
-                disabled={disabled || index === 0}
-                aria-label={t("moveUp", { title: song.title })}
-                onClick={() =>
-                  void onChange((songs) =>
-                    moveAlbumTrack(songs, album.id, id, -1),
-                  )
-                }
-                className="flex min-h-10 min-w-10 items-center justify-center rounded disabled:opacity-30"
+      <details className="mt-3">
+        <summary className="min-h-10 cursor-pointer text-sm text-[var(--admin-accent)]">
+          {t("trackCount", { count: album.trackIds.length })}
+        </summary>
+        <ol className="mt-2 space-y-1">
+          {album.trackIds.map((id, index) => {
+            const song = songsById.get(id);
+            if (!song) return null;
+            return (
+              <li
+                key={id}
+                className="flex items-center gap-2 rounded-md bg-[var(--admin-inset)] px-2 py-1.5 text-xs text-[var(--admin-text)]"
               >
-                <ArrowUp className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                disabled={disabled || index === album.trackIds.length - 1}
-                aria-label={t("moveDown", { title: song.title })}
-                onClick={() =>
-                  void onChange((songs) =>
-                    moveAlbumTrack(songs, album.id, id, 1),
-                  )
-                }
-                className="flex min-h-10 min-w-10 items-center justify-center rounded disabled:opacity-30"
-              >
-                <ArrowDown className="h-4 w-4" />
-              </button>
-            </li>
-          );
-        })}
-      </ol>
+                <span className="w-5 text-right tabular-nums text-[var(--admin-muted)]">
+                  {index + 1}
+                </span>
+                <span className="min-w-0 flex-1 truncate">{song.title}</span>
+                <button
+                  type="button"
+                  disabled={disabled || index === 0}
+                  aria-label={t("moveUp", { title: song.title })}
+                  onClick={() =>
+                    void onChange((songs) =>
+                      moveAlbumTrack(songs, album.id, id, -1),
+                    )
+                  }
+                  className="flex min-h-10 min-w-10 items-center justify-center rounded disabled:opacity-30"
+                >
+                  <ArrowUp className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  disabled={disabled || index === album.trackIds.length - 1}
+                  aria-label={t("moveDown", { title: song.title })}
+                  onClick={() =>
+                    void onChange((songs) =>
+                      moveAlbumTrack(songs, album.id, id, 1),
+                    )
+                  }
+                  className="flex min-h-10 min-w-10 items-center justify-center rounded disabled:opacity-30"
+                >
+                  <ArrowDown className="h-4 w-4" />
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      </details>
     </section>
   );
 }
@@ -120,49 +117,71 @@ function TagRow({
   onChange: Props["onChange"];
 }) {
   const t = useTranslations("catalogManager");
-  const [name, setName] = useState(tag.name);
   return (
-    <div className="flex flex-wrap items-end gap-2 rounded-xl border border-[var(--border)] p-3">
-      <label className="min-w-0 flex-1 text-xs text-gray-400">
-        {t("tagName")}
-        <input
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          className="mt-1 h-10 w-full rounded-md border border-[var(--border)] bg-transparent px-3 text-sm text-gray-200 focus-visible:outline-2 focus-visible:outline-sky-400"
-        />
-      </label>
-      <span className="pb-3 text-xs text-gray-500">
-        {t("trackCount", { count })}
-      </span>
-      <button
-        type="button"
-        disabled={disabled || !name.trim() || name.trim() === tag.name}
-        onClick={() =>
-          void onChange((songs) => renameOrMergeTag(songs, tag.id, name))
+    <div className="admin-panel flex flex-wrap items-center justify-between gap-3 rounded-2xl p-4">
+      <div>
+        <h3 className="text-base font-semibold">{tag.name}</h3>
+        <p className="mt-1 text-xs text-[var(--admin-muted)]">
+          {t("trackCount", { count })}
+        </p>
+      </div>
+      <AdminRenameButton
+        value={tag.name}
+        label={t("tagName")}
+        disabled={disabled}
+        onSave={(name) =>
+          onChange((songs) => renameOrMergeTag(songs, tag.id, name))
         }
-        className="inline-flex h-10 items-center gap-1 rounded-md border border-sky-400/40 px-3 text-xs text-sky-100 disabled:opacity-50"
-      >
-        <Save className="h-3.5 w-3.5" />
-        {t("saveChange")}
-      </button>
+      />
     </div>
   );
 }
 
 export function CatalogManager({ mode, playlist, disabled, onChange }: Props) {
   const t = useTranslations("catalogManager");
+  const a = useTranslations("admin.editor");
+  const [query, setQuery] = useState("");
   const catalog = useMemo(() => buildCatalog(playlist), [playlist]);
+  const normalizedQuery = query.trim().toLocaleLowerCase();
+  const albums = catalog.albums.filter((album) =>
+    `${album.title} ${album.artist}`
+      .toLocaleLowerCase()
+      .includes(normalizedQuery),
+  );
+  const tags = catalog.tags.filter((tag) =>
+    tag.name.toLocaleLowerCase().includes(normalizedQuery),
+  );
   return (
     <div className="min-h-0 flex-1 overflow-y-auto p-4 md:p-6">
-      <h2 className="text-lg font-semibold text-gray-200">
+      <h2 className="text-lg font-semibold text-[var(--admin-text)]">
         {mode === "albums" ? t("albumsTitle") : t("tagsTitle")}
       </h2>
-      <p className="mt-1 text-sm text-gray-500">
+      <p className="mt-1 text-sm text-[var(--admin-muted)]">
         {mode === "albums" ? t("albumsHint") : t("tagsHint")}
       </p>
-      <div className="mt-5 space-y-3">
+      <label className="relative mt-5 block max-w-xl">
+        <span className="sr-only">{a("searchCatalog")}</span>
+        <Search
+          size={16}
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--admin-subtle)]"
+        />
+        <input
+          type="search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder={a("searchCatalog")}
+          className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--admin-surface)] pl-9 pr-3 text-sm"
+        />
+      </label>
+      <div
+        className={
+          mode === "albums"
+            ? "mt-5 grid gap-4 xl:grid-cols-2"
+            : "mt-5 max-w-3xl space-y-3"
+        }
+      >
         {mode === "albums"
-          ? catalog.albums.map((album) => (
+          ? albums.map((album) => (
               <AlbumRow
                 key={album.id}
                 album={album}
@@ -171,7 +190,7 @@ export function CatalogManager({ mode, playlist, disabled, onChange }: Props) {
                 onChange={onChange}
               />
             ))
-          : catalog.tags.map((tag) => (
+          : tags.map((tag) => (
               <TagRow
                 key={tag.id}
                 tag={tag}
@@ -183,10 +202,9 @@ export function CatalogManager({ mode, playlist, disabled, onChange }: Props) {
                 onChange={onChange}
               />
             ))}
-        {(mode === "albums" ? catalog.albums.length : catalog.tags.length) ===
-        0 ? (
-          <p className="py-10 text-center text-sm text-gray-500">
-            {t("empty")}
+        {(mode === "albums" ? albums.length : tags.length) === 0 ? (
+          <p className="col-span-full py-10 text-center text-sm text-[var(--admin-muted)]">
+            {normalizedQuery ? a("noCatalogResults") : t("empty")}
           </p>
         ) : null}
       </div>

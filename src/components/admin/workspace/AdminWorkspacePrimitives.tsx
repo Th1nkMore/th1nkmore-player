@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -27,19 +26,14 @@ export function AdminSectionCard({
   className?: string;
 }) {
   return (
-    <section
-      className={cn(
-        "rounded-2xl bg-[linear-gradient(180deg,rgba(20,24,34,0.96),rgba(12,15,22,0.98))] p-4 shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_8px_24px_rgba(0,0,0,0.22)] md:p-5",
-        className,
-      )}
-    >
+    <section className={cn("admin-panel rounded-2xl p-4 md:p-5", className)}>
       <div className="mb-4 flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <div className="text-balance text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-400">
+          <h2 className="text-balance text-base font-semibold text-[var(--admin-text)]">
             {title}
-          </div>
+          </h2>
           {description ? (
-            <p className="mt-1 text-pretty text-sm text-gray-500">
+            <p className="mt-1 text-pretty text-sm text-[var(--admin-muted)]">
               {description}
             </p>
           ) : null}
@@ -70,23 +64,20 @@ export function AdminCollapsibleSectionCard({
     <details
       open={isOpen}
       onToggle={(event) => setIsOpen(event.currentTarget.open)}
-      className={cn(
-        "group rounded-2xl bg-[linear-gradient(180deg,rgba(20,24,34,0.96),rgba(12,15,22,0.98))] shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_8px_24px_rgba(0,0,0,0.22)]",
-        className,
-      )}
+      className={cn("admin-panel group rounded-2xl", className)}
     >
       <summary className="flex min-h-14 cursor-pointer list-none items-center gap-4 rounded-2xl px-4 py-3 transition-[background-color] duration-150 ease-out hover:bg-white/[0.03] md:px-5 [&::-webkit-details-marker]:hidden">
         <div className="min-w-0 flex-1">
-          <div className="text-balance text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-400">
+          <h2 className="text-balance text-base font-semibold text-[var(--admin-text)]">
             {title}
-          </div>
+          </h2>
           {description ? (
-            <p className="mt-1 text-pretty text-sm text-gray-500">
+            <p className="mt-1 text-pretty text-sm text-[var(--admin-muted)]">
               {description}
             </p>
           ) : null}
         </div>
-        <ChevronDown className="h-4 w-4 shrink-0 text-gray-500 transition-transform duration-150 ease-out group-open:rotate-180" />
+        <ChevronDown className="h-4 w-4 shrink-0 text-[var(--admin-muted)] transition-transform duration-150 ease-out group-open:rotate-180" />
       </summary>
       <div className="border-t border-white/[0.06] p-4 md:p-5">{children}</div>
     </details>
@@ -110,15 +101,22 @@ export function AdminField({
     <div className="space-y-1.5">
       <label
         htmlFor={htmlFor}
-        className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400"
+        className="block text-sm font-medium text-[var(--admin-text)]"
       >
         {label}
       </label>
       {description ? (
-        <p className="text-xs text-gray-500">{description}</p>
+        <p className="text-xs text-[var(--admin-muted)]">{description}</p>
       ) : null}
       {children}
-      {error ? <p className="text-xs text-rose-300">{error}</p> : null}
+      {error ? (
+        <p
+          id={htmlFor ? `${htmlFor}-error` : undefined}
+          className="text-sm text-[var(--admin-danger)]"
+        >
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -154,25 +152,25 @@ const toneStyles: Record<
   neutral: {
     border: "border-sky-500/30",
     background: "bg-sky-500/8",
-    icon: "text-sky-200",
+    icon: "text-[var(--admin-accent)]",
     Icon: Sparkles,
   },
   success: {
     border: "border-emerald-500/30",
     background: "bg-emerald-500/10",
-    icon: "text-emerald-200",
+    icon: "text-[var(--admin-success)]",
     Icon: CheckCircle2,
   },
   warning: {
     border: "border-amber-500/30",
     background: "bg-amber-500/10",
-    icon: "text-amber-200",
+    icon: "text-[var(--admin-warning)]",
     Icon: AlertTriangle,
   },
   error: {
     border: "border-rose-500/30",
     background: "bg-rose-500/10",
-    icon: "text-rose-200",
+    icon: "text-[var(--admin-danger)]",
     Icon: AlertTriangle,
   },
 };
@@ -193,10 +191,8 @@ export function AdminStatusBanner({
   const style = toneStyles[tone];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.18 }}
+    <div
+      role={tone === "error" ? "alert" : "status"}
       className={cn(
         "rounded-2xl border p-3",
         style.border,
@@ -207,14 +203,16 @@ export function AdminStatusBanner({
       <div className="flex items-start gap-3">
         <style.Icon className={cn("mt-0.5 h-4 w-4 shrink-0", style.icon)} />
         <div className="min-w-0">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-200">
+          <div className="text-sm font-semibold text-[var(--admin-text)]">
             {title}
           </div>
-          <p className="mt-1 text-pretty text-sm text-gray-400">{message}</p>
+          <p className="mt-1 text-pretty text-sm text-[var(--admin-muted)]">
+            {message}
+          </p>
         </div>
         {action ? <div className="ml-auto shrink-0">{action}</div> : null}
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -230,7 +228,7 @@ export function AdminActionBar({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-3 rounded-2xl bg-[rgba(10,14,20,0.92)] p-3 shadow-[0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur",
+        "flex flex-wrap items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--admin-surface)] p-3",
         sticky && "sticky bottom-0 z-10 shadow-[0_-8px_24px_rgba(0,0,0,0.24)]",
         className,
       )}
@@ -250,11 +248,11 @@ export function AdminEmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex min-h-[16rem] flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border)] bg-[rgba(12,16,22,0.84)] px-6 py-10 text-center">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-400">
+    <div className="flex min-h-[12rem] flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border)] bg-[var(--admin-inset)] px-6 py-10 text-center">
+      <div className="text-base font-semibold text-[var(--admin-text)]">
         {title}
       </div>
-      <p className="mt-2 max-w-md text-pretty text-sm text-gray-500">
+      <p className="mt-2 max-w-md text-pretty text-sm text-[var(--admin-muted)]">
         {description}
       </p>
       {action ? <div className="mt-4">{action}</div> : null}
@@ -299,21 +297,25 @@ export function AdminLoadingCard({
 }) {
   return (
     <div
+      aria-live="polite"
       className={cn(
-        "rounded-2xl border border-[var(--border)] bg-[rgba(14,18,26,0.94)] p-4",
+        "rounded-2xl border border-[var(--border)] bg-[var(--admin-surface)] p-4",
         className,
       )}
     >
-      <div className="mb-4 flex items-center gap-2 text-gray-500">
+      <div className="mb-4 flex items-center gap-2 text-[var(--admin-muted)]">
         <Loader2 className="h-4 w-4 animate-spin" />
-        <span className="text-[11px] uppercase tracking-[0.22em]">{label}</span>
+        <span className="text-sm">{label}</span>
       </div>
       <div className="space-y-3">
         {Array.from(
           { length: lines },
           (_, index) => `skeleton-${lines}-${index}`,
         ).map((key) => (
-          <div key={key} className="h-10 animate-pulse rounded-xl bg-white/4" />
+          <div
+            key={key}
+            className="h-10 animate-pulse rounded-xl bg-[var(--border)]"
+          />
         ))}
       </div>
     </div>

@@ -36,7 +36,7 @@ export function AdminPlaylistHistoryPanel({
       >
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-sm text-gray-400">
+            <div className="flex items-center gap-2 text-sm text-[var(--admin-muted)]">
               <History className="h-4 w-4" />
               <span className="tabular-nums">
                 {t("playlist.history.count", { count: history.length })}
@@ -57,7 +57,7 @@ export function AdminPlaylistHistoryPanel({
           </div>
 
           {history.length === 0 ? (
-            <p className="rounded-xl bg-white/[0.03] p-3 text-pretty text-sm text-gray-500">
+            <p className="rounded-xl bg-white/[0.03] p-3 text-pretty text-sm text-[var(--admin-muted)]">
               {t("playlist.history.empty")}
             </p>
           ) : (
@@ -68,10 +68,10 @@ export function AdminPlaylistHistoryPanel({
                   className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-black/20 p-3 shadow-[0_0_0_1px_rgba(255,255,255,0.07)]"
                 >
                   <div className="min-w-0">
-                    <div className="text-sm text-gray-300 tabular-nums">
+                    <div className="text-sm text-[var(--admin-text)] tabular-nums">
                       {new Date(item.createdAt).toLocaleString()}
                     </div>
-                    <div className="mt-1 text-xs text-gray-600">
+                    <div className="mt-1 text-xs text-[var(--admin-subtle)]">
                       rev {item.revision} ·{" "}
                       {Math.max(1, Math.round(item.size / 1024))} KB
                     </div>
