@@ -27,7 +27,7 @@
     "openQueue": "次に再生する {count} 曲を開く",
     "queueDescription": "{count} 曲が再生待ちです",
     "closeQueue": "再生待ちを閉じる",
-    "searchPlaceholder": "曲、アーティスト、アルバム、タグを検索",
+    "searchPlaceholder": "曲、演奏者、原曲アーティスト、アルバム、タグを検索",
     "allSongs": "すべて",
     "clearTag": "{tag} フィルターを解除",
     "addedToQueue": "{title} を追加しました",
@@ -272,8 +272,8 @@
         "placeholder": "曲名"
       },
       "artist": {
-        "label": "アーティスト",
-        "placeholder": "アーティスト名"
+        "label": "演奏者",
+        "placeholder": "現在の演奏者（例：Huang）"
       },
       "album": {
         "label": "アルバム",
@@ -413,7 +413,7 @@
       "title": "プレイリスト（{count} 曲）",
       "subtitle": "各トラックを確認し、ライブラリへ直接保存します。",
       "autosaveHint": "1 曲ずつ安全に保存",
-      "searchPlaceholder": "タイトル、アーティスト、アルバム、タグで検索",
+      "searchPlaceholder": "タイトル、演奏者、原曲アーティスト、アルバム、タグで検索",
       "badges": {
         "dirty": "変更あり",
         "attention": "任意"
@@ -429,7 +429,7 @@
         "label": "トラックを並べ替える",
         "manual": "手動順序",
         "title": "タイトル順",
-        "artist": "アーティスト順"
+        "artist": "演奏者順"
       },
       "showing": "{total} 曲中 {count} 曲を表示",
       "selectLabel": "{title} を選択",

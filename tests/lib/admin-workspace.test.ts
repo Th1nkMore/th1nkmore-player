@@ -141,3 +141,14 @@ describe("admin workspace helpers", () => {
     expect(playlist[0].assetStatus).toBe("ready");
   });
 });
+
+it("finds covers by original artist after the performer credit is unified", () => {
+  const cover = { ...songOne, artist: "Huang", originalArtist: "Rapeter" };
+  expect(
+    filterAndSortAdminPlaylist([cover], {
+      filter: "all",
+      query: "RAPETER",
+      sort: "manual",
+    }),
+  ).toEqual([cover]);
+});

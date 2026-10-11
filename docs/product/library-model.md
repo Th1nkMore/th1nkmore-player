@@ -27,6 +27,10 @@ Planned fields should clarify cover credits and sharing:
 - `originalArtist`: the credited original performer or author label shown to listeners
 - `shareSlug`: a stable human-readable share identifier when one is available
 
+`artist` is the performer of the stored audio, while `originalArtist` credits the source work for a cover. Fetching lyrics for a cover updates the source credit without replacing its performer. Library and admin searches include both names.
+
+The song `language` records the primary performed lyric language. English titles, section labels, or occasional foreign-language lines do not by themselves change the primary language. Translations and recording/production credits are not performed lyric content; when a cover has no attached lyrics, a matching original song can be used as reference and the evidence should remain explicit.
+
 These fields should not overload `trackType`. Portfolio-versus-personal and cover-versus-original answer different questions.
 
 ## Creator Note
