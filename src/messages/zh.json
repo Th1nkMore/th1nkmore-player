@@ -27,7 +27,7 @@
     "openQueue": "打开待播队列，共 {count} 首",
     "queueDescription": "已有 {count} 首等待播放",
     "closeQueue": "关闭待播队列",
-    "searchPlaceholder": "搜索歌曲、歌手、专辑或标签",
+    "searchPlaceholder": "搜索歌曲、演唱者、原唱、专辑或标签",
     "allSongs": "全部",
     "clearTag": "清除 {tag} 标签筛选",
     "addedToQueue": "已加入：{title}",
@@ -272,8 +272,8 @@
         "placeholder": "歌曲标题"
       },
       "artist": {
-        "label": "歌手",
-        "placeholder": "歌手名称"
+        "label": "演唱者",
+        "placeholder": "当前演唱者，例如 Huang"
       },
       "album": {
         "label": "专辑",
@@ -413,7 +413,7 @@
       "title": "歌单（{count} 首）",
       "subtitle": "逐首审阅并直接保存到曲库。",
       "autosaveHint": "一首一存，修改更安全",
-      "searchPlaceholder": "搜索标题、歌手、专辑或标签",
+      "searchPlaceholder": "搜索标题、演唱者、原唱、专辑或标签",
       "badges": {
         "dirty": "已改",
         "attention": "可补充"
@@ -429,7 +429,7 @@
         "label": "歌曲排序",
         "manual": "手动顺序",
         "title": "按标题",
-        "artist": "按歌手"
+        "artist": "按演唱者"
       },
       "showing": "显示 {count} / {total} 首",
       "selectLabel": "选择《{title}》",
