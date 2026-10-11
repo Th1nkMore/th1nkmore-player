@@ -10,16 +10,15 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { type ChangeEvent, useRef, useState } from "react";
+import { AdminChoiceGroup } from "@/components/admin/workspace/AdminChoiceGroup";
 import { SpokenNoteRecorder } from "@/components/admin/workspace/SpokenNoteRecorder";
 import { Button } from "@/components/ui/button";
 import { readAudioFileDuration } from "@/lib/admin-audio";
 import { formatSongDuration } from "@/lib/admin-workspace";
 import type { CreatorNote, LegacyLanguage } from "@/types/music";
 
-const selectClassName =
-  "flex h-10 w-full rounded-md border border-[var(--border)] bg-[rgba(7,10,15,0.92)] px-3 py-1 text-sm text-gray-200 outline-none transition-[border-color,box-shadow] duration-150 ease-out focus:border-sky-400/60";
 const textareaClassName =
-  "flex w-full rounded-xl border border-[var(--border)] bg-[rgba(7,10,15,0.92)] px-3 py-3 text-sm text-gray-200 outline-none transition-[border-color,box-shadow] duration-150 ease-out focus:border-sky-400/60";
+  "flex w-full rounded-xl border border-[var(--border)] bg-[var(--admin-inset)] px-3 py-3 text-sm text-[var(--admin-text)] outline-none transition-[border-color,box-shadow] duration-150 ease-out focus:border-sky-400/60";
 
 export function CreatorNoteEditor({
   note,
@@ -27,12 +26,14 @@ export function CreatorNoteEditor({
   onChange,
   onUploadAudio,
   onUploadingChange,
+  onRecordingChange,
 }: {
   note?: CreatorNote;
   fallbackLanguage: LegacyLanguage;
   onChange: (note?: CreatorNote) => void;
   onUploadAudio: (file: File) => Promise<string>;
   onUploadingChange: (isUploading: boolean) => void;
+  onRecordingChange?: (active: boolean) => void;
 }) {
   const t = useTranslations("admin");
   const audioInputRef = useRef<HTMLInputElement>(null);
@@ -86,15 +87,15 @@ export function CreatorNoteEditor({
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_12rem]">
+      <div className="grid grid-cols-1 gap-4">
         <div className="space-y-1.5">
           <label
             htmlFor="creator-note-body"
-            className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400"
+            className="block text-sm font-medium text-[var(--admin-text)]"
           >
             {t("fields.creatorNoteBody.label")}
           </label>
-          <p className="text-pretty text-xs text-gray-500">
+          <p className="text-pretty text-xs text-[var(--admin-muted)]">
             {t("fields.creatorNoteBody.description")}
           </p>
           <textarea
@@ -112,36 +113,29 @@ export function CreatorNoteEditor({
           />
         </div>
 
-        <div className="space-y-1.5">
-          <label
-            htmlFor="creator-note-language"
-            className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-400"
-          >
-            {t("fields.creatorNoteLanguage.label")}
-          </label>
-          <select
-            id="creator-note-language"
-            value={note?.language || fallbackLanguage}
-            onChange={(event) =>
-              patchNote({ language: event.target.value as LegacyLanguage })
-            }
-            className={selectClassName}
-          >
-            <option value="en">en</option>
-            <option value="zh">zh</option>
-            <option value="ja">ja</option>
-          </select>
-        </div>
+        <AdminChoiceGroup
+          label={t("fields.creatorNoteLanguage.label")}
+          value={
+            (note?.language || fallbackLanguage) === "jp"
+              ? "ja"
+              : note?.language || fallbackLanguage
+          }
+          options={(["zh", "en", "ja"] as const).map((value) => ({
+            value,
+            label: t(`options.language.${value}`),
+          }))}
+          onChange={(value) => patchNote({ language: value as LegacyLanguage })}
+        />
       </div>
 
-      <div className="rounded-2xl bg-[rgba(7,10,15,0.72)] p-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]">
+      <div className="rounded-2xl bg-[var(--admin-inset)] p-4 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 text-sm font-semibold text-gray-200">
-              <Mic2 className="h-4 w-4 text-sky-300" />
+            <div className="flex items-center gap-2 text-sm font-semibold text-[var(--admin-text)]">
+              <Mic2 className="h-4 w-4 text-[var(--admin-accent)]" />
               {t("creatorNote.spokenTitle")}
             </div>
-            <p className="mt-1 max-w-2xl text-pretty text-xs text-gray-500">
+            <p className="mt-1 max-w-2xl text-pretty text-xs text-[var(--admin-muted)]">
               {t("creatorNote.spokenDescription")}
             </p>
           </div>
@@ -171,7 +165,10 @@ export function CreatorNoteEditor({
         </div>
 
         {uploadError ? (
-          <p className="mt-3 text-pretty text-xs text-rose-300" role="alert">
+          <p
+            className="mt-3 text-pretty text-xs text-[var(--admin-danger)]"
+            role="alert"
+          >
             {uploadError}
           </p>
         ) : null}
@@ -179,11 +176,11 @@ export function CreatorNoteEditor({
         {note?.audioUrl ? (
           <div className="mt-4 rounded-xl bg-white/[0.035] p-3 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]">
             <div className="mb-3 flex items-center justify-between gap-3">
-              <span className="flex min-w-0 items-center gap-2 text-xs font-medium text-gray-300">
-                <FileAudio className="h-4 w-4 shrink-0 text-emerald-300" />
+              <span className="flex min-w-0 items-center gap-2 text-xs font-medium text-[var(--admin-text)]">
+                <FileAudio className="h-4 w-4 shrink-0 text-[var(--admin-success)]" />
                 {t("creatorNote.currentAudio")}
               </span>
-              <span className="text-xs text-gray-500 tabular-nums">
+              <span className="text-xs text-[var(--admin-muted)] tabular-nums">
                 {formatSongDuration(note.audioDuration || 0)}
               </span>
             </div>
@@ -199,14 +196,14 @@ export function CreatorNoteEditor({
               variant="ghost"
               disabled={isUploading}
               onClick={removeAudio}
-              className="mt-2 text-rose-300 hover:text-rose-200"
+              className="mt-2 text-[var(--admin-danger)] hover:text-[var(--admin-danger)]"
             >
               <Trash2 />
               {t("creatorNote.removeAudio")}
             </Button>
           </div>
         ) : (
-          <p className="mt-4 text-pretty text-xs text-gray-600">
+          <p className="mt-4 text-pretty text-xs text-[var(--admin-subtle)]">
             {t("creatorNote.noAudio")}
           </p>
         )}
@@ -214,19 +211,24 @@ export function CreatorNoteEditor({
         <div className="my-4 h-px bg-white/[0.07]" />
         <SpokenNoteRecorder
           disabled={isUploading}
+          onRecordingChange={onRecordingChange}
           onUseRecording={(file, duration) => attachAudio(file, duration)}
         />
       </div>
 
       <details className="group rounded-xl bg-white/[0.025] p-3 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.07)]">
-        <summary className="flex min-h-10 cursor-pointer list-none items-center text-xs font-semibold text-gray-400 transition-colors duration-150 ease-out hover:text-gray-200">
+        <summary className="flex min-h-10 cursor-pointer list-none items-center text-xs font-semibold text-[var(--admin-muted)] transition-colors duration-150 ease-out hover:text-[var(--admin-text)]">
           {t("fields.creatorNoteTranscript.label")}
           <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-150 ease-out group-open:rotate-180" />
         </summary>
-        <p className="mb-2 text-pretty text-xs text-gray-500">
+        <p className="mb-2 text-pretty text-xs text-[var(--admin-muted)]">
           {t("fields.creatorNoteTranscript.description")}
         </p>
+        <label htmlFor="creator-note-transcript" className="sr-only">
+          {t("fields.creatorNoteTranscript.label")}
+        </label>
         <textarea
+          id="creator-note-transcript"
           value={note?.audioTranscript || ""}
           onChange={(event) =>
             patchNote({ audioTranscript: event.target.value })

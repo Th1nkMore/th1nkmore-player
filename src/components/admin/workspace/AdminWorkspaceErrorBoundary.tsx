@@ -38,13 +38,13 @@ export class AdminWorkspaceErrorBoundary extends Component<
       return (
         <div className="flex h-full min-h-[24rem] items-center justify-center p-6">
           <div className="w-full max-w-lg rounded-2xl border border-rose-500/30 bg-rose-500/8 p-6 text-center">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-rose-200">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--admin-danger)]">
               {this.props.title}
             </div>
-            <p className="mt-3 text-sm text-rose-100/80">
+            <p className="mt-3 text-sm text-[var(--admin-danger)]">
               {this.props.description}
             </p>
-            <p className="mt-2 text-xs text-rose-200/70">
+            <p className="mt-2 text-xs text-[var(--admin-danger)]">
               {this.state.error.message}
             </p>
             <div className="mt-4">

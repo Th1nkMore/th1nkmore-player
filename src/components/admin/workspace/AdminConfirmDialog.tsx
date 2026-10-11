@@ -1,6 +1,7 @@
 "use client";
 
-import type { ReactNode } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
+import { type ReactNode, useRef } from "react";
 import { Button } from "@/components/ui/button";
 
 export function AdminConfirmDialog({
@@ -28,42 +29,64 @@ export function AdminConfirmDialog({
   onSecondary?: () => void;
   children?: ReactNode;
 }) {
-  if (!open) {
-    return null;
-  }
-
+  const returnFocus = useRef<HTMLElement | null>(null);
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-[rgba(12,16,22,0.98)] p-5 shadow-[0_16px_48px_rgba(0,0,0,0.45)]">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-gray-300">
-          {title}
-        </div>
-        <p className="mt-2 text-sm text-gray-500">{description}</p>
-        {children ? <div className="mt-3">{children}</div> : null}
-        <div className="mt-5 flex flex-wrap items-center justify-end gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            disabled={disabled}
-            onClick={onCancel}
-          >
-            {cancelLabel}
-          </Button>
-          {secondaryLabel && onSecondary ? (
+    <Dialog.Root
+      open={open}
+      onOpenChange={(next) => {
+        if (!(next || disabled)) onCancel();
+      }}
+    >
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/45" />
+        <Dialog.Content
+          onOpenAutoFocus={() => {
+            returnFocus.current = document.activeElement as HTMLElement | null;
+          }}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            returnFocus.current?.focus();
+          }}
+          onEscapeKeyDown={(event) => {
+            if (disabled) event.preventDefault();
+          }}
+          onPointerDownOutside={(event) => {
+            if (disabled) event.preventDefault();
+          }}
+          className="fixed left-1/2 top-1/2 z-50 max-h-[90dvh] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-y-auto overscroll-contain rounded-2xl border border-[var(--border)] bg-[var(--admin-surface)] p-6 shadow-xl"
+        >
+          <Dialog.Title className="text-lg font-semibold text-[var(--admin-text)]">
+            {title}
+          </Dialog.Title>
+          <Dialog.Description className="mt-2 text-sm leading-6 text-[var(--admin-muted)]">
+            {description}
+          </Dialog.Description>
+          {children && <div className="mt-3">{children}</div>}
+          <div className="mt-6 flex flex-wrap justify-end gap-2">
             <Button
               type="button"
-              variant="destructive"
+              variant="outline"
               disabled={disabled}
-              onClick={onSecondary}
+              onClick={onCancel}
             >
-              {secondaryLabel}
+              {cancelLabel}
             </Button>
-          ) : null}
-          <Button type="button" disabled={disabled} onClick={onConfirm}>
-            {confirmLabel}
-          </Button>
-        </div>
-      </div>
-    </div>
+            {secondaryLabel && onSecondary && (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={disabled}
+                onClick={onSecondary}
+              >
+                {secondaryLabel}
+              </Button>
+            )}
+            <Button type="button" disabled={disabled} onClick={onConfirm}>
+              {confirmLabel}
+            </Button>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

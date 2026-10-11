@@ -9,10 +9,12 @@ import { useAdminUploadFlow } from "./useAdminUploadFlow";
 type Tab = "upload" | "edit" | "catalog";
 
 export function useAdminPageController() {
-  const [activeTab, setActiveTab] = useState<Tab>("upload");
+  const [activeTab, setActiveTab] = useState<Tab>("edit");
+  const [logoutOpen, setLogoutOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
-  const [currentTime, setCurrentTime] = useState<string>("");
+  const [pendingTab, setPendingTab] = useState<Tab | null>(null);
+  const [isWorkspaceBusy, setIsWorkspaceBusy] = useState(false);
   const { logs, addLog, clearLogs } = useAdminLogs();
 
   const upload = useAdminUploadFlow({ addLog, clearLogs });
@@ -22,37 +24,49 @@ export function useAdminPageController() {
     shouldLoad: activeTab === "edit" || activeTab === "catalog",
   });
 
+  const isBusy =
+    upload.isExtractingMetadata ||
+    upload.isFetchingLyrics ||
+    playlist.isFetchingLyricsEdit ||
+    upload.isDeploying ||
+    upload.isImportingCoverPackage ||
+    playlist.isSavingPlaylist ||
+    playlist.isReplacingAudio ||
+    playlist.isRestoringHistory ||
+    playlist.isBackfillingDurations ||
+    isWorkspaceBusy;
+  const hasEditedDraft = hasSongChanges(
+    playlist.playlist.find((song) => song.id === playlist.editedSong?.id) ??
+      null,
+    playlist.editedSong,
+  );
   const handleTabChange = useCallback(
-    async (tab: Tab) => {
-      if (tab === activeTab || playlist.isSavingPlaylist) return;
-      const savedSong =
-        playlist.playlist.find((song) => song.id === playlist.editedSong?.id) ??
-        null;
-      if (
-        activeTab === "edit" &&
-        hasSongChanges(savedSong, playlist.editedSong)
-      ) {
-        if (!(await playlist.handleSaveEdit())) return;
+    (tab: Tab) => {
+      if (tab === activeTab || isBusy) return;
+      if (activeTab === "edit" && hasEditedDraft) {
+        setPendingTab(tab);
+        return;
       }
       setActiveTab(tab);
     },
-    [activeTab, playlist],
+    [activeTab, hasEditedDraft, isBusy],
   );
-
+  const confirmTabChange = async (save: boolean) => {
+    if (isBusy || !pendingTab) return;
+    if (save && !(await playlist.handleSaveEdit())) return;
+    if (!save) playlist.handleCancelEdit();
+    setActiveTab(pendingTab);
+    setPendingTab(null);
+  };
   useEffect(() => {
-    const updateTime = () => {
-      setCurrentTime(new Date().toLocaleTimeString());
+    const protectDraft = (event: BeforeUnloadEvent) => {
+      if (!(hasEditedDraft || upload.audioFile || isBusy)) return;
+      event.preventDefault();
+      event.returnValue = "";
     };
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    if (logs.at(-1)?.level === "error") {
-      setIsTerminalOpen(true);
-    }
-  }, [logs]);
+    window.addEventListener("beforeunload", protectDraft);
+    return () => window.removeEventListener("beforeunload", protectDraft);
+  }, [hasEditedDraft, upload.audioFile, isBusy]);
 
   const handleLogout = useCallback(async () => {
     setIsSigningOut(true);
@@ -66,10 +80,28 @@ export function useAdminPageController() {
     }
   }, []);
 
+  const requestLogout = () => {
+    if (hasEditedDraft || upload.audioFile) setLogoutOpen(true);
+    else void handleLogout();
+  };
+  const confirmLogout = async () => {
+    playlist.handleCancelEdit();
+    upload.resetDraft();
+    setLogoutOpen(false);
+    await handleLogout();
+  };
   return {
+    logoutOpen,
+    setLogoutOpen,
+    requestLogout,
+    confirmLogout,
     activeTab,
     addLog,
-    currentTime,
+    isBusy,
+    pendingTab,
+    setPendingTab,
+    confirmTabChange,
+    setIsWorkspaceBusy,
     handleLogout,
     handleTabChange,
     isSigningOut,

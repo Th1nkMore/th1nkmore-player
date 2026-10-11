@@ -1,13 +1,19 @@
 "use client";
 
-import { Loader2, Music2, RefreshCcw } from "lucide-react";
+import { Loader2, RefreshCcw } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LyricsTools } from "@/components/admin/LyricsTools";
 import { TagInput } from "@/components/admin/TagInput";
+import { AdminChoiceGroup } from "@/components/admin/workspace/AdminChoiceGroup";
+import {
+  AdminFormNavigation,
+  AdminFormPanel,
+  type AdminSongSection,
+} from "@/components/admin/workspace/AdminFormNavigation";
+import { AdminPublishingFields } from "@/components/admin/workspace/AdminPublishingFields";
 import { AdminStoryFields } from "@/components/admin/workspace/AdminStoryFields";
 import {
-  AdminCollapsibleSectionCard,
   AdminField,
   AdminFieldGrid,
   AdminSectionCard,
@@ -16,16 +22,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { fetchAdminPlaylist } from "@/lib/admin-utils";
-import { formatSongDuration } from "@/lib/admin-workspace";
 import { buildCatalog, tagIdFor } from "@/lib/catalog";
 import type { Album, LibraryTag, Song } from "@/types/music";
 
 const fieldClassName =
-  "border-[var(--border)] bg-[rgba(7,10,15,0.92)] text-gray-200 placeholder:text-gray-600";
+  "border-[var(--border)] bg-[var(--admin-inset)] text-[var(--admin-text)] placeholder:text-[var(--admin-subtle)]";
 const selectClassName =
-  "flex h-9 w-full rounded-md border border-[var(--border)] bg-[rgba(7,10,15,0.92)] px-3 py-1 text-sm text-gray-200 outline-none transition-[border-color,box-shadow] duration-150 ease-out focus:border-sky-400/60";
+  "flex h-9 w-full rounded-md border border-[var(--border)] bg-[var(--admin-inset)] px-3 py-1 text-sm text-[var(--admin-text)] outline-none transition-[border-color,box-shadow] duration-150 ease-out focus:border-sky-400/60";
 const textareaClassName =
-  "flex min-h-[11rem] w-full rounded-xl border border-[var(--border)] bg-[rgba(7,10,15,0.92)] px-3 py-3 text-sm text-gray-200 outline-none transition-[border-color,box-shadow] duration-150 ease-out focus:border-sky-400/60";
+  "flex min-h-[11rem] w-full rounded-xl border border-[var(--border)] bg-[var(--admin-inset)] px-3 py-3 text-sm text-[var(--admin-text)] outline-none transition-[border-color,box-shadow] duration-150 ease-out focus:border-sky-400/60";
 
 type SongDraft = Partial<Song> | Song;
 
@@ -42,7 +47,12 @@ type AdminSongFormProps = {
   onNormalizeLyrics: () => void;
   onUploadCreatorNoteAudio: (file: File) => Promise<string>;
   onCreatorNoteUploadingChange: (isUploading: boolean) => void;
+  onRecordingChange?: (active: boolean) => void;
   mode: "upload" | "edit";
+  section?: AdminSongSection;
+  sections?: AdminSongSection[];
+  showRequiredErrors?: boolean;
+  validationAttempt?: number;
 };
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: The shared song form intentionally keeps the upload/edit field order and grouping in one place
@@ -59,13 +69,52 @@ export function AdminSongForm({
   onNormalizeLyrics,
   onUploadCreatorNoteAudio,
   onCreatorNoteUploadingChange,
+  onRecordingChange,
   mode,
+  section,
+  sections,
+  showRequiredErrors = false,
+  validationAttempt = 0,
 }: AdminSongFormProps) {
   const t = useTranslations("admin");
   const c = useTranslations("catalogManager");
   const [albums, setAlbums] = useState<Album[]>([]);
   const [knownTags, setKnownTags] = useState<LibraryTag[]>([]);
   const [albumQuery, setAlbumQuery] = useState("");
+  const [activeSection, setActiveSection] = useState<AdminSongSection>("basic");
+  const [isRecordingNote, setIsRecordingNote] = useState(false);
+  const [isNoteUploading, setIsNoteUploading] = useState(false);
+  const handleNoteUploading = useCallback(
+    (uploading: boolean) => {
+      setIsNoteUploading(uploading);
+      onCreatorNoteUploadingChange(uploading);
+    },
+    [onCreatorNoteUploadingChange],
+  );
+  const handleNoteRecording = useCallback(
+    (active: boolean) => {
+      setIsRecordingNote(active);
+      onRecordingChange?.(active);
+    },
+    [onRecordingChange],
+  );
+  const currentSection = section || activeSection;
+  const lastValidation = useRef(0);
+  useEffect(() => {
+    if (validationAttempt === lastValidation.current) return;
+    if (draft.title?.trim() && draft.artist?.trim()) {
+      lastValidation.current = validationAttempt;
+      return;
+    }
+    if (currentSection !== "basic") {
+      setActiveSection("basic");
+      return;
+    }
+    lastValidation.current = validationAttempt;
+    document
+      .getElementById(draft.title?.trim() ? `${mode}-artist` : `${mode}-title`)
+      ?.focus();
+  }, [validationAttempt, currentSection, draft.title, draft.artist, mode]);
 
   useEffect(() => {
     let active = true;
@@ -91,318 +140,312 @@ export function AdminSongForm({
       ),
     [albums, albumQuery],
   );
-  const OptionalSectionCard =
-    mode === "edit" ? AdminCollapsibleSectionCard : AdminSectionCard;
 
   return (
     <div className="space-y-4">
-      <AdminSectionCard
-        title={t("sections.track.title")}
-        description={t("sections.track.description")}
+      {!section && (
+        <AdminFormNavigation
+          value={currentSection}
+          onChange={setActiveSection}
+          id={mode}
+          sections={sections}
+          disabled={isNoteUploading || isRecordingNote}
+        />
+      )}
+      <AdminFormPanel
+        mode={mode}
+        name="basic"
+        active={currentSection}
+        controlled={Boolean(section)}
       >
-        <AdminFieldGrid>
-          <AdminField label={t("fields.title.label")} htmlFor={`${mode}-title`}>
-            <Input
-              id={`${mode}-title`}
-              value={draft.title || ""}
-              onChange={(event) => onChange({ title: event.target.value })}
-              className={fieldClassName}
-              placeholder={t("fields.title.placeholder")}
-            />
-          </AdminField>
-          <AdminField
-            label={t("fields.artist.label")}
-            htmlFor={`${mode}-artist`}
-          >
-            <Input
-              id={`${mode}-artist`}
-              value={draft.artist || ""}
-              onChange={(event) => onChange({ artist: event.target.value })}
-              className={fieldClassName}
-              placeholder={t("fields.artist.placeholder")}
-            />
-          </AdminField>
-          <AdminField label={t("fields.album.label")} htmlFor={`${mode}-album`}>
-            <Input
-              id={`${mode}-album`}
-              value={draft.album || ""}
-              onChange={(event) =>
-                onChange({ album: event.target.value, albumId: null })
+        <AdminSectionCard
+          title={t("sections.track.title")}
+          description={t("sections.track.description")}
+        >
+          <AdminFieldGrid>
+            <AdminField
+              label={`${t("fields.title.label")} *`}
+              htmlFor={`${mode}-title`}
+              error={
+                showRequiredErrors && !draft.title?.trim()
+                  ? t("form.required")
+                  : null
               }
-              className={fieldClassName}
-              placeholder={t("fields.album.placeholder")}
-            />
-            <p className="mt-1 text-xs text-gray-500">{c("albumOptional")}</p>
-            {albums.length > 0 ? (
-              <div className="mt-2 space-y-2">
-                <label
-                  htmlFor={`${mode}-album-search`}
-                  className="block text-xs text-gray-400"
-                >
-                  {c("findAlbum")}
-                </label>
-                <Input
-                  id={`${mode}-album-search`}
-                  type="search"
-                  value={albumQuery}
-                  onChange={(event) => setAlbumQuery(event.target.value)}
-                  placeholder={c("findAlbum")}
-                  className={fieldClassName}
-                />
-                <select
-                  value=""
-                  aria-label={c("chooseAlbum")}
-                  onChange={(event) => {
-                    const album = albums.find(
-                      (item) => item.id === event.target.value,
-                    );
-                    if (album)
-                      onChange({ album: album.title, albumId: album.id });
-                  }}
-                  className={selectClassName}
-                >
-                  <option value="">{c("chooseAlbum")}</option>
-                  {filteredAlbums.map((album) => (
-                    <option key={album.id} value={album.id}>
-                      {album.title} · {album.artist}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ) : null}
-          </AdminField>
-          <AdminField
-            label={t("fields.duration.label")}
-            description={t("fields.duration.description")}
-            htmlFor={`${mode}-duration`}
-          >
-            <Input
-              id={`${mode}-duration`}
-              type="number"
-              min={0}
-              value={draft.duration || ""}
-              onChange={(event) =>
-                onChange({
-                  duration: Number.parseInt(event.target.value, 10) || 0,
-                })
+            >
+              <Input
+                id={`${mode}-title`}
+                aria-invalid={showRequiredErrors && !draft.title?.trim()}
+                aria-describedby={
+                  showRequiredErrors && !draft.title?.trim()
+                    ? `${mode}-title-error`
+                    : undefined
+                }
+                required
+                value={draft.title || ""}
+                onChange={(event) => onChange({ title: event.target.value })}
+                className={fieldClassName}
+                placeholder={t("fields.title.placeholder")}
+              />
+            </AdminField>
+            <AdminField
+              label={`${t("fields.artist.label")} *`}
+              htmlFor={`${mode}-artist`}
+              error={
+                showRequiredErrors && !draft.artist?.trim()
+                  ? t("form.required")
+                  : null
               }
-              className={fieldClassName}
-              placeholder="180"
-            />
-          </AdminField>
-        </AdminFieldGrid>
-      </AdminSectionCard>
-
-      <AdminStoryFields
-        draft={draft}
-        onChange={onChange}
-        onUploadCreatorNoteAudio={onUploadCreatorNoteAudio}
-        onCreatorNoteUploadingChange={onCreatorNoteUploadingChange}
-        collapsible={mode === "edit"}
-      />
-
-      <OptionalSectionCard
-        title={t("sections.classification.title")}
-        description={t("sections.classification.description")}
-        aside={
-          <div className="hidden items-center gap-2 rounded-full border border-[var(--border)] px-3 py-1 text-xs text-gray-500 md:flex">
-            <Music2 className="h-3.5 w-3.5" />
-            {formatSongDuration(draft.duration || 0)}
-          </div>
-        }
-      >
-        <div className="space-y-4">
-          <AdminFieldGrid compact>
-            <AdminField label={t("fields.language.label")}>
-              <select
-                value={draft.language || "en"}
-                onChange={(event) =>
-                  onChange({ language: event.target.value as Song["language"] })
+            >
+              <Input
+                id={`${mode}-artist`}
+                aria-invalid={showRequiredErrors && !draft.artist?.trim()}
+                aria-describedby={
+                  showRequiredErrors && !draft.artist?.trim()
+                    ? `${mode}-artist-error`
+                    : undefined
                 }
-                className={selectClassName}
-              >
-                <option value="en">en</option>
-                <option value="zh">zh</option>
-                <option value="ja">ja</option>
-              </select>
+                required
+                value={draft.artist || ""}
+                onChange={(event) => onChange({ artist: event.target.value })}
+                className={fieldClassName}
+                placeholder={t("fields.artist.placeholder")}
+              />
             </AdminField>
-            <AdminField label={t("fields.trackType.label")}>
-              <select
-                value={draft.trackType || "portfolio"}
+            <AdminField
+              label={t("fields.album.label")}
+              htmlFor={`${mode}-album`}
+            >
+              <Input
+                id={`${mode}-album`}
+                value={draft.album || ""}
+                onChange={(event) =>
+                  onChange({ album: event.target.value, albumId: null })
+                }
+                className={fieldClassName}
+                placeholder={t("fields.album.placeholder")}
+              />
+              <p className="mt-1 text-xs text-[var(--admin-muted)]">
+                {c("albumOptional")}
+              </p>
+              {albums.length > 0 ? (
+                <details className="mt-2 space-y-2">
+                  <summary className="cursor-pointer text-xs text-[var(--admin-accent)]">
+                    {c("chooseAlbum")}
+                  </summary>
+                  <label
+                    htmlFor={`${mode}-album-search`}
+                    className="block text-xs text-[var(--admin-muted)]"
+                  >
+                    {c("findAlbum")}
+                  </label>
+                  <Input
+                    id={`${mode}-album-search`}
+                    type="search"
+                    value={albumQuery}
+                    onChange={(event) => setAlbumQuery(event.target.value)}
+                    placeholder={c("findAlbum")}
+                    className={fieldClassName}
+                  />
+                  <select
+                    value=""
+                    aria-label={c("chooseAlbum")}
+                    onChange={(event) => {
+                      const album = albums.find(
+                        (item) => item.id === event.target.value,
+                      );
+                      if (album)
+                        onChange({ album: album.title, albumId: album.id });
+                    }}
+                    className={selectClassName}
+                  >
+                    <option value="">{c("chooseAlbum")}</option>
+                    {filteredAlbums.map((album) => (
+                      <option key={album.id} value={album.id}>
+                        {album.title} · {album.artist}
+                      </option>
+                    ))}
+                  </select>
+                </details>
+              ) : null}
+            </AdminField>
+            <AdminField
+              label={t("fields.duration.label")}
+              description={t("fields.duration.description")}
+              htmlFor={`${mode}-duration`}
+            >
+              <Input
+                id={`${mode}-duration`}
+                type="number"
+                min={0}
+                value={draft.duration || ""}
                 onChange={(event) =>
                   onChange({
-                    trackType: event.target.value as Song["trackType"],
+                    duration: Number.parseInt(event.target.value, 10) || 0,
                   })
                 }
-                className={selectClassName}
-              >
-                <option value="portfolio">portfolio</option>
-                <option value="personal">personal</option>
-              </select>
-            </AdminField>
-            <AdminField label={t("fields.sourceType.label")}>
-              <select
-                value={draft.sourceType || "upload"}
-                onChange={(event) =>
-                  onChange({
-                    sourceType: event.target.value as Song["sourceType"],
-                  })
-                }
-                className={selectClassName}
-              >
-                <option value="upload">upload</option>
-                <option value="external-upload">external-upload</option>
-                <option value="recording">recording</option>
-              </select>
-            </AdminField>
-            <AdminField label={t("fields.visibility.label")}>
-              <select
-                value={draft.visibility || "public"}
-                onChange={(event) =>
-                  onChange({
-                    visibility: event.target.value as Song["visibility"],
-                  })
-                }
-                className={selectClassName}
-              >
-                <option value="public">public</option>
-                <option value="private">private</option>
-                <option value="unlisted">unlisted</option>
-              </select>
-            </AdminField>
-            <AdminField label={t("fields.assetStatus.label")}>
-              <select
-                value={draft.assetStatus || "ready"}
-                onChange={(event) =>
-                  onChange({
-                    assetStatus: event.target.value as Song["assetStatus"],
-                  })
-                }
-                className={selectClassName}
-              >
-                <option value="ready">ready</option>
-                <option value="draft">draft</option>
-                <option value="archived">archived</option>
-              </select>
+                className={fieldClassName}
+                placeholder="180"
+              />
             </AdminField>
           </AdminFieldGrid>
-
-          <AdminField
-            label={t("fields.tags.label")}
-            description={t("fields.tags.description")}
-            htmlFor={`${mode}-tags`}
-          >
-            <TagInput
-              id={`${mode}-tags`}
-              value={draft.tags || []}
-              onChange={(tags) => {
-                const oldTags = draft.tags || [];
-                const oldIds = draft.tagIds || [];
-                onChange({
-                  tags,
-                  tagIds: tags.map((tag) => {
-                    const oldIndex = oldTags.findIndex(
-                      (oldTag) =>
-                        oldTag.toLocaleLowerCase() === tag.toLocaleLowerCase(),
-                    );
-                    return oldIndex >= 0
-                      ? oldIds[oldIndex] || tagIdFor(tag)
-                      : knownTags.find(
-                          (item) =>
-                            item.name.toLocaleLowerCase() ===
-                            tag.toLocaleLowerCase(),
-                        )?.id || tagIdFor(tag);
-                  }),
-                });
-              }}
-              suggestions={
-                knownTags.length > 0
-                  ? knownTags.map((tag) => tag.name)
-                  : undefined
+          <div className="mt-5 space-y-5">
+            <AdminChoiceGroup
+              label={t("fields.language.label")}
+              value={draft.language === "jp" ? "ja" : draft.language || "en"}
+              options={(["zh", "en", "ja"] as const).map((value) => ({
+                value,
+                label: t(`options.language.${value}`),
+              }))}
+              onChange={(value) =>
+                onChange({ language: value as Song["language"] })
               }
-              label={t("fields.tags.suggestions")}
-              placeholder={t("fields.tags.placeholder")}
-              emptyHint={t("fields.tags.emptyHint")}
-              duplicateHint={t("fields.tags.duplicateHint")}
-              removeLabelPrefix={t("fields.tags.removeLabel")}
             />
-          </AdminField>
-        </div>
-      </OptionalSectionCard>
-
-      <OptionalSectionCard
-        title={t("sections.lyrics.title")}
-        description={t("sections.lyrics.description")}
-      >
-        <div className="space-y-4">
-          <AdminField
-            label={t("fields.neteaseUrl.label")}
-            description={t("fields.neteaseUrl.description")}
-            htmlFor={`${mode}-netease-url`}
-          >
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Input
-                id={`${mode}-netease-url`}
-                value={neteaseUrl}
-                onChange={(event) => onNeteaseUrlChange(event.target.value)}
-                className={fieldClassName}
-                placeholder="https://music.163.com/#/song?id=..."
+            <AdminField
+              label={t("fields.tags.label")}
+              description={t("fields.tags.description")}
+              htmlFor={`${mode}-tags`}
+            >
+              <TagInput
+                id={`${mode}-tags`}
+                value={draft.tags || []}
+                onChange={(tags) => {
+                  const oldTags = draft.tags || [];
+                  const oldIds = draft.tagIds || [];
+                  onChange({
+                    tags,
+                    tagIds: tags.map((tag) => {
+                      const oldIndex = oldTags.findIndex(
+                        (oldTag) =>
+                          oldTag.toLocaleLowerCase() ===
+                          tag.toLocaleLowerCase(),
+                      );
+                      return oldIndex >= 0
+                        ? oldIds[oldIndex] || tagIdFor(tag)
+                        : knownTags.find(
+                            (item) =>
+                              item.name.toLocaleLowerCase() ===
+                              tag.toLocaleLowerCase(),
+                          )?.id || tagIdFor(tag);
+                    }),
+                  });
+                }}
+                suggestions={
+                  knownTags.length > 0
+                    ? knownTags.map((tag) => tag.name)
+                    : undefined
+                }
+                label={t("fields.tags.suggestions")}
+                placeholder={t("fields.tags.placeholder")}
+                emptyHint={t("fields.tags.emptyHint")}
+                duplicateHint={t("fields.tags.duplicateHint")}
+                removeLabelPrefix={t("fields.tags.removeLabel")}
               />
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isFetchingLyrics}
-                onClick={onFetchLyrics}
-                className="shrink-0"
-              >
-                {isFetchingLyrics ? (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    {t("actions.fetching")}
-                  </>
-                ) : (
-                  <>
-                    <RefreshCcw className="h-3.5 w-3.5" />
-                    {t("actions.fetchLyrics")}
-                  </>
-                )}
-              </Button>
-            </div>
-          </AdminField>
+            </AdminField>{" "}
+          </div>
+        </AdminSectionCard>
+      </AdminFormPanel>
+      <AdminFormPanel
+        mode={mode}
+        name="story"
+        active={currentSection}
+        controlled={Boolean(section)}
+      >
+        <AdminStoryFields
+          draft={draft}
+          onChange={onChange}
+          onUploadCreatorNoteAudio={onUploadCreatorNoteAudio}
+          onCreatorNoteUploadingChange={handleNoteUploading}
+          onRecordingChange={handleNoteRecording}
+        />
+      </AdminFormPanel>
+      <AdminFormPanel
+        mode={mode}
+        name="publishing"
+        active={currentSection}
+        controlled={Boolean(section)}
+      >
+        <AdminPublishingFields draft={draft} onChange={onChange} />
+      </AdminFormPanel>
+      <AdminFormPanel
+        mode={mode}
+        name="lyrics"
+        active={currentSection}
+        controlled={Boolean(section)}
+      >
+        <AdminSectionCard
+          title={t("sections.lyrics.title")}
+          description={t("sections.lyrics.description")}
+        >
+          <div className="space-y-4">
+            <AdminField
+              label={t("fields.neteaseUrl.label")}
+              description={t("fields.neteaseUrl.description")}
+              htmlFor={`${mode}-netease-url`}
+            >
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Input
+                  id={`${mode}-netease-url`}
+                  value={neteaseUrl}
+                  onChange={(event) => onNeteaseUrlChange(event.target.value)}
+                  className={fieldClassName}
+                  placeholder="https://music.163.com/#/song?id=..."
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isFetchingLyrics}
+                  onClick={onFetchLyrics}
+                  className="shrink-0"
+                >
+                  {isFetchingLyrics ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      {t("actions.fetching")}
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCcw className="h-3.5 w-3.5" />
+                      {t("actions.fetchLyrics")}
+                    </>
+                  )}
+                </Button>
+              </div>
+            </AdminField>
 
-          {lyricFormat !== "empty" ? (
-            <AdminStatusBanner
-              tone={lyricFormat === "plain" ? "warning" : "success"}
-              title={t(`lyricsStatus.${lyricFormat}.title`)}
-              message={t(`lyricsStatus.${lyricFormat}.message`, {
-                count: lyricLineCount,
-              })}
+            {lyricFormat !== "empty" ? (
+              <AdminStatusBanner
+                tone={lyricFormat === "plain" ? "warning" : "success"}
+                title={t(`lyricsStatus.${lyricFormat}.title`)}
+                message={t(`lyricsStatus.${lyricFormat}.message`, {
+                  count: lyricLineCount,
+                })}
+              />
+            ) : null}
+
+            <AdminField
+              label={t("fields.lyrics.label")}
+              htmlFor={`${mode}-lyrics`}
+            >
+              <textarea
+                id={`${mode}-lyrics`}
+                value={draft.lyrics || ""}
+                onChange={(event) => onChange({ lyrics: event.target.value })}
+                rows={10}
+                className={textareaClassName}
+                placeholder={t("fields.lyrics.placeholder")}
+              />
+            </AdminField>
+
+            <LyricsTools
+              format={lyricFormat}
+              lineCount={lyricLineCount}
+              canConvert={lyricFormat === "plain" && (draft.duration || 0) > 0}
+              onConvert={onConvertLyricsToLrc}
+              onNormalize={onNormalizeLyrics}
             />
-          ) : null}
-
-          <AdminField
-            label={t("fields.lyrics.label")}
-            htmlFor={`${mode}-lyrics`}
-          >
-            <textarea
-              id={`${mode}-lyrics`}
-              value={draft.lyrics || ""}
-              onChange={(event) => onChange({ lyrics: event.target.value })}
-              rows={10}
-              className={textareaClassName}
-              placeholder={t("fields.lyrics.placeholder")}
-            />
-          </AdminField>
-
-          <LyricsTools
-            format={lyricFormat}
-            lineCount={lyricLineCount}
-            canConvert={lyricFormat === "plain" && (draft.duration || 0) > 0}
-            onConvert={onConvertLyricsToLrc}
-            onNormalize={onNormalizeLyrics}
-          />
-        </div>
-      </OptionalSectionCard>
+          </div>
+        </AdminSectionCard>
+      </AdminFormPanel>
     </div>
   );
 }

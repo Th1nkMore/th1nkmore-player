@@ -10,6 +10,7 @@ import {
   Upload,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { getCreatorNoteRecordingFilename } from "@/lib/admin-audio";
 import { useAudioRecorder } from "@/lib/hooks/useAudioRecorder";
@@ -19,9 +20,11 @@ import { formatDuration } from "@/lib/utils/audio";
 export function SpokenNoteRecorder({
   disabled,
   onUseRecording,
+  onRecordingChange,
 }: {
   disabled: boolean;
   onUseRecording: (file: File, duration: number) => Promise<void>;
+  onRecordingChange?: (active: boolean) => void;
 }) {
   const t = useTranslations("admin.creatorNote");
   const recorder = useAudioRecorder();
@@ -29,6 +32,11 @@ export function SpokenNoteRecorder({
   const isPaused = recorder.recordingState === "paused";
   const hasRecording =
     recorder.recordingState === "stopped" && Boolean(recorder.recordedBlob);
+
+  useEffect(() => {
+    onRecordingChange?.(isRecording || isPaused || hasRecording);
+    return () => onRecordingChange?.(false);
+  }, [isRecording, isPaused, hasRecording, onRecordingChange]);
 
   const attachRecording = async () => {
     if (!recorder.recordedBlob) return;
@@ -49,7 +57,9 @@ export function SpokenNoteRecorder({
 
   if (!recorder.isSupported) {
     return (
-      <p className="text-pretty text-xs text-gray-500">{t("unsupported")}</p>
+      <p className="text-pretty text-xs text-[var(--admin-muted)]">
+        {t("unsupported")}
+      </p>
     );
   }
 
@@ -106,7 +116,7 @@ export function SpokenNoteRecorder({
 
         {recorder.recordingState !== "idle" ? (
           <span
-            className="min-w-12 text-xs text-gray-400 tabular-nums"
+            className="min-w-12 text-xs text-[var(--admin-muted)] tabular-nums"
             aria-live="polite"
           >
             {formatDuration(recorder.elapsedSeconds)}
@@ -115,7 +125,10 @@ export function SpokenNoteRecorder({
       </div>
 
       {recorder.error ? (
-        <p className="text-pretty text-xs text-rose-300" role="alert">
+        <p
+          className="text-pretty text-xs text-[var(--admin-danger)]"
+          role="alert"
+        >
           {recorder.error}
         </p>
       ) : null}
@@ -123,10 +136,10 @@ export function SpokenNoteRecorder({
       {hasRecording && recorder.previewUrl ? (
         <div className="rounded-xl bg-white/[0.035] p-3 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]">
           <div className="mb-3 flex items-center justify-between gap-3">
-            <span className="text-xs font-medium text-gray-300">
+            <span className="text-xs font-medium text-[var(--admin-text)]">
               {t("recordedPreview")}
             </span>
-            <span className="text-xs text-gray-500 tabular-nums">
+            <span className="text-xs text-[var(--admin-muted)] tabular-nums">
               {formatDuration(recorder.elapsedSeconds)}
             </span>
           </div>
