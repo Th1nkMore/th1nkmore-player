@@ -27,7 +27,7 @@
     "openQueue": "Warteschlange mit {count} Titeln öffnen",
     "queueDescription": "{count} Titel warten auf die Wiedergabe",
     "closeQueue": "Warteschlange schließen",
-    "searchPlaceholder": "Titel, Künstler, Alben oder Tags suchen",
+    "searchPlaceholder": "Titel, Interpreten, Originalinterpreten, Alben oder Tags suchen",
     "allSongs": "Alle",
     "clearTag": "Filter {tag} entfernen",
     "addedToQueue": "{title} hinzugefügt",
@@ -273,7 +273,7 @@
       },
       "artist": {
         "label": "Interpret",
-        "placeholder": "Name des Interpreten"
+        "placeholder": "Aktueller Interpret, z. B. Huang"
       },
       "album": {
         "label": "Album",
@@ -413,7 +413,7 @@
       "title": "Playlist ({count} Songs)",
       "subtitle": "Titel einzeln prüfen und direkt in der Bibliothek speichern.",
       "autosaveHint": "Ein Titel, ein Speichervorgang",
-      "searchPlaceholder": "Titel, Interpret, Album oder Tag suchen",
+      "searchPlaceholder": "Titel, Interpret, Originalinterpret, Album oder Tag suchen",
       "badges": {
         "dirty": "Geändert",
         "attention": "Optional"

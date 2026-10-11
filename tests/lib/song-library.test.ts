@@ -48,3 +48,14 @@ describe("filterLibrarySongs", () => {
     ).toEqual([songs[2]]);
   });
 });
+
+it("keeps original artist searches available for owner-performed covers", () => {
+  const cover = { ...songOne, artist: "Huang", originalArtist: "Rapeter" };
+  expect(
+    filterLibrarySongs([cover], {
+      activeAlbum: null,
+      activeTag: null,
+      query: "rapeter",
+    }),
+  ).toEqual([cover]);
+});

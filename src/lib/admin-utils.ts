@@ -1,6 +1,7 @@
 import type { MediaAssetKind } from "@/lib/media";
 import {
   DEFAULT_ASSET_STATUS,
+  DEFAULT_PERFORMANCE_TYPE,
   DEFAULT_SOURCE_TYPE,
   DEFAULT_TRACK_TYPE,
   DEFAULT_VISIBILITY,
@@ -384,7 +385,13 @@ export function mergeFetchedSongInfo<T extends Partial<Song>>(
 
   const nextDraft = { ...draft };
   if (songInfo.title) nextDraft.title = songInfo.title;
-  if (songInfo.artist) nextDraft.artist = songInfo.artist;
+  if (songInfo.artist) {
+    if ((draft.performanceType ?? DEFAULT_PERFORMANCE_TYPE) === "cover") {
+      nextDraft.originalArtist = songInfo.artist;
+    } else {
+      nextDraft.artist = songInfo.artist;
+    }
+  }
   if (songInfo.album) {
     nextDraft.album = songInfo.album;
     nextDraft.albumId = null;
