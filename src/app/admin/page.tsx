@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { AdminCatalogWorkspace } from "@/components/admin/AdminCatalogWorkspace";
 import { EditPlaylist } from "@/components/admin/EditPlaylist";
+import { RepertoireWorkspace } from "@/components/admin/repertoire/RepertoireWorkspace";
 import { UploadForm } from "@/components/admin/UploadForm";
 import { useAdminPageController } from "@/components/admin/useAdminPageController";
 import { AdminConfirmDialog } from "@/components/admin/workspace/AdminConfirmDialog";
@@ -31,7 +32,12 @@ export default function AdminPage() {
         description={t("errors.workspaceCrashDescription")}
         resetLabel={t("actions.retry")}
       >
-        {controller.activeTab === "upload" ? (
+        {controller.activeTab === "repertoire" ? (
+          <RepertoireWorkspace
+            onGuardChange={controller.setRepertoireGuard}
+            onBusyChange={controller.setIsWorkspaceBusy}
+          />
+        ) : controller.activeTab === "upload" ? (
           <UploadForm
             onBusyChange={controller.setIsWorkspaceBusy}
             onResetDraft={controller.upload.resetDraft}

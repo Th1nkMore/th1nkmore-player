@@ -194,7 +194,8 @@
       "upload": "Add song",
       "record": "Record Audio",
       "edit": "Songs",
-      "catalog": "Albums & tags"
+      "catalog": "Albums & tags",
+      "repertoire": "Repertoire"
     },
     "shell": {
       "title": "Music workspace",
@@ -636,7 +637,8 @@
       "descriptions": {
         "edit": "Find, edit, and publish your music.",
         "upload": "Add an audio file or import a cover package.",
-        "catalog": "Keep your albums and tags organized."
+        "catalog": "Keep your albums and tags organized.",
+        "repertoire": "Register songs, link recordings and explore your repertoire."
       }
     },
     "form": {
@@ -701,7 +703,14 @@
       "language": {
         "zh": "Chinese",
         "en": "English",
-        "ja": "Japanese"
+        "ja": "Japanese",
+        "yue": "Cantonese",
+        "ko": "Korean",
+        "es": "Spanish",
+        "fr": "French",
+        "de": "German",
+        "other": "Other languages",
+        "unknown": "Unspecified"
       },
       "visibility": {
         "public": "Public",
@@ -824,12 +833,145 @@
     "language": {
       "zh": "Chinese",
       "en": "English",
-      "ja": "Japanese"
+      "ja": "Japanese",
+      "unknown": "Unspecified",
+      "yue": "Cantonese",
+      "ko": "Korean",
+      "es": "Spanish",
+      "fr": "French",
+      "de": "German",
+      "other": "Other languages"
     },
     "performance": {
       "cover": "Covers",
       "original": "Originals",
       "listening": "Listening notes"
-    }
+    },
+    "recordingCount": "{count, plural, one {# version} other {# versions}}",
+    "countingMode": "Counting method",
+    "mode": {
+      "songs": "By song",
+      "recordings": "By recording"
+    },
+    "songScope": "Unique published songs, across {count} recording versions.",
+    "recordingScope": "Each published recording counts separately: {count} versions.",
+    "dimension": "Distribution",
+    "dimensionNames": {
+      "artists": "Original / source artists",
+      "styles": "Styles",
+      "languages": "Singing languages",
+      "tags": "Tags",
+      "performances": "Work types"
+    },
+    "unfilled": "Unspecified",
+    "artistNote": "Artists refer to original or source credits. Collaborations can count towards several artists.",
+    "distributionNote": "Shares use the selected scope. A song can belong to several styles, tags or language versions.",
+    "searchDistribution": "Search distribution",
+    "noDistribution": "No matching data",
+    "showLessRows": "Show fewer",
+    "showAllRows": "Show all {count} items"
+  },
+  "repertoire": {
+    "description": "Known totals, proficiency and personal notes stay in admin. Published recordings share artist and style metadata with homepage stats.",
+    "known": "Known",
+    "learning": "Learning",
+    "recorded": "Recorded",
+    "published": "Published",
+    "all": "All",
+    "unrecorded": "To record",
+    "archived": "Archived",
+    "new": "Register song",
+    "bulk": "Bulk register",
+    "export": "Export list",
+    "reload": "Reload",
+    "view": "List view",
+    "list": "Songs",
+    "insights": "Insights",
+    "history": "History",
+    "loading": "Loading repertoire…",
+    "saving": "Saving…",
+    "save": "Save song",
+    "saved": "Repertoire saved",
+    "close": "Close repertoire panel",
+    "cancel": "Cancel",
+    "previous": "Previous",
+    "next": "Next",
+    "empty": "No matching songs. Adjust filters or register a song.",
+    "search": "Search title, original artist, style or tag",
+    "filter": "Recording status",
+    "artists": "Original / source artists",
+    "styles": "Styles",
+    "tags": "Tags",
+    "language": "Language you sing in",
+    "languages": {
+      "unknown": "Unspecified",
+      "zh": "Chinese",
+      "en": "English",
+      "ja": "Japanese",
+      "yue": "Cantonese",
+      "ko": "Korean",
+      "es": "Spanish",
+      "fr": "French",
+      "de": "German",
+      "other": "Other languages"
+    },
+    "knowledge": "Knowledge",
+    "proficiency": "Proficiency",
+    "unassessed": "Not assessed",
+    "comfortable": "Comfortable",
+    "review": "Needs review",
+    "learnedOn": "Date learned (optional)",
+    "note": "Personal note",
+    "privateNote": "Saved in admin only; never sent to the public player.",
+    "versions": "Linked recordings",
+    "noRecording": "No recording yet. Link an upload to this song later.",
+    "archiveEntry": "Archive from repertoire (recoverable; publication stays unchanged)",
+    "stylesHint": "Separate artists, styles or tags with commas. Instrument labels such as Guitar belong in Tags.",
+    "editorHint": "A song can have several recordings and still counts once.",
+    "titleField": "Song title (required)",
+    "edit": "Edit song",
+    "titleRequired": "Enter a song title first.",
+    "bulkHint": "One song per line, or tab-separated table columns: title, original artist, style, language. Use codes such as zh, yue, en, ja or ko; blank means unspecified.",
+    "bulkPreview": "{count} songs to add; {duplicates} duplicate entries skipped.",
+    "bulkDescription": "Review the preview before saving. A recording is optional.",
+    "importConfirm": "Register {count} songs",
+    "entryCount": "{count, plural, one {# song} other {# songs}}",
+    "versionCount": "{count, plural, one {# recording} other {# recordings}}",
+    "unknownArtist": "Original artist unspecified",
+    "insightsScope": "Showing {count} items in “{scope}”. Known songs use repertoire metadata; recorded and published scopes use recording language and style.",
+    "scope": "Statistics scope",
+    "historyHint": "A previous version is kept before each save. Restoring also backs up the current list.",
+    "restore": "Restore version",
+    "restoreTitle": "Restore repertoire history",
+    "restoreDescription": "The selected version will replace the list. The current version will remain in history.",
+    "discardTitle": "Save your changes?",
+    "discardDescription": "There are unsaved entries or changes. Save to continue, or discard these changes.",
+    "discard": "Discard changes",
+    "linkedEntry": "Linked repertoire song",
+    "linkSearch": "Search repertoire title or original artist",
+    "unlinked": "Not linked (new recordings are registered automatically)",
+    "linkHint": "Link versions of the same song to one entry. Artist and style distributions use repertoire metadata.",
+    "linkUnavailable": "Repertoire unavailable. Save the recording now and link it later.",
+    "errors": {
+      "conflict": "The list changed elsewhere. Keep or copy your draft, close the editor, and reload before saving.",
+      "invalid": "Check the title, date and recording links. A recording can belong to only one song.",
+      "revisionRequired": "Reload the repertoire before saving.",
+      "storageError": "Unable to read or save the repertoire. Try reloading shortly."
+    },
+    "backupFile": "Import repertoire JSON backup (merge)",
+    "backupInvalid": "Cannot read this repertoire backup. Choose a JSON file exported here.",
+    "backupPreview": "Merge {count} backup entries, retaining unrelated existing songs.",
+    "recordingStyles": "Style of this recording",
+    "inheritStyles": "Follow the linked song’s styles",
+    "developmentHint": "Local preview; for lasting records use",
+    "productionAdmin": "the live admin",
+    "advancedFilters": "Filter by artist, style and language",
+    "bulkUncertain": "{count} existing titles need source credits before adding: {titles}",
+    "saveChanges": "Save changes"
+  },
+  "playerSession": {
+    "previous": "Last played: {title} · {position}",
+    "continue": "Continue",
+    "dismiss": "Dismiss resume notice"
   }
 }

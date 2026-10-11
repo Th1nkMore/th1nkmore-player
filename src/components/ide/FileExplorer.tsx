@@ -30,14 +30,14 @@ export function FileExplorer({
 }) {
   const { activeTag, files, getFileById, isLoading, openFile, setActiveTag } =
     useIDEStore();
-  const {
-    addManyToQueue,
-    addToQueue,
-    currentTrackId,
-    isPlaying,
-    playFromCollection,
-    queue,
-  } = usePlayerStore();
+  const addManyToQueue = usePlayerStore((state) => state.addManyToQueue);
+  const addToQueue = usePlayerStore((state) => state.addToQueue);
+  const currentTrackId = usePlayerStore((state) => state.currentTrackId);
+  const isPlaying = usePlayerStore((state) => state.isPlaying);
+  const playFromCollection = usePlayerStore(
+    (state) => state.playFromCollection,
+  );
+  const queue = usePlayerStore((state) => state.queue);
   const t = useTranslations("fileExplorer");
   const tTag = useTranslations("tagGrid");
   const isMobile = useScreenMode() !== "desktop";

@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { songOne, songTwo } from "@/../tests/fixtures/songs";
+import {
+  readRepertoireSnapshot,
+  writeRepertoire,
+} from "@/lib/repertoire.server";
 import { normalizeSong } from "@/lib/song";
 
 const routeMocks = vi.hoisted(() => ({
@@ -56,6 +60,32 @@ describe("public playlist route", () => {
     vi.unstubAllGlobals();
   });
 
+  it("exposes canonical artists and styles without leaking private repertoire fields", async () => {
+    const snapshot = await readRepertoireSnapshot([songOne]);
+    await writeRepertoire(snapshot.revision, [
+      {
+        ...snapshot.entries[0],
+        originalArtists: ["Source singer"],
+        styles: ["Jazz"],
+        note: "PRIVATE NOTE",
+        knowledge: "learning",
+      },
+    ]);
+    routeMocks.sendMock.mockResolvedValueOnce({
+      Body: JSON.stringify([songOne]),
+    });
+    const { GET } = await importRoute();
+    const response = await GET();
+    const body = await response.json();
+    expect(body[0]).toMatchObject({
+      originalArtists: ["Source singer"],
+      styles: ["Jazz"],
+    });
+    expect(JSON.stringify(body)).not.toContain("PRIVATE NOTE");
+    expect(body[0]).not.toHaveProperty("knowledge");
+    expect(body[0]).not.toHaveProperty("proficiency");
+  });
+
   it("normalizes public playlist songs from R2", async () => {
     routeMocks.sendMock.mockResolvedValueOnce({
       Body: JSON.stringify([
@@ -80,7 +110,7 @@ describe("public playlist route", () => {
     const response = await GET();
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual([
+    await expect(response.json()).resolves.toMatchObject([
       normalizeSong({ ...songOne, language: "ja", tags: ["Rap", "Soul"] }),
       normalizeSong({ ...songTwo, language: "zh", tags: [] }),
     ]);
@@ -98,10 +128,10 @@ describe("public playlist route", () => {
     const firstResponse = await GET();
     const secondResponse = await GET();
 
-    await expect(firstResponse.json()).resolves.toEqual([
+    await expect(firstResponse.json()).resolves.toMatchObject([
       normalizeSong(songOne),
     ]);
-    await expect(secondResponse.json()).resolves.toEqual([
+    await expect(secondResponse.json()).resolves.toMatchObject([
       normalizeSong(songOne),
     ]);
     expect(routeMocks.sendMock).toHaveBeenCalledTimes(1);
@@ -149,7 +179,9 @@ describe("public playlist route", () => {
 
     const response = await GET();
 
-    await expect(response.json()).resolves.toEqual([normalizeSong(songOne)]);
+    await expect(response.json()).resolves.toMatchObject([
+      normalizeSong(songOne),
+    ]);
     expect(fetchMock).toHaveBeenCalledWith(
       "https://cdn.example.com/playlist.json",
       { next: { revalidate: 300, tags: ["public-playlist"] } },
@@ -171,10 +203,10 @@ describe("public playlist route", () => {
     const firstResponse = await GET();
     const secondResponse = await GET();
 
-    await expect(firstResponse.json()).resolves.toEqual([
+    await expect(firstResponse.json()).resolves.toMatchObject([
       normalizeSong(songOne),
     ]);
-    await expect(secondResponse.json()).resolves.toEqual([
+    await expect(secondResponse.json()).resolves.toMatchObject([
       normalizeSong(songOne),
     ]);
     expect(routeMocks.sendMock).toHaveBeenCalledTimes(1);
@@ -189,7 +221,7 @@ describe("public playlist route", () => {
     const response = await GET();
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual([]);
+    await expect(response.json()).resolves.toMatchObject([]);
     expect(response.headers.get("cache-control")).toBe(
       "public, s-maxage=300, stale-while-revalidate=900",
     );

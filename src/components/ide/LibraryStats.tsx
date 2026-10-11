@@ -22,15 +22,17 @@ export function LibraryStats() {
   const isLoading = useIDEStore((state) => state.isLoading);
   const loadError = useIDEStore((state) => state.loadError);
   const fetchSongs = useIDEStore((state) => state.fetchSongs);
-  const stats = useMemo(() => buildLibraryStats(files), [files]);
+  const [mode, setMode] = useState<"songs" | "recordings">("songs");
+  const totals = useMemo(() => buildLibraryStats(files), [files]);
+  const stats = useMemo(() => buildLibraryStats(files, mode), [files, mode]);
   const [retrying, setRetrying] = useState(false);
-  const unavailable = loadError && stats.total === 0;
-  const totalLabel = t("songCount", { count: stats.total });
+  const unavailable = loadError && totals.total === 0;
+  const totalLabel = t("songCount", { count: totals.total });
   const triggerLabel = isLoading
     ? t("loading")
     : unavailable
       ? t("unavailable")
-      : t("open", { count: stats.total });
+      : t("open", { count: totals.total });
   async function retry() {
     setRetrying(true);
     await fetchSongs();
@@ -54,7 +56,7 @@ export function LibraryStats() {
             {t("collected")}
           </span>
           <span className="tabular-nums sm:hidden" aria-hidden="true">
-            {isLoading || unavailable ? "—" : format.number(stats.total)}
+            {isLoading || unavailable ? "—" : format.number(totals.total)}
           </span>
           <span className="hidden tabular-nums sm:inline" aria-hidden="true">
             {isLoading || unavailable ? "—" : totalLabel}
@@ -97,7 +99,13 @@ export function LibraryStats() {
                   </button>
                 </output>
               )}
-              {!unavailable && <LibraryStatsDetails stats={stats} />}
+              {!unavailable && (
+                <LibraryStatsDetails
+                  stats={stats}
+                  mode={mode}
+                  onModeChange={setMode}
+                />
+              )}
             </>
           )}
         </div>

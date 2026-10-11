@@ -4,8 +4,8 @@ import { Loader2, RefreshCcw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LyricsTools } from "@/components/admin/LyricsTools";
+import { RepertoireLinkField } from "@/components/admin/repertoire/RepertoireLinkField";
 import { TagInput } from "@/components/admin/TagInput";
-import { AdminChoiceGroup } from "@/components/admin/workspace/AdminChoiceGroup";
 import {
   AdminFormNavigation,
   AdminFormPanel,
@@ -23,12 +23,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { fetchAdminPlaylist } from "@/lib/admin-utils";
 import { buildCatalog, tagIdFor } from "@/lib/catalog";
-import type { Album, LibraryTag, Song } from "@/types/music";
+import {
+  type Album,
+  type LibraryTag,
+  SONG_LANGUAGES,
+  type Song,
+} from "@/types/music";
 
 const fieldClassName =
   "border-[var(--border)] bg-[var(--admin-inset)] text-[var(--admin-text)] placeholder:text-[var(--admin-subtle)]";
 const selectClassName =
-  "flex h-9 w-full rounded-md border border-[var(--border)] bg-[var(--admin-inset)] px-3 py-1 text-sm text-[var(--admin-text)] outline-none transition-[border-color,box-shadow] duration-150 ease-out focus-visible:border-primary/60";
+  "flex min-h-11 w-full rounded-md border border-[var(--border)] bg-[var(--admin-inset)] px-3 py-1 text-sm text-[var(--admin-text)] transition-[border-color,box-shadow] duration-150 ease-out focus-visible:border-primary/60 focus-visible:outline-2 focus-visible:outline-primary";
 const textareaClassName =
   "flex min-h-[11rem] w-full rounded-xl border border-[var(--border)] bg-[var(--admin-inset)] px-3 py-3 text-sm text-[var(--admin-text)] outline-none transition-[border-color,box-shadow] duration-150 ease-out focus-visible:border-primary/60";
 
@@ -289,17 +294,27 @@ export function AdminSongForm({
             </AdminField>
           </AdminFieldGrid>
           <div className="mt-5 space-y-5">
-            <AdminChoiceGroup
+            <AdminField
               label={t("fields.language.label")}
-              value={draft.language === "jp" ? "ja" : draft.language || "en"}
-              options={(["zh", "en", "ja"] as const).map((value) => ({
-                value,
-                label: t(`options.language.${value}`),
-              }))}
-              onChange={(value) =>
-                onChange({ language: value as Song["language"] })
-              }
-            />
+              htmlFor={`${mode}-language`}
+            >
+              <select
+                id={`${mode}-language`}
+                value={
+                  draft.language === "jp" ? "ja" : draft.language || "unknown"
+                }
+                onChange={(event) =>
+                  onChange({ language: event.target.value as Song["language"] })
+                }
+                className={selectClassName}
+              >
+                {SONG_LANGUAGES.map((value) => (
+                  <option key={value} value={value}>
+                    {t(`options.language.${value}`)}
+                  </option>
+                ))}
+              </select>
+            </AdminField>
             <AdminField
               label={t("fields.tags.label")}
               description={t("fields.tags.description")}
@@ -364,7 +379,10 @@ export function AdminSongForm({
         active={currentSection}
         controlled={Boolean(section)}
       >
-        <AdminPublishingFields draft={draft} onChange={onChange} />
+        <div className="space-y-4">
+          <RepertoireLinkField draft={draft} onChange={onChange} />
+          <AdminPublishingFields draft={draft} onChange={onChange} />
+        </div>
       </AdminFormPanel>
       <AdminFormPanel
         mode={mode}

@@ -194,7 +194,8 @@
       "upload": "添加歌曲",
       "record": "录制音频",
       "edit": "歌曲管理",
-      "catalog": "专辑与标签"
+      "catalog": "专辑与标签",
+      "repertoire": "会唱清单"
     },
     "shell": {
       "title": "音乐工作台",
@@ -636,7 +637,8 @@
       "descriptions": {
         "edit": "查找、编辑和发布你的音乐。",
         "upload": "上传音频，或导入翻唱发布包。",
-        "catalog": "整理专辑与标签，让曲库井然有序。"
+        "catalog": "整理专辑与标签，让曲库井然有序。",
+        "repertoire": "登记会唱曲目、关联录音与分类统计。"
       }
     },
     "form": {
@@ -701,7 +703,14 @@
       "language": {
         "zh": "中文",
         "en": "英语",
-        "ja": "日语"
+        "ja": "日语",
+        "yue": "粤语",
+        "ko": "韩语",
+        "es": "西班牙语",
+        "fr": "法语",
+        "de": "德语",
+        "other": "其他语言",
+        "unknown": "未确定"
       },
       "visibility": {
         "public": "公开",
@@ -824,12 +833,145 @@
     "language": {
       "zh": "中文",
       "en": "英语",
-      "ja": "日语"
+      "ja": "日语",
+      "unknown": "未确定",
+      "yue": "粤语",
+      "ko": "韩语",
+      "es": "西班牙语",
+      "fr": "法语",
+      "de": "德语",
+      "other": "其他语言"
     },
     "performance": {
       "cover": "翻唱",
       "original": "原创",
       "listening": "聆听手记"
-    }
+    },
+    "recordingCount": "{count} 个版本",
+    "countingMode": "统计口径",
+    "mode": {
+      "songs": "按歌曲",
+      "recordings": "按录音版本"
+    },
+    "songScope": "公开歌曲去重统计，共 {count} 个录音版本。",
+    "recordingScope": "每个公开录音版本分别计入，共 {count} 个版本。",
+    "dimension": "查看分布",
+    "dimensionNames": {
+      "artists": "原唱／来源艺人",
+      "styles": "风格",
+      "languages": "演唱语言",
+      "tags": "Tag",
+      "performances": "作品类型"
+    },
+    "unfilled": "待补充",
+    "artistNote": "艺人指原唱／来源艺人。合作作品可以同时计入多个艺人。",
+    "distributionNote": "占比以当前统计范围为基数。同一歌曲可计入多个风格、Tag 或语言版本。",
+    "searchDistribution": "搜索分布项目",
+    "noDistribution": "暂无符合条件的数据",
+    "showLessRows": "收起",
+    "showAllRows": "展开全部 {count} 项"
+  },
+  "repertoire": {
+    "description": "会唱数量、熟练程度和私人备注仅在后台可见；已公开录音的艺人与风格用于首页统计。",
+    "known": "会唱",
+    "learning": "在练",
+    "recorded": "已录",
+    "published": "已公开",
+    "all": "全部",
+    "unrecorded": "待录",
+    "archived": "已归档",
+    "new": "登记歌曲",
+    "bulk": "批量登记",
+    "export": "导出清单",
+    "reload": "重新加载",
+    "view": "清单视图",
+    "list": "歌曲清单",
+    "insights": "数据分析",
+    "history": "历史记录",
+    "loading": "正在读取清单…",
+    "saving": "正在保存…",
+    "save": "保存歌曲",
+    "saved": "清单已保存",
+    "close": "关闭清单窗口",
+    "cancel": "取消",
+    "previous": "上一页",
+    "next": "下一页",
+    "empty": "没有符合条件的曲目，可以调整筛选或登记一首歌。",
+    "search": "搜索歌名、原唱、风格或 Tag",
+    "filter": "收录状态",
+    "artists": "原唱／来源艺人",
+    "styles": "风格",
+    "tags": "Tag",
+    "language": "会唱语言",
+    "languages": {
+      "unknown": "未确定",
+      "zh": "中文",
+      "en": "英语",
+      "ja": "日语",
+      "yue": "粤语",
+      "ko": "韩语",
+      "es": "西班牙语",
+      "fr": "法语",
+      "de": "德语",
+      "other": "其他语言"
+    },
+    "knowledge": "掌握状态",
+    "proficiency": "熟练程度",
+    "unassessed": "尚未评估",
+    "comfortable": "熟练",
+    "review": "需要复习",
+    "learnedOn": "学会日期（可留空）",
+    "note": "私人备注",
+    "privateNote": "仅在后台保存；不会发送到公开播放器。",
+    "versions": "关联录音版本",
+    "noRecording": "尚无录音，之后上传时可以关联到这首歌。",
+    "archiveEntry": "从会唱清单归档（可恢复，不改变录音发布状态）",
+    "stylesHint": "多个艺人、风格或 Tag 用逗号分隔。Guitar 等乐器标签可放在 Tag 中。",
+    "editorHint": "同一首歌可以关联多个录音版本，歌曲数只计一次。",
+    "titleField": "歌名（必填）",
+    "edit": "编辑歌曲",
+    "titleRequired": "请先填写歌名。",
+    "bulkHint": "每行一个歌名，或粘贴表格：歌名、原唱、风格、语言，列之间用制表符分隔。语言可填 zh、yue、en、ja、ko 等代码；留空表示未确定。",
+    "bulkPreview": "将新增 {count} 首，已跳过 {duplicates} 条重复记录。",
+    "bulkDescription": "先检查预览，再确认保存。仅登记曲目，不要求录音文件。",
+    "importConfirm": "确认登记 {count} 首",
+    "entryCount": "{count} 首曲目",
+    "versionCount": "{count} 个录音版本",
+    "unknownArtist": "原唱待补充",
+    "insightsScope": "当前统计「{scope}」，共 {count} 项。会唱范围用曲目信息；已录／已公开范围用录音的语言与风格。",
+    "scope": "统计范围",
+    "historyHint": "每次保存前都会保留旧版本。恢复历史也会备份当前清单。",
+    "restore": "恢复此版本",
+    "restoreTitle": "恢复历史清单",
+    "restoreDescription": "当前清单会被所选历史版本替换，当前版本仍会保留在历史记录中。",
+    "discardTitle": "保存当前修改吗？",
+    "discardDescription": "有尚未保存的登记内容或修改。保存后继续，或放弃本次修改。",
+    "discard": "放弃修改",
+    "linkedEntry": "关联会唱清单",
+    "linkSearch": "搜索清单中的歌名或原唱",
+    "unlinked": "暂不关联（新录音将自动登记）",
+    "linkHint": "同一首歌的不同录音关联到同一条目；原唱与风格分布使用清单资料。",
+    "linkUnavailable": "暂时无法读取清单；可以继续保存录音，稍后再关联。",
+    "errors": {
+      "conflict": "清单已在另一处更新。保留或复制当前修改，关闭编辑并重新加载后再保存。",
+      "invalid": "请检查歌名、日期和录音关联；同一个录音不能关联到多首歌。",
+      "revisionRequired": "请先重新加载清单，再保存。",
+      "storageError": "暂时无法读取或保存清单，请稍后重新加载。"
+    },
+    "backupFile": "导入会唱清单 JSON 备份（合并）",
+    "backupInvalid": "无法读取这份清单备份，请选择从这里导出的 JSON 文件。",
+    "backupPreview": "将合并 {count} 条备份记录，现有未包含的曲目会保留。",
+    "recordingStyles": "本次录音风格",
+    "inheritStyles": "录音风格跟随关联曲目",
+    "developmentHint": "本地预览；正式记录使用",
+    "productionAdmin": "线上后台",
+    "advancedFilters": "按原唱、风格、语言细分筛选",
+    "bulkUncertain": "{count} 条同名记录需补充原唱后确认，暂未新增：{titles}",
+    "saveChanges": "保存内容"
+  },
+  "playerSession": {
+    "previous": "上次听到《{title}》{position}",
+    "continue": "继续播放",
+    "dismiss": "关闭继续播放提示"
   }
 }
