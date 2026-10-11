@@ -20,6 +20,7 @@ import {
   Clock3,
   Eye,
   EyeOff,
+  RefreshCcw,
   Search,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -43,7 +44,7 @@ import {
 import type { Song } from "@/types/music";
 
 const selectClassName =
-  "h-10 rounded-xl border border-[var(--border)] bg-[rgba(7,10,15,0.92)] px-3 text-sm text-gray-300 outline-none transition-[border-color,box-shadow] duration-150 ease-out focus:border-sky-400/60";
+  "h-10 rounded-xl border border-[var(--border)] bg-[var(--admin-inset)] px-3 text-sm text-[var(--admin-text)] outline-none transition-[border-color,box-shadow] duration-150 ease-out focus:border-sky-400/60";
 
 type BulkPatch = Partial<Pick<Song, "assetStatus" | "visibility">>;
 
@@ -62,6 +63,7 @@ export function AdminPlaylistSidebar({
   onBackfillDurations,
   onReorderSongs,
   onReload,
+  onCreateSong,
 }: {
   playlist: Song[];
   isLoading: boolean;
@@ -79,6 +81,7 @@ export function AdminPlaylistSidebar({
     overSongId: string,
   ) => Promise<boolean>;
   onReload: () => Promise<void>;
+  onCreateSong: () => void;
 }) {
   const t = useTranslations("admin");
   const [query, setQuery] = useState("");
@@ -157,16 +160,31 @@ export function AdminPlaylistSidebar({
   };
 
   return (
-    <aside className="flex min-h-0 w-full flex-col border-r border-[var(--border)] lg:w-[25rem] lg:min-w-[25rem]">
-      <div className="space-y-3 border-b border-[var(--border)] p-4">
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
-          <Input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={t("playlist.searchPlaceholder")}
-            className="border-[var(--border)] bg-[rgba(7,10,15,0.92)] pl-9 text-gray-200 placeholder:text-gray-600"
-          />
+    <aside className="flex h-full min-h-0 w-full flex-col border-r border-[var(--border)] bg-[var(--admin-surface)]">
+      <div className="max-h-[65%] shrink-0 space-y-3 overflow-y-auto overscroll-contain border-b border-[var(--border)] p-4">
+        <div className="flex items-center gap-2">
+          <div className="relative min-w-0 flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--admin-subtle)]" />
+            <Input
+              type="search"
+              aria-label={t("editor.searchLabel")}
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={t("playlist.searchPlaceholder")}
+              className="border-[var(--border)] bg-[var(--admin-inset)] pl-9 text-[var(--admin-text)] placeholder:text-[var(--admin-subtle)]"
+            />
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            disabled={isSaving || disabled || isLoading}
+            aria-label={t("editor.reload")}
+            title={t("editor.reload")}
+            onClick={() => void onReload()}
+          >
+            <RefreshCcw size={16} />
+          </Button>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
@@ -199,7 +217,7 @@ export function AdminPlaylistSidebar({
           </select>
         </div>
 
-        <div className="flex items-center justify-between gap-3 text-xs text-gray-500">
+        <div className="flex items-center justify-between gap-3 text-xs text-[var(--admin-muted)]">
           <span className="tabular-nums">
             {t("playlist.showing", {
               count: visiblePlaylist.length,
@@ -209,7 +227,7 @@ export function AdminPlaylistSidebar({
           <button
             type="button"
             onClick={toggleVisible}
-            className="min-h-10 rounded-xl px-2 text-sky-300 transition-[scale,color,background-color] duration-150 ease-out hover:bg-sky-400/8 hover:text-sky-200 active:scale-[0.96]"
+            className="min-h-10 rounded-xl px-2 text-[var(--admin-accent)] transition-[scale,color,background-color] duration-150 ease-out hover:bg-sky-400/8 hover:text-[var(--admin-accent)] active:scale-[0.96]"
           >
             {allVisibleSelected
               ? t("playlist.bulk.clear")
@@ -219,15 +237,22 @@ export function AdminPlaylistSidebar({
 
         {selectedIds.size > 0 ? (
           <div className="rounded-2xl bg-sky-400/8 p-2 shadow-[0_0_0_1px_rgba(56,189,248,0.2)]">
-            <div className="mb-2 px-1 text-xs text-sky-100 tabular-nums">
+            <div className="mb-2 flex items-center justify-between gap-2 px-1 text-xs text-[var(--admin-accent)] tabular-nums">
               {t("playlist.bulk.selected", { count: selectedIds.size })}
+              <button
+                type="button"
+                className="min-h-10 rounded-lg px-2 underline"
+                onClick={() => setSelectedIds(new Set())}
+              >
+                {t("editor.clearSelection")}
+              </button>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
-                disabled={isSaving || disabled}
+                disabled={isSaving || disabled || isEditingSongDirty}
                 onClick={() =>
                   void applyBulkUpdate({ assetStatus: "archived" })
                 }
@@ -239,7 +264,7 @@ export function AdminPlaylistSidebar({
                 type="button"
                 size="sm"
                 variant="outline"
-                disabled={isSaving || disabled}
+                disabled={isSaving || disabled || isEditingSongDirty}
                 onClick={() => void applyBulkUpdate({ assetStatus: "ready" })}
               >
                 <CheckCircle2 className="h-3.5 w-3.5" />
@@ -249,7 +274,7 @@ export function AdminPlaylistSidebar({
                 type="button"
                 size="sm"
                 variant="outline"
-                disabled={isSaving || disabled}
+                disabled={isSaving || disabled || isEditingSongDirty}
                 onClick={() => void applyBulkUpdate({ visibility: "public" })}
               >
                 <Eye className="h-3.5 w-3.5" />
@@ -259,7 +284,7 @@ export function AdminPlaylistSidebar({
                 type="button"
                 size="sm"
                 variant="outline"
-                disabled={isSaving || disabled}
+                disabled={isSaving || disabled || isEditingSongDirty}
                 onClick={() => void applyBulkUpdate({ visibility: "private" })}
               >
                 <EyeOff className="h-3.5 w-3.5" />
@@ -272,6 +297,7 @@ export function AdminPlaylistSidebar({
                 disabled={
                   isSaving ||
                   disabled ||
+                  isEditingSongDirty ||
                   isBackfillingDurations ||
                   selectedMissingDurationCount === 0
                 }
@@ -307,8 +333,33 @@ export function AdminPlaylistSidebar({
       ) : visiblePlaylist.length === 0 ? (
         <div className="p-4">
           <AdminEmptyState
-            title={t("playlist.emptyList.title")}
-            description={t("playlist.emptyList.description")}
+            title={t(
+              playlist.length === 0
+                ? "editor.emptyLibraryTitle"
+                : "playlist.emptyList.title",
+            )}
+            description={t(
+              playlist.length === 0
+                ? "editor.emptyLibraryHint"
+                : "playlist.emptyList.description",
+            )}
+            action={
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  if (playlist.length === 0) onCreateSong();
+                  else {
+                    setQuery("");
+                    setFilter("all");
+                  }
+                }}
+              >
+                {t(
+                  playlist.length === 0 ? "tabs.upload" : "editor.clearFilters",
+                )}
+              </Button>
+            }
           />
         </div>
       ) : (
@@ -322,7 +373,7 @@ export function AdminPlaylistSidebar({
               items={visiblePlaylist.map((song) => song.id)}
               strategy={verticalListSortingStrategy}
             >
-              <div className="space-y-2 p-4">
+              <div className="space-y-2 p-3">
                 {visiblePlaylist.map((song) => (
                   <AdminSongListRow
                     key={song.id}

@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronUp } from "lucide-react";
+import { ChevronUp, CircleCheck, Loader2, TriangleAlert } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type LogEntry = {
   id: string;
@@ -8,76 +9,78 @@ type LogEntry = {
   message: string;
   timestamp: Date;
 };
-
-type TerminalOutputProps = {
-  logs: LogEntry[];
-  isBusy: boolean;
-  isExpanded: boolean;
-  onToggle: () => void;
-};
-
 export function TerminalOutput({
   logs,
   isBusy,
   isExpanded,
   onToggle,
-}: TerminalOutputProps) {
-  const lastLog = logs.length > 0 ? logs[logs.length - 1] : null;
-
+}: {
+  logs: LogEntry[];
+  isBusy: boolean;
+  isExpanded: boolean;
+  onToggle: () => void;
+}) {
+  const t = useTranslations("admin.activity");
+  const lastLog = logs.at(-1);
+  const Icon = isBusy
+    ? Loader2
+    : lastLog?.level === "error"
+      ? TriangleAlert
+      : CircleCheck;
   return (
-    <div className="shrink-0 border-t border-gray-800 bg-black font-mono">
-      {/* Header bar — always visible at 32px */}
+    <div className="shrink-0 border-t border-[var(--border)] bg-[var(--admin-surface)]">
       <button
         type="button"
-        className="flex h-8 w-full cursor-pointer select-none items-center justify-between px-4 hover:bg-gray-900"
+        aria-expanded={isExpanded}
+        aria-controls="admin-activity"
+        className="flex min-h-10 w-full items-center justify-between gap-3 px-4 text-xs hover:bg-[var(--admin-inset)]"
         onClick={onToggle}
       >
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-gray-500">
-            TERMINAL
+        <span className="flex min-w-0 items-center gap-2 text-[var(--admin-muted)]">
+          <Icon size={14} className={isBusy ? "animate-spin" : ""} />
+          <span className="shrink-0">
+            {isBusy ? t("processing") : t("title")}
           </span>
-          {!isExpanded && (
-            <span className="truncate text-[10px] text-gray-600">
-              {isBusy
-                ? "> Processing..."
-                : (lastLog?.message ?? "> Waiting for admin action...")}
-            </span>
-          )}
-        </div>
-        <ChevronUp
-          className={`h-3 w-3 text-gray-500 transition-transform ${isExpanded ? "" : "rotate-180"}`}
-        />
+          <span className="hidden truncate text-[var(--admin-subtle)] sm:inline">
+            {lastLog?.message || t("idle")}
+          </span>
+        </span>
+        <span className="flex shrink-0 items-center gap-2 text-[var(--admin-subtle)]">
+          <span className="tabular-nums">{logs.length}</span>
+          <ChevronUp
+            size={14}
+            className={`transition-transform ${isExpanded ? "" : "rotate-180"}`}
+          />
+        </span>
       </button>
-
-      {/* Expanded log area */}
-      {isExpanded && (
-        <div className="max-h-48 space-y-1 overflow-y-auto px-4 pb-3 text-[11px] scrollbar-none">
-          {logs.length === 0 ? (
-            <div className="text-gray-600">
-              {"> Waiting for admin action..."}
-            </div>
-          ) : (
-            logs.map((log) => (
-              <div
-                key={log.id}
-                className={
-                  log.level === "error" ? "text-rose-300" : "text-gray-400"
-                }
-              >
-                <span className="text-gray-600">
-                  {log.timestamp.toLocaleTimeString()}
-                </span>{" "}
-                {log.message}
-              </div>
-            ))
-          )}
-          {isBusy && (
-            <div className="animate-pulse text-gray-500">
-              {"> Processing..."}
-            </div>
-          )}
+      <div
+        id="admin-activity"
+        className={`grid transition-[grid-template-rows] duration-200 ${isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+      >
+        <div className="overflow-hidden">
+          <div className="max-h-40 space-y-2 overflow-y-auto px-4 pb-3 text-xs">
+            {logs.length === 0 ? (
+              <p className="text-[var(--admin-muted)]">{t("idle")}</p>
+            ) : (
+              logs.map((log) => (
+                <p
+                  key={log.id}
+                  className={
+                    log.level === "error"
+                      ? "text-[var(--admin-danger)]"
+                      : "text-[var(--admin-muted)]"
+                  }
+                >
+                  <span className="mr-3 tabular-nums text-[var(--admin-subtle)]">
+                    {log.timestamp.toLocaleTimeString()}
+                  </span>
+                  {log.message}
+                </p>
+              ))
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

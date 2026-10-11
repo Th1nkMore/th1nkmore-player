@@ -1,90 +1,153 @@
 "use client";
 
-import { AudioLines, Library, LogOut, Tags } from "lucide-react";
+import {
+  AudioLines,
+  ExternalLink,
+  Library,
+  LogOut,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Tags,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
+import { AdminAppearanceControls } from "@/components/admin/AdminAppearanceControls";
 import { cn } from "@/lib/utils";
 
-type AdminTab = "upload" | "edit" | "catalog";
+export type AdminTab = "upload" | "edit" | "catalog";
+const tabs = [
+  { id: "edit" as const, icon: Library },
+  { id: "upload" as const, icon: AudioLines },
+  { id: "catalog" as const, icon: Tags },
+];
 
-type AdminPageChromeProps = {
+export function AdminNavigation({
+  activeTab,
+  collapsed,
+  disabled,
+  onToggle,
+  onTabChange,
+}: {
   activeTab: AdminTab;
-  currentTime: string;
-  isSigningOut: boolean;
-  logCount: number;
-  onLogout: () => void;
+  collapsed: boolean;
+  disabled: boolean;
+  onToggle: () => void;
   onTabChange: (tab: AdminTab) => void;
-};
+}) {
+  const t = useTranslations("admin");
+  return (
+    <aside
+      className={cn(
+        "flex shrink-0 flex-col border-b border-[var(--border)] bg-[var(--admin-surface)] lg:border-b-0 lg:border-r transition-[width] duration-200",
+        collapsed ? "lg:w-[72px]" : "lg:w-[208px]",
+      )}
+    >
+      <div className="hidden h-[88px] items-center gap-3 px-5 lg:flex">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-[var(--admin-accent)] text-white">
+          <AudioLines size={19} aria-hidden="true" />
+        </span>
+        {!collapsed && (
+          <div className="block">
+            <p className="font-semibold tracking-tight">Sonic</p>
+            <p className="text-xs text-[var(--admin-subtle)]">
+              {t("shell.title")}
+            </p>
+          </div>
+        )}
+      </div>
+      <nav
+        aria-label={t("navigation.label")}
+        className="flex gap-1 p-2 lg:flex-col lg:gap-2 lg:px-3 lg:py-4"
+      >
+        {tabs.map(({ id, icon: Icon }) => (
+          <button
+            key={id}
+            type="button"
+            title={t(`tabs.${id}`)}
+            aria-current={activeTab === id ? "page" : undefined}
+            disabled={disabled}
+            onClick={() => onTabChange(id)}
+            className={cn(
+              "flex min-h-11 flex-1 items-center justify-center gap-3 rounded-xl px-3 text-sm font-medium lg:flex-none lg:justify-start",
+              activeTab === id
+                ? "bg-[var(--admin-accent-soft)] text-[var(--admin-accent)]"
+                : "text-[var(--admin-muted)] hover:bg-[var(--admin-inset)]",
+              collapsed && "lg:justify-center",
+            )}
+          >
+            <Icon size={19} className="shrink-0" aria-hidden="true" />
+            <span className={cn("lg:sr-only", !collapsed && "lg:not-sr-only")}>
+              {t(`tabs.${id}`)}
+            </span>
+          </button>
+        ))}
+      </nav>
+      <div className="mt-auto hidden p-3 lg:block">
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-label={t(
+            collapsed ? "navigation.expand" : "navigation.collapse",
+          )}
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl text-[var(--admin-subtle)] hover:bg-[var(--admin-inset)]"
+        >
+          {collapsed ? (
+            <PanelLeftOpen size={18} />
+          ) : (
+            <PanelLeftClose size={18} />
+          )}
+          {!collapsed && (
+            <span className="text-xs">{t("navigation.collapse")}</span>
+          )}
+        </button>
+      </div>
+    </aside>
+  );
+}
 
 export function AdminPageChrome({
   activeTab,
-  currentTime,
   isSigningOut,
-  logCount,
+  disabled,
   onLogout,
-  onTabChange,
-}: AdminPageChromeProps) {
+}: {
+  activeTab: AdminTab;
+  isSigningOut: boolean;
+  disabled: boolean;
+  onLogout: () => void;
+}) {
   const t = useTranslations("admin");
-
-  const tabs = [
-    { id: "upload" as const, icon: AudioLines, label: t("tabs.upload") },
-    { id: "edit" as const, icon: Library, label: t("tabs.edit") },
-    { id: "catalog" as const, icon: Tags, label: t("tabs.catalog") },
-  ];
-
   return (
-    <>
-      <div className="border-b border-[var(--border)] bg-[rgba(12,15,22,0.94)] px-4 py-3 md:px-6">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="min-w-0">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-400">
-              {t("shell.title")}
-            </div>
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-500">
-              <span>{t("shell.subtitle")}</span>
-              <span className="hidden text-gray-700 md:inline">/</span>
-              <span className="tabular-nums">
-                {t("shell.logCount", { count: logCount })}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
-            <span className="rounded-full border border-[var(--border)] px-3 py-1 tabular-nums">
-              {currentTime || "--:--:--"}
-            </span>
-            <button
-              type="button"
-              onClick={onLogout}
-              disabled={isSigningOut}
-              className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[var(--border)] px-3 py-1.5 text-gray-400 transition-[scale,color,border-color] duration-150 ease-out hover:border-rose-500/30 hover:text-rose-200 active:scale-[0.96] disabled:cursor-not-allowed disabled:text-gray-600"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              {isSigningOut ? t("actions.signingOut") : t("actions.logout")}
-            </button>
-          </div>
-        </div>
+    <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] bg-[var(--admin-surface)] px-4 py-4 lg:min-h-[88px] lg:px-6">
+      <div className="min-w-0">
+        <h1 className="text-xl font-semibold tracking-tight">
+          {t(`tabs.${activeTab}`)}
+        </h1>
+        <p className="mt-1 hidden text-sm text-[var(--admin-muted)] sm:block">
+          {t(`navigation.descriptions.${activeTab}`)}
+        </p>
       </div>
-
-      <div className="border-b border-[var(--border)] bg-[rgba(12,15,22,0.9)] px-4 py-2 md:px-6">
-        <div className="flex flex-wrap gap-2">
-          {tabs.map(({ id, icon: Icon, label }) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => onTabChange(id)}
-              className={cn(
-                "inline-flex min-h-10 items-center gap-2 rounded-full border px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] transition-[scale,color,background-color,border-color] duration-150 ease-out active:scale-[0.96]",
-                activeTab === id
-                  ? "border-sky-400/50 bg-sky-400/10 text-sky-100"
-                  : "border-[var(--border)] text-gray-500 hover:text-gray-300",
-              )}
-            >
-              <Icon className="h-3.5 w-3.5" />
-              {label}
-            </button>
-          ))}
-        </div>
+      <div className="flex items-center gap-2">
+        <a
+          href="/"
+          target="_blank"
+          rel="noreferrer"
+          className="hidden min-h-10 items-center gap-2 rounded-lg px-3 text-sm text-[var(--admin-muted)] hover:bg-[var(--admin-inset)] md:inline-flex"
+        >
+          <ExternalLink size={16} />
+          {t("navigation.viewSite")}
+        </a>
+        <AdminAppearanceControls disabled={disabled} />
+        <button
+          type="button"
+          onClick={onLogout}
+          disabled={isSigningOut || disabled}
+          title={t("actions.logout")}
+          className="flex size-10 items-center justify-center rounded-lg text-[var(--admin-muted)] hover:bg-[var(--admin-inset)]"
+          aria-label={t(isSigningOut ? "actions.signingOut" : "actions.logout")}
+        >
+          <LogOut size={17} />
+        </button>
       </div>
-    </>
+    </header>
   );
 }

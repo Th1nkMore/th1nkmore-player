@@ -191,13 +191,13 @@
   },
   "admin": {
     "tabs": {
-      "upload": "上传新歌",
+      "upload": "添加歌曲",
       "record": "录制音频",
-      "edit": "编辑歌单",
-      "catalog": "整理"
+      "edit": "歌曲管理",
+      "catalog": "专辑与标签"
     },
     "shell": {
-      "title": "管理工作区",
+      "title": "音乐工作台",
       "subtitle": "现代化的上传、标签与歌单控制界面。",
       "logCount": "{count} 条运行日志"
     },
@@ -207,8 +207,8 @@
       "retry": "重试",
       "fetchLyrics": "抓取歌词",
       "fetching": "抓取中...",
-      "deploy": "部署歌曲",
-      "deploying": "部署中...",
+      "deploy": "发布歌曲",
+      "deploying": "正在发布…",
       "reset": "重置草稿",
       "saveSong": "保存修改",
       "archive": "归档歌曲",
@@ -232,8 +232,8 @@
         "description": "歌曲基础身份信息与时间元数据。"
       },
       "classification": {
-        "title": "分类设置",
-        "description": "曲库语义、可见性以及标签归类。"
+        "title": "发布设置",
+        "description": "设置歌曲的可见性、状态与归属。"
       },
       "lyrics": {
         "title": "歌词",
@@ -318,7 +318,7 @@
     },
     "creatorNote": {
       "spokenTitle": "口述录音",
-      "spokenDescription": "上传已有录音，或在这里录一段简短口述。它不会进入完整翻唱录音工作区。",
+      "spokenDescription": "上传已有录音，或录一段简短口述。",
       "uploadAudio": "上传录音",
       "replaceAudio": "替换录音",
       "uploading": "正在上传……",
@@ -351,11 +351,11 @@
     "upload": {
       "packageImport": {
         "title": "导入翻唱发布包",
-        "description": "在浏览器本地校验 HuangToolbar 生成的 .coverpkg，并填入现有上传流程。",
+        "description": "导入 .coverpkg，自动填入音频、歌词与歌曲信息。",
         "choose": "拖入 .coverpkg，或点击选择并检查",
         "dropActive": "松开即可检查这个翻唱发布包",
         "inspecting": "正在本地检查发布包……",
-        "localOnly": "审核并编辑字段、点击“部署”之前，不会上传任何内容。",
+        "localOnly": "确认保存之前，音频与歌词会保留在本地。",
         "verified": "发布包检查通过",
         "checksumVerified": "四文件白名单、v1 清单、MP3 标识、UTF-8 歌词和全部 SHA-256 校验和均有效。",
         "performer": "翻唱演唱者",
@@ -365,12 +365,14 @@
         "schema": "发布包身份",
         "channels": "{count} 声道",
         "timedLines": "{count} 行时间轴歌词",
-        "duplicateTitle": "这个发布包已经部署",
-        "duplicateMessage": "相同发布包已保存为 {id}，为避免重复歌曲，当前禁止再次部署。",
+        "duplicateTitle": "这个发布包已经保存",
+        "duplicateMessage": "相同发布包已保存为 {id}，请编辑已有歌曲，避免重复添加。",
         "relatedTitle": "发现同一项目的已有版本",
         "relatedMessage": "歌曲 {id} 来自同一个翻唱项目，请把本次导入作为一次明确的修订审阅。",
         "warnings": "需要审阅的提醒",
-        "noWarnings": "没有待处理的发布包级提醒。"
+        "noWarnings": "没有待处理的发布包级提醒。",
+        "summary": "{title} · {artist} · {count} 行歌词",
+        "invalid": "无法导入发布包"
       },
       "fileCard": {
         "title": "音频源文件",
@@ -414,12 +416,12 @@
       "searchPlaceholder": "搜索标题、歌手、专辑或标签",
       "badges": {
         "dirty": "已改",
-        "attention": "待补"
+        "attention": "可补充"
       },
       "filters": {
         "label": "筛选歌曲",
         "all": "全部歌曲",
-        "needsAttention": "待完善（{count}）",
+        "needsAttention": "可补充信息（{count}）",
         "ready": "已就绪",
         "archived": "已归档"
       },
@@ -459,7 +461,7 @@
       },
       "emptyList": {
         "title": "没有匹配的歌曲",
-        "description": "换一个搜索词，或先去上传工作区添加歌曲。"
+        "description": "试试其他关键词，或清除筛选条件。"
       },
       "mobilePrompt": {
         "title": "打开详情编辑器",
@@ -479,7 +481,7 @@
       }
     },
     "confirm": {
-      "discardTitle": "放弃未保存修改？",
+      "discardTitle": "有未保存的修改",
       "discardDescription": "切换歌曲会丢弃当前选中歌曲尚未保存的草稿修改。",
       "discardConfirm": "放弃并继续",
       "saveAndContinue": "保存并继续",
@@ -492,7 +494,14 @@
       "deleteTitle": "删除这首歌曲？",
       "deleteDescription": "该歌曲会从当前暂存歌单中移除，直到你保存或重新加载。",
       "deleteConfirm": "删除歌曲",
-      "cancel": "取消"
+      "cancel": "取消",
+      "leaveDescription": "当前歌曲有未保存的修改。保存后离开，或放弃这些修改。",
+      "logoutTitle": "退出并放弃未保存的草稿？",
+      "logoutDescription": "当前有未保存的修改或上传草稿。取消退出可继续编辑并保存。",
+      "logoutConfirm": "退出并放弃草稿",
+      "reloadTitle": "重新载入并放弃当前修改？",
+      "reloadDescription": "将读取曲库的最新版本，替换当前歌曲的未保存草稿。",
+      "reloadConfirm": "重新载入并放弃修改"
     },
     "status": {
       "ready": "已就绪",
@@ -602,20 +611,158 @@
         "selectedMessage": "已为当前草稿生成估算时间轴。"
       },
       "deploying": {
-        "title": "正在部署歌曲",
-        "message": "正在上传二进制资源并写入歌单条目。"
+        "title": "正在保存歌曲",
+        "message": "正在上传音频并保存歌曲信息。"
       },
       "deployComplete": {
-        "title": "部署完成",
+        "title": "歌曲已保存",
         "message": "{title} 已加入歌单。"
       },
       "deployFailed": {
-        "title": "部署失败"
+        "title": "歌曲保存失败"
       },
       "recordingAttached": {
         "title": "录音已附加",
         "message": "{filename} 已作为上传源文件附加。"
       }
+    },
+    "navigation": {
+      "label": "后台导航",
+      "collapse": "收起导航",
+      "expand": "展开导航",
+      "viewSite": "查看网站",
+      "language": "界面语言",
+      "skip": "跳转到工作区",
+      "descriptions": {
+        "edit": "查找、编辑和发布你的音乐。",
+        "upload": "上传音频，或导入翻唱发布包。",
+        "catalog": "整理专辑与标签，让曲库井然有序。"
+      }
+    },
+    "form": {
+      "label": "歌曲编辑分区",
+      "basic": "基础信息",
+      "lyrics": "歌词",
+      "story": "翻唱者说",
+      "publishing": "发布设置",
+      "required": "请填写此必填项。",
+      "requiredMetadata": "请填写歌曲标题和歌手，然后重新保存。"
+    },
+    "wizard": {
+      "label": "添加歌曲进度",
+      "source": "选择文件",
+      "details": "补充信息",
+      "publish": "确认发布",
+      "sourceTitle": "从一份音频开始",
+      "sourceHint": "选择文件后，检查歌曲信息，再将它加入曲库。",
+      "sourceType": "文件类型",
+      "audio": "音频文件",
+      "detailsHint": "标题和歌手为必填项。歌词和个人文字可按需补充。",
+      "reviewTitle": "确认这首歌曲",
+      "reviewHint": "核对歌曲信息，并设置谁可以看到它。",
+      "back": "上一步",
+      "next": "继续",
+      "hints": {
+        "source": "发布前，所选文件保留在本地。",
+        "details": "切换步骤会保留已填写的内容。",
+        "publish": "发布会保存音频与歌曲信息。"
+      },
+      "clearDraft": "清空草稿",
+      "clearDraftTitle": "清空当前上传草稿？",
+      "clearDraftHint": "将移除所选文件与已填写的信息，曲库中的歌曲不会受影响。",
+      "saveToLibrary": "保存到曲库"
+    },
+    "activity": {
+      "title": "操作记录",
+      "idle": "暂无操作记录",
+      "processing": "正在处理…"
+    },
+    "overview": {
+      "total": "共 {count} 首歌曲",
+      "public": "{count} 首公开",
+      "drafts": "{count} 首草稿"
+    },
+    "editor": {
+      "tools": "音频、修订与曲库历史",
+      "archiveHint": "归档会隐藏歌曲，并保留音频。",
+      "backToList": "返回歌曲列表",
+      "clearFilters": "清除筛选",
+      "clearSelection": "清除选择",
+      "emptyLibraryTitle": "从第一首歌开始",
+      "emptyLibraryHint": "添加音频文件，或导入翻唱发布包，建立你的曲库。",
+      "searchLabel": "搜索歌曲",
+      "reload": "刷新曲库",
+      "changesHint": "点击「保存修改」后，修改才会生效。",
+      "searchCatalog": "搜索专辑或标签",
+      "noCatalogResults": "没有匹配结果，请试试其他关键词。",
+      "resizeList": "调整歌曲列表宽度"
+    },
+    "options": {
+      "language": {
+        "zh": "中文",
+        "en": "英语",
+        "ja": "日语"
+      },
+      "visibility": {
+        "public": "公开",
+        "unlisted": "不在列表显示",
+        "private": "私密"
+      },
+      "visibilityHints": {
+        "public": "歌曲就绪后，会出现在公开播放器中。",
+        "unlisted": "不会出现在公开曲库列表中。",
+        "private": "仅在后台管理工作区中可见。"
+      },
+      "assetStatus": {
+        "ready": "已就绪",
+        "draft": "草稿",
+        "archived": "已归档"
+      },
+      "trackType": {
+        "portfolio": "个人作品",
+        "personal": "私人收藏"
+      },
+      "sourceType": {
+        "upload": "上传",
+        "external-upload": "外部导入",
+        "recording": "录音"
+      },
+      "performanceType": {
+        "cover": "翻唱",
+        "original": "原创",
+        "listening": "聆听收藏"
+      }
+    },
+    "lyricTools": {
+      "normalize": "整理歌词格式",
+      "convert": "生成估算时间轴",
+      "lines": "{count} 行歌词",
+      "empty": "尚未添加歌词",
+      "estimateHint": "时间轴根据时长估算，发布前请试听核对。"
+    },
+    "login": {
+      "title": "欢迎回来",
+      "description": "登录后，管理你的音乐、专辑与故事。",
+      "password": "管理密码",
+      "submit": "登录后台",
+      "submitting": "正在登录…",
+      "failed": "无法登录，请检查密码后重试。",
+      "session": "登录状态将保留 {hours} 小时。",
+      "home": "返回音乐网站",
+      "show": "显示密码",
+      "hide": "隐藏密码",
+      "rateLimited": "尝试次数较多，请稍后再试。",
+      "unavailable": "登录服务暂时不可用，请稍后再试。"
+    },
+    "rename": {
+      "action": "重命名",
+      "label": "重命名「{name}」",
+      "hint": "保存后，会同步更新相关歌曲。标签改成已有名称时会合并。",
+      "save": "保存名称",
+      "saving": "正在保存…",
+      "cancel": "取消",
+      "required": "请填写名称。",
+      "failed": "保存失败，请重试。"
     }
   },
   "albumBrowse": {
