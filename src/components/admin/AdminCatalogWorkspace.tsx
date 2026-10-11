@@ -44,8 +44,8 @@ export function AdminCatalogWorkspace({
             className={cn(
               "min-h-10 rounded-lg px-4 text-sm focus-visible:outline-2 focus-visible:outline-sky-400",
               mode === option
-                ? "bg-sky-400/10 text-sky-100"
-                : "text-gray-400 hover:text-gray-200",
+                ? "bg-[var(--admin-accent-soft)] text-[var(--admin-accent)]"
+                : "text-[var(--admin-muted)] hover:text-[var(--admin-text)]",
             )}
           >
             {option === "albums" ? t("albumsTitle") : t("tagsTitle")}

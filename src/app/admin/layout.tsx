@@ -1,4 +1,5 @@
 import "../globals.css";
+import "./admin.css";
 import { cookies } from "next/headers";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
@@ -28,10 +29,13 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <html lang={locale} className="antialiased" suppressHydrationWarning>
-      <body className={rootFontClassName} suppressHydrationWarning>
+      <body
+        className={`${rootFontClassName} admin-ui`}
+        suppressHydrationWarning
+      >
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="light"
           enableSystem={false}
         >
           <NextIntlClientProvider locale={locale} messages={messages}>

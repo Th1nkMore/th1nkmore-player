@@ -172,6 +172,14 @@ export function useAdminPlaylistFlow({
 
   const handleSaveEdit = useCallback(async (): Promise<boolean> => {
     if (!(editedSong && playlistRevision)) return false;
+    if (!(editedSong.title.trim() && editedSong.artist.trim())) {
+      setPlaylistNotice({
+        tone: "error",
+        title: t("notices.saveFailed.title"),
+        message: t("form.requiredMetadata"),
+      });
+      return false;
+    }
     const nextSong = normalizeSong(editedSong);
     setIsSavingPlaylist(true);
     setPlaylistNotice({

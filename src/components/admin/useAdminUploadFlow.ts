@@ -23,6 +23,11 @@ import {
 } from "@/lib/lyrics";
 import { createEmptySongDraft } from "@/lib/song";
 import type { Song } from "@/types/music";
+import {
+  audioMetadataNotice,
+  importedCoverNotice,
+  mergeAudioMetadata,
+} from "./uploadWorkspaceUtils";
 
 type AdminLogger = (message: string) => void;
 
@@ -44,6 +49,7 @@ export function useAdminUploadFlow({
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [fileStatus, setFileStatus] = useState<FileStatus>(null);
   const [uploadNotice, setUploadNotice] = useState<AdminNotice | null>(null);
+  const [isExtractingMetadata, setIsExtractingMetadata] = useState(false);
   const [isDeploying, setIsDeploying] = useState(false);
   const [isFetchingLyrics, setIsFetchingLyrics] = useState(false);
   const [neteaseUrl, setNeteaseUrl] = useState("");
@@ -59,7 +65,8 @@ export function useAdminUploadFlow({
       const file = event.target.files?.[0];
       if (!file) return;
 
-      coverImportSequence.current += 1;
+      const sequence = ++coverImportSequence.current;
+      setIsExtractingMetadata(true);
       setCoverPackageReview(null);
       setAudioFile(file);
       setFormData((current) => ({
@@ -80,33 +87,15 @@ export function useAdminUploadFlow({
       try {
         addLog("> Extracting metadata from file...");
         const metadata = await mm.parseBlob(file);
-        const { common, format } = metadata;
+        if (coverImportSequence.current !== sequence) return;
 
-        setFormData((current) => {
-          const updated = { ...current };
-          if (common.title) updated.title = common.title;
-          if (common.artist) updated.artist = common.artist;
-          if (common.album) {
-            updated.album = common.album;
-            updated.albumId = null;
-          }
-          if (format.duration) updated.duration = Math.floor(format.duration);
-          return updated;
-        });
+        setFormData((current) => mergeAudioMetadata(current, metadata));
 
-        setFileStatus({
-          tone: "success",
-          title: t("notices.metadataReady.title"),
-          message:
-            common.title || common.artist
-              ? `${common.title || "Unknown"} • ${common.artist || "Unknown"}`
-              : t("notices.metadataReady.message"),
-        });
-
-        addLog(
-          `> Metadata extracted: ${common.title || "Unknown"} - ${common.artist || "Unknown"}`,
-        );
+        const notice = audioMetadataNotice(metadata, t);
+        setFileStatus(notice);
+        addLog(`> Metadata extracted: ${notice.message}`);
       } catch (error) {
+        if (coverImportSequence.current !== sequence) return;
         const message =
           error instanceof Error ? error.message : "Unknown metadata error";
         setFileStatus({
@@ -115,6 +104,9 @@ export function useAdminUploadFlow({
           message,
         });
         addLog(`> Warning: Could not extract metadata from file: ${message}`);
+      } finally {
+        if (coverImportSequence.current === sequence)
+          setIsExtractingMetadata(false);
       }
     },
     [addLog, t],
@@ -127,9 +119,8 @@ export function useAdminUploadFlow({
       setIsImportingCoverPackage(true);
       setUploadNotice({
         tone: "neutral",
-        title: "Inspecting cover package",
-        message:
-          "Validating ZIP structure, schema, media, lyrics, and SHA-256 checksums locally.",
+        title: t("upload.packageImport.inspecting"),
+        message: t("upload.packageImport.localOnly"),
       });
       addLog(`> Inspecting cover package locally: ${file.name}`);
 
@@ -141,10 +132,14 @@ export function useAdminUploadFlow({
         setFormData((current) => coverPackageSongDraft(current, review));
         setFileStatus({
           tone: "success",
-          title: "Verified cover package",
-          message: `${review.manifest.title} • ${review.manifest.artist} • ${review.lyricLineCount} timed lyric lines`,
+          title: t("upload.packageImport.verified"),
+          message: t("upload.packageImport.summary", {
+            title: review.manifest.title,
+            artist: review.manifest.artist,
+            count: review.lyricLineCount,
+          }),
         });
-        setUploadNotice(packageUploadNotice(review));
+        setUploadNotice(importedCoverNotice(review, t));
         addLog(`> Package verified: ${review.manifest.packageId}`);
         addLog(
           `> Performer: ${review.manifest.artist}; original artist: ${review.manifest.originalArtist}`,
@@ -159,12 +154,12 @@ export function useAdminUploadFlow({
             : String(importError);
         setFileStatus({
           tone: "error",
-          title: "Invalid cover package",
+          title: t("upload.packageImport.invalid"),
           message,
         });
         setUploadNotice({
           tone: "error",
-          title: "Cover package import failed",
+          title: t("upload.packageImport.invalid"),
           message,
         });
         addLog(`> Error: Cover package rejected locally: ${message}`);
@@ -174,7 +169,7 @@ export function useAdminUploadFlow({
         }
       }
     },
-    [addLog],
+    [addLog, t],
   );
 
   const handleCoverPackageSelect = useCallback(
@@ -281,6 +276,8 @@ export function useAdminUploadFlow({
 
   const resetUploadForm = useCallback(() => {
     coverImportSequence.current += 1;
+    setIsExtractingMetadata(false);
+    setIsImportingCoverPackage(false);
     setFormData(createEmptySongDraft());
     setAudioFile(null);
     setCoverPackageReview(null);
@@ -316,7 +313,7 @@ export function useAdminUploadFlow({
       return;
     }
 
-    if (!(formData.title && formData.artist)) {
+    if (!(formData.title?.trim() && formData.artist?.trim())) {
       const message = "Please fill in title and artist";
       addLog(`> Error: ${message}`);
       setUploadNotice({
@@ -391,6 +388,11 @@ export function useAdminUploadFlow({
     handleFileSelect,
     handleNormalizeLyrics,
     handleUploadCreatorNoteAudio,
+    resetDraft: () => {
+      resetUploadForm();
+      setUploadNotice(null);
+    },
+    isExtractingMetadata,
     isDeploying,
     isFetchingLyrics,
     isImportingCoverPackage,
@@ -399,30 +401,5 @@ export function useAdminUploadFlow({
     setNeteaseUrl,
     uploadLyricsDescriptor: describeLyrics(formData.lyrics || ""),
     uploadNotice,
-  };
-}
-
-function packageUploadNotice(review: CoverPackageReview): AdminNotice {
-  if (review.duplicateSongId) {
-    return {
-      tone: "error",
-      title: "Package already deployed",
-      message: `This exact package is already stored as ${review.duplicateSongId}; deployment is blocked to prevent a duplicate.`,
-    };
-  }
-  if (review.relatedSongId) {
-    return {
-      tone: "warning",
-      title: "Cover project revision found",
-      message: `This project already has a published track (${review.relatedSongId}). Review this package as an explicit revision before deploying.`,
-    };
-  }
-  return {
-    tone: review.warnings.length > 0 ? "warning" : "success",
-    title: "Cover package ready for review",
-    message:
-      review.warnings.length > 0
-        ? "The package is valid but has review warnings. Check them before deploying."
-        : "The package passed local validation. Review the editable metadata and lyrics before deploying.",
   };
 }

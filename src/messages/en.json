@@ -191,13 +191,13 @@
   },
   "admin": {
     "tabs": {
-      "upload": "Upload New",
+      "upload": "Add song",
       "record": "Record Audio",
-      "edit": "Edit Playlist",
-      "catalog": "Organize"
+      "edit": "Songs",
+      "catalog": "Albums & tags"
     },
     "shell": {
-      "title": "Admin Workspace",
+      "title": "Music workspace",
       "subtitle": "Modernized upload, tagging, and playlist control surface.",
       "logCount": "{count} runtime log entries"
     },
@@ -207,8 +207,8 @@
       "retry": "Retry",
       "fetchLyrics": "Fetch Lyrics",
       "fetching": "Fetching...",
-      "deploy": "Deploy Track",
-      "deploying": "Deploying...",
+      "deploy": "Publish song",
+      "deploying": "Publishing…",
       "reset": "Reset Draft",
       "saveSong": "Save Changes",
       "archive": "Archive Track",
@@ -232,8 +232,8 @@
         "description": "Core track identity and timeline metadata."
       },
       "classification": {
-        "title": "Classification",
-        "description": "Library semantics, availability, and tag grouping."
+        "title": "Publishing",
+        "description": "Choose visibility, status, and collection."
       },
       "lyrics": {
         "title": "Lyrics",
@@ -318,7 +318,7 @@
     },
     "creatorNote": {
       "spokenTitle": "Spoken note",
-      "spokenDescription": "Upload an existing recording or capture a short note here. It stays separate from the full cover recording workflow.",
+      "spokenDescription": "Upload a recording or record a short spoken note.",
       "uploadAudio": "Upload audio",
       "replaceAudio": "Replace audio",
       "uploading": "Uploading...",
@@ -351,7 +351,7 @@
     "upload": {
       "packageImport": {
         "title": "Import Cover Package",
-        "description": "Verify a HuangToolbar .coverpkg locally and prefill this existing upload workflow.",
+        "description": "Import a .coverpkg to fill in audio, lyrics, and song details.",
         "choose": "Drop a .coverpkg or click to inspect",
         "dropActive": "Drop to inspect this cover package",
         "inspecting": "Inspecting package locally...",
@@ -370,7 +370,9 @@
         "relatedTitle": "Existing project version found",
         "relatedMessage": "Track {id} came from the same cover project. Treat this import as an explicit revision.",
         "warnings": "Review warnings",
-        "noWarnings": "No package-level warnings remain."
+        "noWarnings": "No package-level warnings remain.",
+        "summary": "{title} · {artist} · {count} lyric lines",
+        "invalid": "Unable to import package"
       },
       "fileCard": {
         "title": "Audio Source",
@@ -414,12 +416,12 @@
       "searchPlaceholder": "Search title, artist, album, or tag",
       "badges": {
         "dirty": "Dirty",
-        "attention": "Needs"
+        "attention": "Optional"
       },
       "filters": {
         "label": "Filter tracks",
         "all": "All tracks",
-        "needsAttention": "Needs attention ({count})",
+        "needsAttention": "More details available ({count})",
         "ready": "Ready",
         "archived": "Archived"
       },
@@ -459,7 +461,7 @@
       },
       "emptyList": {
         "title": "No matching songs",
-        "description": "Try another search term or add tracks from the upload workspace."
+        "description": "Try another search or clear the filters."
       },
       "mobilePrompt": {
         "title": "Open the detail editor",
@@ -479,7 +481,7 @@
       }
     },
     "confirm": {
-      "discardTitle": "Discard unsaved changes?",
+      "discardTitle": "Unsaved changes",
       "discardDescription": "Switching tracks will drop any unsaved draft changes for the current selection.",
       "discardConfirm": "Discard and continue",
       "saveAndContinue": "Save and continue",
@@ -492,7 +494,14 @@
       "deleteTitle": "Delete this track?",
       "deleteDescription": "The track will be removed from the staged playlist until you save or reload.",
       "deleteConfirm": "Delete track",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "leaveDescription": "This song has unsaved changes. Save them before leaving, or discard them.",
+      "logoutTitle": "Sign out and discard unsaved drafts?",
+      "logoutDescription": "You have an edited song or upload draft. Cancel to finish and save your work.",
+      "logoutConfirm": "Sign out and discard drafts",
+      "reloadTitle": "Reload and discard changes?",
+      "reloadDescription": "The latest library version will replace this song’s unsaved draft.",
+      "reloadConfirm": "Reload and discard changes"
     },
     "status": {
       "ready": "Ready",
@@ -616,6 +625,144 @@
         "title": "Recording attached",
         "message": "{filename} is ready as the upload source."
       }
+    },
+    "navigation": {
+      "label": "Admin navigation",
+      "collapse": "Collapse navigation",
+      "expand": "Expand navigation",
+      "viewSite": "View site",
+      "language": "Interface language",
+      "skip": "Skip to workspace",
+      "descriptions": {
+        "edit": "Find, edit, and publish your music.",
+        "upload": "Add an audio file or import a cover package.",
+        "catalog": "Keep your albums and tags organized."
+      }
+    },
+    "form": {
+      "label": "Song editor sections",
+      "basic": "Details",
+      "lyrics": "Lyrics",
+      "story": "Creator note",
+      "publishing": "Publishing",
+      "required": "Enter a value for this required field.",
+      "requiredMetadata": "Enter a title and artist, then save again."
+    },
+    "wizard": {
+      "label": "Add song progress",
+      "source": "Choose file",
+      "details": "Song details",
+      "publish": "Review & publish",
+      "sourceTitle": "Start with your audio",
+      "sourceHint": "Choose a file, then review its details before adding it to the library.",
+      "sourceType": "File type",
+      "audio": "Audio file",
+      "detailsHint": "Title and artist are required. Lyrics and a creator note are optional.",
+      "reviewTitle": "Ready for the library",
+      "reviewHint": "Review the song and choose who can see it.",
+      "back": "Back",
+      "next": "Continue",
+      "hints": {
+        "source": "Files stay local until you publish.",
+        "details": "Your draft is kept while you move between steps.",
+        "publish": "Publishing saves the audio and song details."
+      },
+      "clearDraft": "Clear draft",
+      "clearDraftTitle": "Clear this upload draft?",
+      "clearDraftHint": "The selected file and entered details will be removed. Saved songs remain in the library.",
+      "saveToLibrary": "Save to library"
+    },
+    "activity": {
+      "title": "Activity",
+      "idle": "No recent activity",
+      "processing": "Working…"
+    },
+    "overview": {
+      "total": "{count, plural, one {# song} other {# songs}}",
+      "public": "{count} public",
+      "drafts": "{count, plural, one {# draft} other {# drafts}}"
+    },
+    "editor": {
+      "tools": "Audio, revisions & library history",
+      "archiveHint": "Archive to hide this song while keeping its audio.",
+      "backToList": "Back to songs",
+      "clearFilters": "Clear filters",
+      "clearSelection": "Clear selection",
+      "emptyLibraryTitle": "Your music starts here",
+      "emptyLibraryHint": "Add your first audio file or import a cover package.",
+      "searchLabel": "Search songs",
+      "reload": "Refresh library",
+      "changesHint": "Changes are saved only when you choose Save.",
+      "searchCatalog": "Search albums or tags",
+      "noCatalogResults": "No matches. Try another search.",
+      "resizeList": "Resize song list"
+    },
+    "options": {
+      "language": {
+        "zh": "Chinese",
+        "en": "English",
+        "ja": "Japanese"
+      },
+      "visibility": {
+        "public": "Public",
+        "unlisted": "Unlisted",
+        "private": "Private"
+      },
+      "visibilityHints": {
+        "public": "Visible in the public player when the song is ready.",
+        "unlisted": "Hidden from the public library.",
+        "private": "Only available in this admin workspace."
+      },
+      "assetStatus": {
+        "ready": "Ready",
+        "draft": "Draft",
+        "archived": "Archived"
+      },
+      "trackType": {
+        "portfolio": "My work",
+        "personal": "Personal collection"
+      },
+      "sourceType": {
+        "upload": "Upload",
+        "external-upload": "External",
+        "recording": "Recording"
+      },
+      "performanceType": {
+        "cover": "Cover",
+        "original": "Original",
+        "listening": "Listening"
+      }
+    },
+    "lyricTools": {
+      "normalize": "Clean up lyrics",
+      "convert": "Add estimated timing",
+      "lines": "{count, plural, one {# lyric line} other {# lyric lines}}",
+      "empty": "No lyrics added",
+      "estimateHint": "Timing is estimated from duration. Review it before publishing."
+    },
+    "login": {
+      "title": "Welcome back",
+      "description": "Sign in to manage your music, albums, and stories.",
+      "password": "Admin password",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "failed": "Unable to sign in. Check your password and try again.",
+      "session": "Your session lasts {hours} hours.",
+      "home": "Back to music",
+      "show": "Show password",
+      "hide": "Hide password",
+      "rateLimited": "Too many attempts. Wait a little before trying again.",
+      "unavailable": "Sign-in is temporarily unavailable. Try again later."
+    },
+    "rename": {
+      "action": "Rename",
+      "label": "Rename “{name}”",
+      "hint": "Saving updates related songs. Matching tag names will be merged.",
+      "save": "Save name",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "required": "Enter a name.",
+      "failed": "Unable to save. Try again."
     }
   },
   "albumBrowse": {
@@ -632,7 +779,7 @@
     "tagsHint": "Tag names save immediately across matching tracks. Renaming to an existing tag merges them.",
     "albumName": "Album name",
     "tagName": "Tag name",
-    "trackCount": "{count} tracks",
+    "trackCount": "{count, plural, one {# track} other {# tracks}}",
     "stageRename": "Stage change",
     "moveUp": "Move {title} up",
     "moveDown": "Move {title} down",

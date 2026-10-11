@@ -191,13 +191,13 @@
   },
   "admin": {
     "tabs": {
-      "upload": "新規アップロード",
+      "upload": "楽曲を追加",
       "record": "音声録音",
-      "edit": "プレイリスト編集",
-      "catalog": "整理"
+      "edit": "楽曲管理",
+      "catalog": "アルバムとタグ"
     },
     "shell": {
-      "title": "管理ワークスペース",
+      "title": "音楽ワークスペース",
       "subtitle": "モダン化されたアップロード、タグ、プレイリスト管理画面。",
       "logCount": "実行ログ {count} 件"
     },
@@ -207,8 +207,8 @@
       "retry": "再試行",
       "fetchLyrics": "歌詞を取得",
       "fetching": "取得中...",
-      "deploy": "トラックをデプロイ",
-      "deploying": "デプロイ中...",
+      "deploy": "楽曲を公開",
+      "deploying": "公開中…",
       "reset": "下書きをリセット",
       "saveSong": "変更を保存",
       "archive": "曲をアーカイブ",
@@ -232,8 +232,8 @@
         "description": "基本情報とタイムライン関連のメタデータ。"
       },
       "classification": {
-        "title": "分類設定",
-        "description": "ライブラリ上の意味付け、公開範囲、タグ分類。"
+        "title": "公開設定",
+        "description": "公開範囲、状態、分類を設定します。"
       },
       "lyrics": {
         "title": "歌詞",
@@ -318,7 +318,7 @@
     },
     "creatorNote": {
       "spokenTitle": "音声メモ",
-      "spokenDescription": "既存の録音をアップロードするか、ここで短いメモを録音します。フルカバー録音とは別の操作です。",
+      "spokenDescription": "録音をアップロードするか、短い音声を録音します。",
       "uploadAudio": "音声をアップロード",
       "replaceAudio": "音声を置き換え",
       "uploading": "アップロード中……",
@@ -351,7 +351,7 @@
     "upload": {
       "packageImport": {
         "title": "カバーパッケージを読み込む",
-        "description": "HuangToolbar の .coverpkg をローカルで検証し、既存のアップロード画面に反映します。",
+        "description": ".coverpkg から音声、歌詞、情報を読み込みます。",
         "choose": ".coverpkg をドロップ、またはクリックして検査",
         "dropActive": "ドロップしてカバーパッケージを検査",
         "inspecting": "パッケージをローカルで検査中…",
@@ -370,7 +370,9 @@
         "relatedTitle": "同じプロジェクトの既存版があります",
         "relatedMessage": "{id} は同じカバープロジェクト由来です。明示的な改訂として確認してください。",
         "warnings": "確認が必要な警告",
-        "noWarnings": "パッケージに警告はありません。"
+        "noWarnings": "パッケージに警告はありません。",
+        "summary": "{title} · {artist} · 歌詞 {count} 行",
+        "invalid": "パッケージを読み込めません"
       },
       "fileCard": {
         "title": "音声ソース",
@@ -414,12 +416,12 @@
       "searchPlaceholder": "タイトル、アーティスト、アルバム、タグで検索",
       "badges": {
         "dirty": "変更あり",
-        "attention": "要確認"
+        "attention": "任意"
       },
       "filters": {
         "label": "トラックを絞り込む",
         "all": "すべてのトラック",
-        "needsAttention": "要確認（{count}）",
+        "needsAttention": "情報を追加可能（{count}）",
         "ready": "準備完了",
         "archived": "アーカイブ済み"
       },
@@ -459,7 +461,7 @@
       },
       "emptyList": {
         "title": "一致する曲がありません",
-        "description": "別の検索語を試すか、アップロード画面から曲を追加してください。"
+        "description": "検索語を変えるか、絞り込みを解除してください。"
       },
       "mobilePrompt": {
         "title": "詳細エディタを開く",
@@ -479,7 +481,7 @@
       }
     },
     "confirm": {
-      "discardTitle": "未保存の変更を破棄しますか？",
+      "discardTitle": "未保存の変更",
       "discardDescription": "別の曲へ切り替えると、現在の下書き変更は失われます。",
       "discardConfirm": "破棄して続行",
       "saveAndContinue": "保存して続行",
@@ -492,7 +494,14 @@
       "deleteTitle": "この曲を削除しますか？",
       "deleteDescription": "保存または再読み込みするまで、この曲はステージ済みプレイリストから削除されます。",
       "deleteConfirm": "トラックを削除",
-      "cancel": "キャンセル"
+      "cancel": "キャンセル",
+      "leaveDescription": "未保存の変更があります。保存して移動するか、変更を破棄してください。",
+      "logoutTitle": "下書きを破棄してログアウトしますか？",
+      "logoutDescription": "楽曲の変更またはアップロード下書きがあります。キャンセルして保存できます。",
+      "logoutConfirm": "破棄してログアウト",
+      "reloadTitle": "変更を破棄して再読み込みしますか？",
+      "reloadDescription": "最新のライブラリで未保存の下書きを置き換えます。",
+      "reloadConfirm": "破棄して再読み込み"
     },
     "status": {
       "ready": "準備完了",
@@ -616,6 +625,144 @@
         "title": "録音を添付しました",
         "message": "{filename} をアップロード元として利用できます。"
       }
+    },
+    "navigation": {
+      "label": "管理ナビゲーション",
+      "collapse": "折りたたむ",
+      "expand": "展開する",
+      "viewSite": "サイトを見る",
+      "language": "表示言語",
+      "skip": "ワークスペースへ",
+      "descriptions": {
+        "edit": "楽曲の検索、編集、公開。",
+        "upload": "音声ファイルやカバーパッケージを追加。",
+        "catalog": "アルバムとタグを整理。"
+      }
+    },
+    "form": {
+      "label": "楽曲編集セクション",
+      "basic": "基本情報",
+      "lyrics": "歌詞",
+      "story": "作者の言葉",
+      "publishing": "公開設定",
+      "required": "この必須項目を入力してください。",
+      "requiredMetadata": "タイトルとアーティストを入力して保存してください。"
+    },
+    "wizard": {
+      "label": "楽曲追加の手順",
+      "source": "ファイル選択",
+      "details": "楽曲情報",
+      "publish": "確認と公開",
+      "sourceTitle": "音声ファイルから始める",
+      "sourceHint": "ファイルを選び、情報を確認してライブラリに追加します。",
+      "sourceType": "ファイルの種類",
+      "audio": "音声ファイル",
+      "detailsHint": "タイトルとアーティストは必須です。歌詞と作者の言葉は任意です。",
+      "reviewTitle": "楽曲を確認",
+      "reviewHint": "情報と公開範囲を確認してください。",
+      "back": "戻る",
+      "next": "次へ",
+      "hints": {
+        "source": "公開するまでファイルはローカルに保存されます。",
+        "details": "手順を移動しても入力内容は保持されます。",
+        "publish": "音声と楽曲情報を保存します。"
+      },
+      "clearDraft": "下書きを消去",
+      "clearDraftTitle": "下書きを消去しますか？",
+      "clearDraftHint": "選択ファイルと入力情報を消去します。保存済みの楽曲には影響しません。",
+      "saveToLibrary": "ライブラリに保存"
+    },
+    "activity": {
+      "title": "操作履歴",
+      "idle": "操作履歴はありません",
+      "processing": "処理中…"
+    },
+    "overview": {
+      "total": "全 {count} 曲",
+      "public": "公開 {count} 曲",
+      "drafts": "下書き {count} 曲"
+    },
+    "editor": {
+      "tools": "音声、改訂、ライブラリ履歴",
+      "archiveHint": "音声を保持したまま楽曲を非表示にします。",
+      "backToList": "楽曲一覧へ",
+      "clearFilters": "絞り込みを解除",
+      "clearSelection": "選択を解除",
+      "emptyLibraryTitle": "最初の楽曲から始めましょう",
+      "emptyLibraryHint": "音声ファイルまたはカバーパッケージを追加します。",
+      "searchLabel": "楽曲を検索",
+      "reload": "再読み込み",
+      "changesHint": "保存を選ぶまで変更は反映されません。",
+      "searchCatalog": "アルバムやタグを検索",
+      "noCatalogResults": "一致する結果がありません。",
+      "resizeList": "楽曲一覧の幅を変更"
+    },
+    "options": {
+      "language": {
+        "zh": "中国語",
+        "en": "英語",
+        "ja": "日本語"
+      },
+      "visibility": {
+        "public": "公開",
+        "unlisted": "一覧非表示",
+        "private": "非公開"
+      },
+      "visibilityHints": {
+        "public": "準備完了の楽曲は公開プレイヤーに表示されます。",
+        "unlisted": "公開ライブラリの一覧には表示されません。",
+        "private": "管理ワークスペースでのみ利用できます。"
+      },
+      "assetStatus": {
+        "ready": "準備完了",
+        "draft": "下書き",
+        "archived": "アーカイブ"
+      },
+      "trackType": {
+        "portfolio": "作品",
+        "personal": "個人用"
+      },
+      "sourceType": {
+        "upload": "アップロード",
+        "external-upload": "外部",
+        "recording": "録音"
+      },
+      "performanceType": {
+        "cover": "カバー",
+        "original": "オリジナル",
+        "listening": "鑑賞"
+      }
+    },
+    "lyricTools": {
+      "normalize": "歌詞を整える",
+      "convert": "推定タイミングを追加",
+      "lines": "歌詞 {count} 行",
+      "empty": "歌詞なし",
+      "estimateHint": "時間は長さから推定されます。公開前に確認してください。"
+    },
+    "login": {
+      "title": "おかえりなさい",
+      "description": "ログインして音楽、アルバム、ストーリーを管理。",
+      "password": "管理パスワード",
+      "submit": "ログイン",
+      "submitting": "ログイン中…",
+      "failed": "ログインできません。パスワードを確認してください。",
+      "session": "セッションは {hours} 時間有効です。",
+      "home": "音楽サイトへ戻る",
+      "show": "パスワードを表示",
+      "hide": "パスワードを隠す",
+      "rateLimited": "試行回数が多すぎます。しばらくしてから再試行してください。",
+      "unavailable": "ログインを利用できません。後で再試行してください。"
+    },
+    "rename": {
+      "action": "名前を変更",
+      "label": "「{name}」の名前を変更",
+      "hint": "関連楽曲も更新されます。同名のタグは統合されます。",
+      "save": "名前を保存",
+      "saving": "保存中…",
+      "cancel": "キャンセル",
+      "required": "名前を入力してください。",
+      "failed": "保存できません。再試行してください。"
     }
   },
   "albumBrowse": {

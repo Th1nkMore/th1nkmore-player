@@ -123,7 +123,7 @@ export function CoverRevisionPanel({
         title="歌曲版本"
         description="正在读取 Cover Studio 的候选版本。"
       >
-        <div className="flex min-h-28 items-center justify-center text-sm text-gray-500">
+        <div className="flex min-h-28 items-center justify-center text-sm text-[var(--admin-muted)]">
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           加载版本历史…
         </div>
@@ -137,7 +137,7 @@ export function CoverRevisionPanel({
       title="歌曲版本"
       description="公开链接始终指向同一首歌；上传只新增候选，采用后才替换当前播放版本。"
       aside={
-        <span className="rounded-full bg-white/[0.05] px-3 py-1 text-xs tabular-nums text-gray-400 shadow-[0_0_0_1px_rgba(255,255,255,0.08)]">
+        <span className="rounded-full bg-white/[0.05] px-3 py-1 text-xs tabular-nums text-[var(--admin-muted)] shadow-[0_0_0_1px_rgba(255,255,255,0.08)]">
           {ledger.revisions.length} 个版本
         </span>
       }
@@ -171,22 +171,22 @@ export function CoverRevisionPanel({
                 }`}
               >
                 <span className="flex items-center justify-between gap-3">
-                  <span className="font-medium text-gray-100 tabular-nums">
+                  <span className="font-medium text-[var(--admin-text)] tabular-nums">
                     v{String(revision.number).padStart(2, "0")}
                   </span>
                   <span
                     className={`rounded-full px-2 py-0.5 text-[11px] ${
                       revision.state === "active"
-                        ? "bg-emerald-400/10 text-emerald-300"
+                        ? "bg-emerald-400/10 text-[var(--admin-success)]"
                         : revision.state === "draft"
-                          ? "bg-amber-400/10 text-amber-200"
-                          : "bg-white/[0.05] text-gray-500"
+                          ? "bg-amber-400/10 text-[var(--admin-warning)]"
+                          : "bg-white/[0.05] text-[var(--admin-muted)]"
                     }`}
                   >
                     {stateLabels[revision.state]}
                   </span>
                 </span>
-                <span className="mt-1.5 block text-xs text-gray-400">
+                <span className="mt-1.5 block text-xs text-[var(--admin-muted)]">
                   {kindLabels[revision.kind]} ·{" "}
                   {new Date(revision.createdAt).toLocaleString("zh-CN", {
                     month: "2-digit",
@@ -196,7 +196,7 @@ export function CoverRevisionPanel({
                   })}
                 </span>
                 {revision.note ? (
-                  <span className="mt-1.5 line-clamp-2 block text-xs leading-5 text-gray-300">
+                  <span className="mt-1.5 line-clamp-2 block text-xs leading-5 text-[var(--admin-text)]">
                     {revision.note}
                   </span>
                 ) : null}
@@ -209,18 +209,18 @@ export function CoverRevisionPanel({
           <div className="min-w-0 rounded-2xl bg-black/20 p-4 shadow-[0_0_0_1px_rgba(255,255,255,0.08)]">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="flex items-center gap-2 text-sm font-semibold text-gray-100">
-                  <GitCompareArrows className="h-4 w-4 text-sky-300" />v
-                  {String(selected.number).padStart(2, "0")} ·{" "}
+                <p className="flex items-center gap-2 text-sm font-semibold text-[var(--admin-text)]">
+                  <GitCompareArrows className="h-4 w-4 text-[var(--admin-accent)]" />
+                  v{String(selected.number).padStart(2, "0")} ·{" "}
                   {kindLabels[selected.kind]}
                 </p>
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-[var(--admin-muted)]">
                   {formatSongDuration(selected.duration)} · SHA{" "}
                   {selected.audioSha256.slice(0, 10) || "旧版未记录"}
                 </p>
               </div>
               {selected.state === "active" ? (
-                <span className="flex items-center gap-1.5 text-xs text-emerald-300">
+                <span className="flex items-center gap-1.5 text-xs text-[var(--admin-success)]">
                   <Check className="h-3.5 w-3.5" /> 当前播放版本
                 </span>
               ) : null}
@@ -250,7 +250,7 @@ export function CoverRevisionPanel({
             </div>
 
             {active && active.revisionId !== selected.revisionId ? (
-              <div className="mt-3 flex flex-wrap gap-2 text-xs text-gray-400">
+              <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--admin-muted)]">
                 <DifferencePill
                   label="时长"
                   value={`${selected.duration - active.duration >= 0 ? "+" : ""}${selected.duration - active.duration}s`}
@@ -271,7 +271,7 @@ export function CoverRevisionPanel({
             ) : null}
 
             {confirmAction ? (
-              <div className="mt-4 rounded-xl bg-amber-400/[0.07] p-3 text-xs leading-5 text-amber-100 shadow-[0_0_0_1px_rgba(251,191,36,0.2)]">
+              <div className="mt-4 rounded-xl bg-amber-400/[0.07] p-3 text-xs leading-5 text-[var(--admin-warning)] shadow-[0_0_0_1px_rgba(251,191,36,0.2)]">
                 {confirmAction === "promote"
                   ? "确认后，这个版本会成为网站当前播放版本；歌曲 ID、公开链接、标题与可见性保持不变。"
                   : "确认后，这个候选会从日常审核中归档，文件和记录仍会保留。"}
@@ -342,8 +342,8 @@ function AudioReview({
   revision: CoverRevisionView;
 }) {
   return (
-    <div className="min-w-0 rounded-xl bg-[rgba(7,10,15,0.82)] p-3 shadow-[0_0_0_1px_rgba(255,255,255,0.08)]">
-      <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-gray-400">
+    <div className="min-w-0 rounded-xl bg-[var(--admin-inset)] p-3 shadow-[0_0_0_1px_rgba(255,255,255,0.08)]">
+      <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-[var(--admin-muted)]">
         <Clock3 className="h-3.5 w-3.5" />
         {label}
       </p>
@@ -362,7 +362,7 @@ function AudioReview({
 function DifferencePill({ label, value }: { label: string; value: string }) {
   return (
     <span className="rounded-full bg-white/[0.045] px-2.5 py-1 shadow-[0_0_0_1px_rgba(255,255,255,0.07)]">
-      <span className="text-gray-500">{label}</span> · {value}
+      <span className="text-[var(--admin-muted)]">{label}</span> · {value}
     </span>
   );
 }

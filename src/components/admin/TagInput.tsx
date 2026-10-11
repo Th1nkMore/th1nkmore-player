@@ -107,23 +107,23 @@ export function TagInput({
   return (
     <div className="space-y-3">
       {label ? (
-        <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-500">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--admin-muted)]">
           {label}
         </div>
       ) : null}
 
-      <div className="rounded-2xl border border-[var(--border)] bg-[rgba(7,10,15,0.92)] p-3">
+      <div className="rounded-2xl border border-[var(--border)] bg-[var(--admin-inset)] p-3">
         <div className="flex min-h-11 flex-wrap items-center gap-2">
           {value.map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center gap-1 rounded-full border border-sky-500/30 bg-sky-500/10 px-2.5 py-1 text-xs text-sky-100"
+              className="inline-flex items-center gap-1 rounded-full border border-sky-500/30 bg-sky-500/10 px-2.5 py-1 text-xs text-[var(--admin-accent)]"
             >
               <span>{tag}</span>
               <button
                 type="button"
                 onClick={() => handleRemove(tag)}
-                className="rounded-full text-sky-100/75 transition-colors duration-150 ease-out hover:text-white"
+                className="rounded-full text-[var(--admin-accent)] transition-colors duration-150 ease-out hover:text-white"
                 aria-label={`${removeLabelPrefix} ${tag}`}
               >
                 <X className="h-3 w-3" />
@@ -162,7 +162,7 @@ export function TagInput({
             }}
             placeholder={value.length === 0 ? placeholder : ""}
             className={cn(
-              "min-w-[10rem] flex-1 bg-transparent text-sm text-gray-200 outline-none placeholder:text-gray-600",
+              "min-w-[10rem] flex-1 bg-transparent text-sm text-[var(--admin-text)] outline-none placeholder:text-[var(--admin-subtle)]",
               inputClassName,
             )}
           />
@@ -182,8 +182,8 @@ export function TagInput({
                 className={cn(
                   "inline-flex min-h-10 items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-[scale,color,background-color,border-color] duration-150 ease-out active:scale-[0.96]",
                   isSelected
-                    ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-100"
-                    : "border-[var(--border)] bg-white/3 text-gray-400 hover:border-sky-500/30 hover:text-gray-200",
+                    ? "border-emerald-500/40 bg-emerald-500/10 text-[var(--admin-success)]"
+                    : "border-[var(--border)] bg-[var(--admin-inset)] text-[var(--admin-muted)] hover:border-sky-500/30 hover:text-[var(--admin-text)]",
                 )}
               >
                 <Plus className="h-3 w-3" />
@@ -194,7 +194,9 @@ export function TagInput({
         </div>
       </div>
 
-      {status ? <p className="text-xs text-gray-500">{status}</p> : null}
+      {status ? (
+        <p className="text-xs text-[var(--admin-muted)]">{status}</p>
+      ) : null}
     </div>
   );
 }
