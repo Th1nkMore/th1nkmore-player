@@ -18,7 +18,7 @@ The private manifest lives outside the deployment checkout: `REPERTOIRE_DATA_DIR
 
 Writes require the last observed SHA-256 revision, serialize through a process-aware file lock, save a private history snapshot, and atomically rename a new manifest. Files are created with mode 0600 and directories with 0700. Failed/corrupt reads do not replace the list. Locks left by terminated writers can be recovered; live writers are not interrupted. History restoration is revision checked and first backs up the replaced state. Exported JSON backups can be merged back in without removing unrelated entries.
 
-The existing admin session middleware protects `/api/admin/repertoire`, including history. Responses are private/no-store. Public playlist enrichment copies only repertoire ID, structured source artists, and applicable musical styles for already-public playable recordings. It never exposes unrecorded titles, knowledge/proficiency, personal notes, private tags, or learned dates. Source credit text attached to individual recordings remains intact. Saving repertoire metadata invalidates public page/playlist caches.
+`/api/admin/repertoire` independently verifies the existing admin session before every read or write, including history, in addition to the admin routing protection. Responses are private/no-store. Public playlist enrichment copies only repertoire ID, structured source artists, and applicable musical styles for already-public playable recordings. It never exposes unrecorded titles, knowledge/proficiency, personal notes, private tags, or learned dates. Source credit text attached to individual recordings remains intact. Saving repertoire metadata invalidates public page/playlist caches.
 
 ## Management UI
 

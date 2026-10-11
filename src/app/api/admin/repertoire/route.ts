@@ -1,6 +1,7 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
 import { readAdminPlaylistSnapshot } from "@/lib/admin-playlist.server";
+import { getAdminCookieFromRequest, verifyAuthToken } from "@/lib/auth";
 import { PUBLIC_PLAYLIST_CACHE_TAG } from "@/lib/public-playlist";
 import { recordingReferences } from "@/lib/repertoire";
 import {
@@ -15,6 +16,14 @@ import { RepertoireValidationError } from "@/lib/repertoire-validation";
 
 export const runtime = "nodejs";
 
+async function requireSession(request: NextRequest) {
+  const token = getAdminCookieFromRequest(request);
+  if (!(token && (await verifyAuthToken(token)))) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  return null;
+}
+
 function failure(error: unknown) {
   if (error instanceof RepertoireRevisionRequiredError)
     return NextResponse.json({ error: "revisionRequired" }, { status: 428 });
@@ -28,6 +37,8 @@ function failure(error: unknown) {
 
 export async function GET(request: NextRequest) {
   try {
+    const unauthorized = await requireSession(request);
+    if (unauthorized) return unauthorized;
     if (request.nextUrl.searchParams.get("history") === "1")
       return NextResponse.json(await readRepertoireHistory(), {
         headers: { "Cache-Control": "private, no-store" },
@@ -50,6 +61,8 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const unauthorized = await requireSession(request);
+    if (unauthorized) return unauthorized;
     const payload = await request.json();
     const expected =
       request.headers.get("if-match")?.replace(/^"|"$/g, "") ?? null;
