@@ -2,6 +2,7 @@
 
 import { ListChecks, ListMusic, Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import type { RefObject } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -18,8 +19,9 @@ type LibraryToolbarProps = {
   onToggleSelectionMode: () => void;
   query: string;
   queueCount: number;
+  searchInputRef: RefObject<HTMLInputElement | null>;
+  selectionButtonRef: RefObject<HTMLButtonElement | null>;
   showQueue: boolean;
-  showSelection: boolean;
   songCount: number;
   selectionMode: boolean;
 };
@@ -37,8 +39,9 @@ export function LibraryToolbar({
   onToggleSelectionMode,
   query,
   queueCount,
+  searchInputRef,
+  selectionButtonRef,
   showQueue,
-  showSelection,
   songCount,
   selectionMode,
 }: LibraryToolbarProps) {
@@ -46,7 +49,7 @@ export function LibraryToolbar({
 
   return (
     <div className="shrink-0 border-b border-border bg-sidebar px-3 pb-3 pt-2.5">
-      <div className="mb-2.5 flex min-h-11 items-center justify-between gap-3">
+      <div className="mb-2.5 flex min-h-11 flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <div className="truncate text-sm font-semibold text-foreground">
             {t("library")}
@@ -55,38 +58,34 @@ export function LibraryToolbar({
             <span className="tabular-nums">
               {t("songCount", { count: songCount })}
             </span>
-            {feedback && (
-              <output className="truncate text-primary" aria-live="polite">
-                {feedback}
-              </output>
-            )}
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
-          {showSelection && (
-            <button
-              type="button"
-              onClick={onToggleSelectionMode}
-              disabled={!(selectionMode || canSelect)}
-              className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl bg-accent/55 pl-3 pr-3.5 text-xs font-medium text-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.08)] transition-[scale,background-color,box-shadow,opacity] duration-150 ease-out hover:bg-accent active:scale-[0.96] disabled:pointer-events-none disabled:opacity-40 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08)]"
-              aria-pressed={selectionMode}
-            >
-              <ListChecks className="size-4" aria-hidden="true" />
-              <span>
-                {t(selectionMode ? "cancelSelection" : "selectMultiple")}
-              </span>
-            </button>
-          )}
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <button
+            ref={selectionButtonRef}
+            type="button"
+            onClick={onToggleSelectionMode}
+            disabled={!(selectionMode || canSelect)}
+            className="flex min-h-11 max-w-full items-center gap-1.5 rounded-xl bg-accent/55 px-3 py-2 text-xs font-medium text-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.08)] transition-[scale,background-color,box-shadow,opacity] duration-150 ease-out hover:bg-accent focus-visible:outline-2 focus-visible:outline-primary active:scale-[0.96] disabled:pointer-events-none disabled:opacity-40 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08)]"
+            aria-pressed={selectionMode}
+          >
+            <ListChecks className="size-4 shrink-0" aria-hidden="true" />
+            <span className="min-w-0 [overflow-wrap:anywhere]">
+              {t(selectionMode ? "cancelSelection" : "selectMultiple")}
+            </span>
+          </button>
           {showQueue && (
             <button
               type="button"
               onClick={onOpenQueue}
-              className="flex min-h-11 shrink-0 items-center gap-2 rounded-xl bg-accent/55 pl-3 pr-3.5 text-xs font-medium text-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.08)] transition-[scale,background-color,box-shadow] duration-150 ease-out hover:bg-accent active:scale-[0.96] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08)]"
+              className="flex min-h-11 max-w-full items-center gap-2 rounded-xl bg-accent/55 px-3 py-2 text-xs font-medium text-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.08)] transition-[scale,background-color,box-shadow] duration-150 ease-out hover:bg-accent focus-visible:outline-2 focus-visible:outline-primary active:scale-[0.96] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.08)]"
               aria-label={t("openQueue", { count: queueCount })}
             >
-              <ListMusic className="size-4" />
-              <span>{t("queue")}</span>
+              <ListMusic className="size-4 shrink-0" aria-hidden="true" />
+              <span className="min-w-0 [overflow-wrap:anywhere]">
+                {t("queue")}
+              </span>
               <span className="min-w-5 rounded-full bg-primary/15 px-1.5 py-0.5 text-center text-[10px] text-primary tabular-nums">
                 {queueCount}
               </span>
@@ -94,6 +93,16 @@ export function LibraryToolbar({
           )}
         </div>
       </div>
+
+      <output
+        className={cn(
+          "block break-words text-xs text-primary",
+          feedback && "mb-2.5",
+        )}
+        aria-live="polite"
+      >
+        {feedback}
+      </output>
 
       <div className="relative">
         <label className="sr-only" htmlFor="song-library-search">
@@ -104,6 +113,7 @@ export function LibraryToolbar({
           aria-hidden="true"
         />
         <Input
+          ref={searchInputRef}
           id="song-library-search"
           type="search"
           value={query}
