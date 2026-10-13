@@ -9,6 +9,7 @@ The current codebase is a usable player and publishing baseline. Bottom-navigati
 ## Current Public Capabilities
 
 - IDE-like library browsing, tag exploration, metadata, queue, and playback
+- Library multiselect on desktop and mobile, with select-all scoped to the current search/tag results, duplicate-free queue append, and uninterrupted current playback
 - A playback sequence strip with explicit song-player semantics
 - Global Howler-based audio playback
 - LRC lyrics with active-line synchronization and seeking
