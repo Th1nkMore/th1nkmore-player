@@ -312,6 +312,34 @@ describe("usePlayerStore", () => {
     ]);
   });
 
+  it.each([
+    { state: "playing", isPlaying: true },
+    { state: "paused", isPlaying: false },
+  ])("preserves $state playback when adding a batch", ({ isPlaying }) => {
+    const playbackContext = [songOne, songThree, songTwo];
+    usePlayerStore.setState({
+      currentTrackId: songOne.id,
+      currentTime: 42,
+      isPlaying,
+      playbackContext,
+      playbackStatus: "ready",
+      queue: [songTwo],
+    });
+
+    usePlayerStore
+      .getState()
+      .addManyToQueue([songThree, songTwo, songOne, songThree]);
+
+    expect(usePlayerStore.getState()).toMatchObject({
+      currentTrackId: songOne.id,
+      currentTime: 42,
+      isPlaying,
+      playbackContext,
+      playbackStatus: "ready",
+      queue: [songTwo, songThree, songOne],
+    });
+  });
+
   it("starts the first unique song from a batch added while idle", () => {
     usePlayerStore.getState().addManyToQueue([songTwo, songTwo, songThree]);
 

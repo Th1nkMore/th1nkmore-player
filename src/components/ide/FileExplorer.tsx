@@ -3,8 +3,8 @@
 import { AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { BatchQueueBar } from "@/components/ide/BatchQueueBar";
 import { LibraryToolbar } from "@/components/ide/LibraryToolbar";
-import { MobileBatchQueueBar } from "@/components/ide/MobileBatchQueueBar";
 import { MobileQueueDrawer } from "@/components/ide/MobileQueueDrawer";
 import { SongItem } from "@/components/ide/SongItem";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -28,8 +28,20 @@ export function FileExplorer({
   className?: string;
   onFileClick?: () => void;
 }) {
-  const { activeTag, files, getFileById, isLoading, openFile, setActiveTag } =
-    useIDEStore();
+  const {
+    activeTag,
+    files,
+    getFileById,
+    isLoading,
+    libraryQuery: query,
+    openFile,
+    queueSelectionMode: selectionMode,
+    selectedSongIds,
+    setActiveTag,
+    setLibraryQuery: setQuery,
+    setQueueSelectionMode: setSelectionMode,
+    setSelectedSongIds,
+  } = useIDEStore();
   const addManyToQueue = usePlayerStore((state) => state.addManyToQueue);
   const addToQueue = usePlayerStore((state) => state.addToQueue);
   const currentTrackId = usePlayerStore((state) => state.currentTrackId);
@@ -40,15 +52,13 @@ export function FileExplorer({
   const queue = usePlayerStore((state) => state.queue);
   const t = useTranslations("fileExplorer");
   const tTag = useTranslations("tagGrid");
-  const isMobile = useScreenMode() !== "desktop";
-  const [query, setQuery] = useState("");
+  const screenMode = useScreenMode();
+  const isMobile = screenMode !== "desktop";
   const [feedback, setFeedback] = useState<string | null>(null);
   const [isQueueDrawerOpen, setIsQueueDrawerOpen] = useState(false);
-  const [selectionMode, setSelectionMode] = useState(false);
-  const [selectedSongIds, setSelectedSongIds] = useState<Set<string>>(
-    () => new Set(),
-  );
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const selectionButtonRef = useRef<HTMLButtonElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const queuedSongIds = useMemo(
     () => new Set(queue.map((song) => song.id)),
@@ -72,13 +82,7 @@ export function FileExplorer({
     setSelectedSongIds((previous) =>
       reconcileSelectedSongIds(previous, selectableSongs),
     );
-  }, [selectableSongs]);
-
-  useEffect(() => {
-    if (isMobile) return;
-    setSelectionMode(false);
-    setSelectedSongIds(new Set());
-  }, [isMobile]);
+  }, [selectableSongs, setSelectedSongIds]);
 
   useEffect(
     () => () => {
@@ -109,9 +113,17 @@ export function FileExplorer({
   };
 
   const handleToggleSelectionMode = () => {
-    setSelectionMode((current) => {
-      if (current) setSelectedSongIds(new Set());
-      return !current;
+    if (selectionMode) setSelectedSongIds(new Set());
+    setSelectionMode(!selectionMode);
+  };
+
+  const finishSelection = () => {
+    setSelectedSongIds(new Set());
+    setSelectionMode(false);
+    requestAnimationFrame(() => {
+      const button = selectionButtonRef.current;
+      if (button && !button.disabled) button.focus();
+      else searchInputRef.current?.focus();
     });
   };
 
@@ -129,8 +141,7 @@ export function FileExplorer({
     if (selectedSongs.length === 0) return;
     addManyToQueue(selectedSongs);
     showFeedback(t("batchAddedToQueue", { count: selectedSongs.length }));
-    setSelectedSongIds(new Set());
-    setSelectionMode(false);
+    finishSelection();
   };
 
   const handleCopyLink = (song: Song) => {
@@ -138,7 +149,22 @@ export function FileExplorer({
   };
 
   return (
-    <div className={cn("flex h-full min-h-0 flex-col bg-sidebar", className)}>
+    <section
+      aria-label={t("library")}
+      className={cn("flex h-full min-h-0 flex-col bg-sidebar", className)}
+      onKeyDown={(event) => {
+        if (
+          event.key === "Escape" &&
+          !event.defaultPrevented &&
+          selectionMode &&
+          !isQueueDrawerOpen
+        ) {
+          event.preventDefault();
+          event.stopPropagation();
+          finishSelection();
+        }
+      }}
+    >
       <LibraryToolbar
         activeAlbum={null}
         activeTagLabel={activeTagLabel}
@@ -152,8 +178,9 @@ export function FileExplorer({
         onToggleSelectionMode={handleToggleSelectionMode}
         query={query}
         queueCount={queue.length}
-        showQueue={isMobile}
-        showSelection={isMobile}
+        searchInputRef={searchInputRef}
+        selectionButtonRef={selectionButtonRef}
+        showQueue={screenMode === "mobile-portrait"}
         songCount={visibleSongs.length}
         selectionMode={selectionMode}
       />
@@ -193,7 +220,7 @@ export function FileExplorer({
                   onCopyLink={() => handleCopyLink(song)}
                   onProperties={() => openFile(song.id)}
                   onToggleSelection={() => handleToggleSongSelection(song.id)}
-                  selectionMode={isMobile && selectionMode}
+                  selectionMode={selectionMode}
                 />
               ))}
             </AnimatePresence>
@@ -201,8 +228,8 @@ export function FileExplorer({
         )}
       </ScrollArea>
       <AnimatePresence initial={false}>
-        {isMobile && selectionMode ? (
-          <MobileBatchQueueBar
+        {selectionMode ? (
+          <BatchQueueBar
             allVisibleSelected={allVisibleSelected}
             onAdd={handleAddSelectedToQueue}
             onToggleSelectAll={() =>
@@ -223,6 +250,6 @@ export function FileExplorer({
           onOpenChange={setIsQueueDrawerOpen}
         />
       ) : null}
-    </div>
+    </section>
   );
 }

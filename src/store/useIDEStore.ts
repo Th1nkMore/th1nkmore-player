@@ -81,12 +81,20 @@ export type IDEState = {
   activeFileId: string | null;
   explorerView: "library" | "albums" | "tags" | "queue";
   activeTag: string | null;
+  libraryQuery: string;
+  queueSelectionMode: boolean;
+  selectedSongIds: Set<string>;
   fetchSongs: () => Promise<void>;
   openFile: (fileId: string) => void;
   closeFile: (fileId: string) => void;
   setActiveFile: (fileId: string) => void;
   setExplorerView: (view: "library" | "albums" | "tags" | "queue") => void;
   setActiveTag: (tag: string | null) => void;
+  setLibraryQuery: (query: string) => void;
+  setQueueSelectionMode: (mode: boolean) => void;
+  setSelectedSongIds: (
+    value: Set<string> | ((previous: Set<string>) => Set<string>),
+  ) => void;
   getActiveFile: () => Song | null;
   getFileById: (fileId: string) => Song | null;
   getSongsByTag: (tag: string) => Song[];
@@ -129,6 +137,9 @@ export function createIDEStore({ initialSongs }: IDEStoreInit) {
     activeFileId: null,
     explorerView: "library",
     activeTag: null,
+    libraryQuery: "",
+    queueSelectionMode: false,
+    selectedSongIds: new Set(),
 
     fetchSongs: async () => {
       const cached = prepareLocalPlaylist(get(), set);
@@ -187,6 +198,13 @@ export function createIDEStore({ initialSongs }: IDEStoreInit) {
     setActiveFile: (activeFileId) => set({ activeFileId }),
     setExplorerView: (explorerView) => set({ explorerView }),
     setActiveTag: (activeTag) => set({ activeTag }),
+    setLibraryQuery: (libraryQuery) => set({ libraryQuery }),
+    setQueueSelectionMode: (queueSelectionMode) => set({ queueSelectionMode }),
+    setSelectedSongIds: (value) =>
+      set((state) => ({
+        selectedSongIds:
+          typeof value === "function" ? value(state.selectedSongIds) : value,
+      })),
 
     getActiveFile: () => {
       const state = get();
